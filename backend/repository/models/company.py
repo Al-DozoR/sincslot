@@ -1,0 +1,28 @@
+from backend.repository.models.base import Base
+from backend.repository.models.mixins import CreatedAtMixin, UpdatedAtMixin
+
+from sqlalchemy import String, Text
+from sqlalchemy import true
+from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import mapped_column
+
+
+class Company(CreatedAtMixin, UpdatedAtMixin, Base):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), unique=True)
+    description: Mapped[str] = mapped_column(
+        Text,
+        default="",
+        server_default="",
+    )
+    address: Mapped[str] = mapped_column(String(255), unique=False)
+    email: Mapped[str] = mapped_column(String(254), unique=True)
+    phone: Mapped[str] = mapped_column(String(255), unique=True)
+    hash_password: Mapped[str] = mapped_column(unique=True)
+    is_active: Mapped[bool] = mapped_column(
+        default=True,
+        server_default=true(),
+    )
+
+    def __str__(self):
+        return self.name
