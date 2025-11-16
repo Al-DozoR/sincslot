@@ -3,7 +3,12 @@ from pydantic import BaseModel
 
 
 class CreateCompanyResponse(BaseModel):
-    id: int
+    access_token: str
+    refresh_token: str
+
+
+class CreateCompanyErrorResponse(BaseModel):
+    message: str
 
 
 class CompanyByIdResponse(BaseModel):
