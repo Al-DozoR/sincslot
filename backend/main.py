@@ -1,9 +1,13 @@
 import logging
+
+
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
+
 import uvicorn
 from fastapi import FastAPI
 from backend.api.conrollers.health import router_health
+from backend.api.conrollers.company import router_company
 from backend.core.config import settings
 from core.db_helper import db_helper
 
@@ -19,6 +23,11 @@ app = FastAPI(lifespan=lifespan)
 
 app.include_router(
     router_health,
+    prefix=settings.api.prefix,
+)
+
+app.include_router(
+    router_company,
     prefix=settings.api.prefix,
 )
 
