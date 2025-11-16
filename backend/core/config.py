@@ -13,6 +13,17 @@ LOG_DEFAULT_FORMAT = (
 )
 
 
+class Password(BaseModel):
+    salt: str = "Tom&Jerry"
+
+
+class JWT(BaseModel):
+    secret_key: str = "secret_key"
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 120
+    refresh_token_expire_minutes: int = 1440
+
+
 class RunConfig(BaseModel):
     host: str = "127.0.0.1"
     port: int = 8000
@@ -79,6 +90,8 @@ class Settings(BaseSettings):
     logging: LoggingConfig = LoggingConfig()
     api: ApiPrefix = ApiPrefix()
     db: DatabaseConfig
+    jwt: JWT = JWT()
+    password: Password = Password()
 
 
 settings = Settings()
