@@ -16,7 +16,7 @@ class Base(AsyncAttrs, DeclarativeBase):
     @declared_attr.directive
     def __tablename__(cls) -> str:
         """
-        converts CamelCase to snake_case
+        converts table name CamelCase to snake_case
         """
         chars = []
         for c_idx, char in enumerate(cls.__name__):
