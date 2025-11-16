@@ -1,3 +1,4 @@
+from backend.entity.company import CompanyEntity
 from backend.repository.models.base import Base
 from backend.repository.models.mixins import CreatedAtMixin, UpdatedAtMixin
 
@@ -23,6 +24,19 @@ class Company(CreatedAtMixin, UpdatedAtMixin, Base):
         default=True,
         server_default=true(),
     )
+
+    @classmethod
+    def to_company_model(cls, obj: CompanyEntity):
+        return cls(
+            name=obj.name,
+            description=obj.description,
+            address=obj.address,
+            email=obj.email,
+            phone=obj.phone,
+            hash_password=obj.password,
+            updated_at=obj.updated_at,
+            created_at=obj.created_at,
+        )
 
     def __str__(self):
         return self.name
