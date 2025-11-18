@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import './Auth.css';
+import React, {useState} from 'react';
+import {Link} from 'react-router-dom';
+import styles from '../Auth.module.css';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -22,15 +22,15 @@ const Login = () => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <div className="auth-header">
+    <div className={styles.authContainer}>
+      <div className={styles.authCard}>
+        <div className={styles.authHeader}>
           <h2>Вход в SyncSlot</h2>
           <p>Войдите в свой аккаунт</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="auth-form">
-          <div className="form-group">
+        <form onSubmit={handleSubmit} className={styles.authForm}>
+          <div className={styles.formGroup}>
             <label htmlFor="email">Email или телефон</label>
             <input
               type="text"
@@ -43,7 +43,7 @@ const Login = () => {
             />
           </div>
 
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="password">Пароль</label>
             <input
               type="password"
@@ -56,19 +56,19 @@ const Login = () => {
             />
           </div>
 
-          <button type="submit" className="btn btn-primary btn-full">
+          <button type="submit" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnFull}`}>
             Войти
           </button>
 
-          <div className="auth-links">
-            <Link to="/forgot-password" className="auth-link">
-                Восстановить пароль
+          <div className={styles.authLinks}>
+            <Link to="/forgot-password" className={styles.authLink}>
+              Восстановить пароль
             </Link>
-            <span className="auth-divider">|</span>
-            <Link to="/register" className="auth-link">
-                Зарегистрироваться
+            <span className={styles.authDivider}>|</span>
+            <Link to="/register" className={styles.authLink}>
+              Зарегистрироваться
             </Link>
-        </div>
+          </div>
         </form>
       </div>
     </div>
