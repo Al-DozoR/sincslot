@@ -4,7 +4,7 @@ from starlette.requests import Request
 from starlette.responses import Response
 from starlette.responses import JSONResponse
 
-from backend.use_case.token import IToken
+from backend.use_case.token_use_case import IToken
 from backend.use_case.company_use_case import ICompanyUseCase
 from backend.core.db_helper import db_helper
 
@@ -63,7 +63,7 @@ class AuthCompanyMiddleware(BaseHTTPMiddleware):
             )
 
         try:
-            payload = self.token_use_case.verify_token(token)
+            payload = self.token_use_case.decode_token(token)
         except Exception as ex:
             return JSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,

@@ -48,8 +48,8 @@ async def register(
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,
         content=CompanyTokensResponse(
-            access_token=tokens.get("access_token"),
-            refresh_token=tokens.get("refresh_token"),
+            access_token=tokens.access_token,
+            refresh_token=tokens.refresh_token,
         ).model_dump()
     )
 
@@ -77,6 +77,11 @@ async def login(
             refresh_token=tokens.get("refresh_token"),
         ).model_dump()
     )
+
+
+@router_company.post("/{refresh_token}")
+async def refresh_tokens(refresh_token: str):
+    pass
 
 
 @router_company.get("/{company_id}", responses={

@@ -3,7 +3,7 @@ from passlib.context import CryptContext
 
 from backend.repository.company_repository import ICompanyRepository, CompanyRepository
 from backend.use_case.company_use_case import ICompanyUseCase, CompanyUseCase
-from backend.use_case.token import IToken, Token
+from backend.use_case.token_use_case import IToken, Token
 from backend.core.config import settings
 
 

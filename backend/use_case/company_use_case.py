@@ -2,8 +2,9 @@ from abc import ABC, abstractmethod
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.use_case.token import IToken
+from backend.use_case.token_use_case import IToken
 from backend.entity.company import CompanyEntity
+from backend.entity.token import TokenEntity
 from backend.repository.company_repository import ICompanyRepository
 
 
@@ -18,7 +19,7 @@ class ICompanyUseCase(ABC):
             phone: str,
             address: str,
             password: str
-    ) -> dict:
+    ) -> TokenEntity:
         raise NotImplemented
 
     @abstractmethod
@@ -48,10 +49,7 @@ class CompanyUseCase(ICompanyUseCase):
             phone: str,
             address: str,
             password: str
-    ) -> dict:
-
-        access_token = self.token.create_access_token(to_encode={"email": email})
-        refresh_token = self.token.create_refresh_token(to_encode={"email": email})
+    ) -> TokenEntity:
 
         hash_password = self.token.hash_password(password)
 
@@ -62,17 +60,24 @@ class CompanyUseCase(ICompanyUseCase):
             phone,
             address,
             hash_password,
-            access_token,
-            refresh_token
         )
 
-        return {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-        }
+        access_token = self.token.create_access_token(to_encode={
+            "company_id": company_id,
+            "name": name,
+            "email": email
+        })
+        refresh_token = self.token.create_refresh_token(to_encode={"email": email})
+
+        tokens = await self.token.save_tokens(session, access_token, refresh_token)
+
+        return tokens
 
     async def get_company_by_id(self, session: AsyncSession, company_id: int) -> CompanyEntity | None:
         return await self.company_repository.get_company_by_id(session, company_id)
+
+    async def get_company_by_email(self, session: AsyncSession, email: str) -> CompanyEntity | None:
+        return await self.company_repository.get_company_by_email(session, email)
 
     async def login(self, session: AsyncSession, email: str, input_password: str) -> dict | None:
         company = await self.company_repository.get_company_by_email(session, email)

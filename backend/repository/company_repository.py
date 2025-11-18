@@ -18,8 +18,6 @@ class ICompanyRepository(ABC):
             phone: str,
             address: str,
             password: str,
-            access_token: str,
-            refresh_token: str,
     ) -> int:
         raise NotImplemented
 
@@ -42,8 +40,6 @@ class CompanyRepository(ICompanyRepository):
             phone: str,
             address: str,
             password: str,
-            access_token: str,
-            refresh_token: str,
     ) -> int:
 
         new_company = Company(
@@ -52,8 +48,6 @@ class CompanyRepository(ICompanyRepository):
             phone=phone,
             address=address,
             hash_password=password,
-            access_token=access_token,
-            refresh_token=refresh_token,
         )
 
         async with UnitOfWork(session) as uow:
