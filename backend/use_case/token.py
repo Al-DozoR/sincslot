@@ -1,8 +1,6 @@
-from typing import Optional
 from datetime import datetime, timedelta
 from abc import ABC, abstractmethod
 from jose import jwt
-from jose.exceptions import JWSError
 from passlib.context import CryptContext
 from backend.core.config import JWT, Password
 
@@ -26,7 +24,7 @@ class IToken(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def verify_token(self, token: str):
+    def verify_token(self, token: str) -> dict:
         raise NotImplementedError
 
 
@@ -57,6 +55,6 @@ class Token(IToken):
         encoded_jwt = jwt.encode(to_encode, self.jwt_settings.secret_key, algorithm=self.jwt_settings.algorithm)
         return encoded_jwt
 
-    def verify_token(self, token: str):
+    def verify_token(self, token: str) -> dict:
         payload = jwt.decode(token, self.jwt_settings.secret_key, algorithms=[self.jwt_settings.algorithm])
         return payload

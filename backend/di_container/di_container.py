@@ -21,5 +21,8 @@ class DIContainer:
     def get_company_use_cases(self) -> ICompanyUseCase:
         return self.container.resolve(ICompanyUseCase)
 
+    def get_token_use_case(self) -> IToken:
+        return self.container.resolve(IToken)
+
 
 di_container = DIContainer()
