@@ -9,3 +9,8 @@ class CreateCompanyRequest(BaseModel):
     phone: Optional[str] = None
     password: str
     repeat_password: str
+
+
+class LoginCompanyRequest(BaseModel):
+    email: str
+    password: str

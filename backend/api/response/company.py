@@ -2,13 +2,9 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class CreateCompanyResponse(BaseModel):
+class CompanyTokensResponse(BaseModel):
     access_token: str
     refresh_token: str
-
-
-class CreateCompanyErrorResponse(BaseModel):
-    message: str
 
 
 class CompanyByIdResponse(BaseModel):
@@ -20,5 +16,5 @@ class CompanyByIdResponse(BaseModel):
     address: Optional[str]
 
 
-class CompanyNotFoundByIdResponse(BaseModel):
+class CompanyErrorResponse(BaseModel):
     message: str

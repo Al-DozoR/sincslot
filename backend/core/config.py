@@ -7,7 +7,6 @@ from pydantic_settings import (
     SettingsConfigDict,
 )
 
-
 LOG_DEFAULT_FORMAT = (
     "[%(asctime)s.%(msecs)03d] %(module)10s:%(lineno)-3d %(levelname)-7s - %(message)s"
 )
@@ -69,13 +68,11 @@ class LoggingConfig(BaseModel):
 
 
 class ApiV1Prefix(BaseModel):
-    prefix: str = "/v1"
-    users: str = "/users"
+    prefix: str = "/api/v1"
 
 
 class ApiPrefix(BaseModel):
     prefix: str = "/api"
-    v1: ApiV1Prefix = ApiV1Prefix()
 
 
 class Settings(BaseSettings):
@@ -89,6 +86,7 @@ class Settings(BaseSettings):
     gunicorn: GunicornConfig = GunicornConfig()
     logging: LoggingConfig = LoggingConfig()
     api: ApiPrefix = ApiPrefix()
+    api_v1: ApiV1Prefix = ApiV1Prefix()
     db: DatabaseConfig
     jwt: JWT = JWT()
     password: Password = Password()
