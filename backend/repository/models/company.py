@@ -24,6 +24,8 @@ class Company(CreatedAtMixin, UpdatedAtMixin, Base):
         default=True,
         server_default=true(),
     )
+    access_token: Mapped[str] = mapped_column(unique=True)
+    refresh_token: Mapped[str] = mapped_column(unique=True)
 
     @classmethod
     def to_company_model(cls, obj: CompanyEntity):
