@@ -10,6 +10,8 @@ from backend.api.conrollers.health import router_health
 from backend.api.conrollers.company import router_company
 from backend.core.config import settings
 from core.db_helper import db_helper
+from api.middleware.auth_middleware import AuthCompanyMiddleware
+from di_container.di_container import di_container
 
 
 @asynccontextmanager
@@ -29,6 +31,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.add_middleware(
+    AuthCompanyMiddleware,
+    exclude_path=[],
+    token_use_case=di_container.get_token_use_case(),
+    company_use_case=di_container.get_company_use_cases()
+)
+
 app.include_router(
     router_health,
     prefix=settings.api.prefix,
@@ -36,7 +45,7 @@ app.include_router(
 
 app.include_router(
     router_company,
-    prefix=settings.api.prefix,
+    prefix=settings.api_v1.prefix,
 )
 
 if __name__ == "__main__":
