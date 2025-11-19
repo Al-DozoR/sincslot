@@ -90,10 +90,12 @@ class Token(IToken):
         )
 
         return await self.token_repository.update_tokens(
+            session,
             TokenEntity(
                 access_token=new_access_token,
                 refresh_token=new_refresh_token
-            )
+            ),
+            refresh_token
         )
 
     def hash_password(self, password: str) -> str:

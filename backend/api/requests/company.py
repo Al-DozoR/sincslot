@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 
-class CreateCompanyRequest(BaseModel):
+class CompanyCreateRequest(BaseModel):
     name: str
     address: Optional[str] = None
     email: str
@@ -11,6 +11,10 @@ class CreateCompanyRequest(BaseModel):
     repeat_password: str
 
 
-class LoginCompanyRequest(BaseModel):
+class CompanyLoginRequest(BaseModel):
     email: str
     password: str
+
+
+class CompanyRefreshTokenRequest(BaseModel):
+    refresh_token: str

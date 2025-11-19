@@ -1,6 +1,7 @@
 from fastapi import APIRouter, status, Depends, Request
+from pycparser.ply.cpp import tokens
 from starlette.responses import JSONResponse
-from backend.api.requests.company import CreateCompanyRequest, LoginCompanyRequest
+from backend.api.requests.company import CompanyCreateRequest, CompanyLoginRequest, CompanyRefreshTokenRequest
 from backend.api.response.company import (
     CompanyTokensResponse,
     CompanyByIdResponse,
@@ -8,9 +9,9 @@ from backend.api.response.company import (
 )
 from backend.di_container.di_container import di_container
 from backend.use_case.company_use_case import ICompanyUseCase
+from backend.use_case.token_use_case import IToken
 from backend.core.db_helper import db_helper
 from sqlalchemy.ext.asyncio import AsyncSession
-from backend.entity.company import CompanyEntity
 
 router_company = APIRouter(tags=["company"])
 
@@ -20,7 +21,7 @@ router_company = APIRouter(tags=["company"])
     status.HTTP_400_BAD_REQUEST: {"model": CompanyErrorResponse}
 })
 async def register(
-        company: CreateCompanyRequest,
+        company: CompanyCreateRequest,
         company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
         session: AsyncSession = Depends(db_helper.session_getter)
 ) -> JSONResponse:
@@ -31,7 +32,7 @@ async def register(
         )
 
     try:
-        tokens = await company_use_case.save_company(
+        new_tokens = await company_use_case.save_company(
             session,
             name=company.name,
             email=company.email,
@@ -48,8 +49,8 @@ async def register(
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,
         content=CompanyTokensResponse(
-            access_token=tokens.access_token,
-            refresh_token=tokens.refresh_token,
+            access_token=new_tokens.access_token,
+            refresh_token=new_tokens.refresh_token,
         ).model_dump()
     )
 
@@ -59,11 +60,11 @@ async def register(
     status.HTTP_400_BAD_REQUEST: {"model": CompanyErrorResponse}
 })
 async def login(
-        login_input: LoginCompanyRequest,
+        login_input: CompanyLoginRequest,
         company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
         session: AsyncSession = Depends(db_helper.session_getter),
 ):
-    tokens = await company_use_case.login(session, login_input.email, login_input.password)
+    new_tokens = await company_use_case.login(session, login_input.email, login_input.password)
     if not tokens:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -73,15 +74,30 @@ async def login(
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,
         content=CompanyTokensResponse(
-            access_token=tokens.get("access_token"),
-            refresh_token=tokens.get("refresh_token"),
+            access_token=new_tokens.get("access_token"),
+            refresh_token=new_tokens.get("refresh_token"),
         ).model_dump()
     )
 
 
-@router_company.post("/{refresh_token}")
-async def refresh_tokens(refresh_token: str):
-    pass
+@router_company.post("/refresh_token", responses={
+    status.HTTP_201_CREATED: {"model": CompanyTokensResponse},
+    status.HTTP_400_BAD_REQUEST: {"model": CompanyErrorResponse}
+})
+async def refresh_tokens(
+        refresh_token: CompanyRefreshTokenRequest,
+        token_use_case: IToken = Depends(di_container.get_token_use_case),
+        session: AsyncSession = Depends(db_helper.session_getter),
+):
+    new_tokens = await token_use_case.update_tokens(session, refresh_token.refresh_token)
+
+    return JSONResponse(
+        status_code=status.HTTP_201_CREATED,
+        content=CompanyTokensResponse(
+            access_token=new_tokens.access_token,
+            refresh_token=new_tokens.refresh_token,
+        ).model_dump()
+    )
 
 
 @router_company.get("/{company_id}", responses={
