@@ -9,6 +9,7 @@ from alembic import context
 
 from backend.repository.models.base import Base
 from backend.repository.models.company import Company
+from backend.repository.models.token import Token
 from backend.core.config import settings
 
 
