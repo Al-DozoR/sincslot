@@ -17,15 +17,15 @@ class Password(BaseModel):
 
 
 class JWT(BaseModel):
-    secret_key: str = "secret_key"
+    secret_key: str = "MickeyMouse"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 120
     refresh_token_expire_minutes: int = 1440
 
 
 class RunConfig(BaseModel):
-    host: str = "127.0.0.1"
-    port: int = 8000
+    host: str = "0.0.0.0"
+    port: int = 10004
 
 
 class GunicornConfig(BaseModel):

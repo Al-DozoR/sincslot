@@ -9,9 +9,9 @@ from fastapi import FastAPI
 from backend.api.conrollers.health import router_health
 from backend.api.conrollers.company import router_company
 from backend.core.config import settings
-from core.db_helper import db_helper
-from api.middleware.auth_middleware import AuthCompanyMiddleware
-from di_container.di_container import di_container
+from backend.core.db_helper import db_helper
+from backend.api.middleware.auth_middleware import AuthCompanyMiddleware
+from backend.di_container.di_container import di_container
 
 
 @asynccontextmanager
@@ -33,7 +33,7 @@ app.add_middleware(
 
 app.add_middleware(
     AuthCompanyMiddleware,
-    exclude_path=[],
+    exclude_path=["docs", "openapi", "health", "login", "register"],
     token_use_case=di_container.get_token_use_case(),
     company_use_case=di_container.get_company_use_cases()
 )
