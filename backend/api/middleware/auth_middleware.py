@@ -24,21 +24,9 @@ class AuthCompanyMiddleware(BaseHTTPMiddleware):
         self.company_use_case: ICompanyUseCase = company_use_case
         self.exclude_path = exclude_path
 
-    def is_skip(self, url: str, exclude_path):
-
-        for p in exclude_path:
-            if p in url:
-                return True
-
-        return False
-
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
 
-        print(request.url.path)
-
-        self.exclude_path = ["docs", "openapi", "health", "login", "register"]
-
-        if self.is_skip(request.url.path, self.exclude_path):
+        if self._exclude_path(request.url.path, self.exclude_path):
             return await call_next(request)
 
         auth_header = request.headers.get("Authorization")
@@ -86,3 +74,12 @@ class AuthCompanyMiddleware(BaseHTTPMiddleware):
 
         response = await call_next(request)
         return response
+
+    @staticmethod
+    def _exclude_path(url: str, exclude_path):
+
+        for p in exclude_path:
+            if p in url:
+                return True
+
+        return False

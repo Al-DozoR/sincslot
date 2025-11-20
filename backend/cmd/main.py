@@ -33,7 +33,7 @@ app.add_middleware(
 
 app.add_middleware(
     AuthCompanyMiddleware,
-    exclude_path=[],
+    exclude_path=["docs", "openapi", "health", "login", "register"],
     token_use_case=di_container.get_token_use_case(),
     company_use_case=di_container.get_company_use_cases()
 )
