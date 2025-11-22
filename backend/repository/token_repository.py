@@ -15,6 +15,7 @@ class ITokenRepository(ABC):
             session: AsyncSession,
             access_token: str,
             refresh_token: str,
+            is_revoke: bool,
     ) -> TokenEntity:
         raise NotImplemented
 
@@ -43,16 +44,22 @@ class TokenRepository(ITokenRepository):
             session: AsyncSession,
             access_token: str,
             refresh_token: str,
+            is_revoke: bool,
     ) -> TokenEntity:
         new_tokens = Token(
             access_token=access_token,
             refresh_token=refresh_token,
+            is_revoke=is_revoke,
         )
 
         async with UnitOfWork(session) as uow:
             await uow.add(new_tokens)
 
-        return TokenEntity(access_token=new_tokens.access_token, refresh_token=new_tokens.refresh_token)
+        return TokenEntity(
+            access_token=new_tokens.access_token,
+            refresh_token=new_tokens.refresh_token,
+            is_revoke=is_revoke,
+        )
 
     async def get_tokens_by_refresh_token(self, session: AsyncSession, refresh_token: str) -> TokenEntity | None:
 

@@ -21,6 +21,8 @@ class JWT(BaseModel):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 120
     refresh_token_expire_minutes: int = 1440
+    token_type_access: str = "access"
+    token_type_refresh: str = "refresh"
 
 
 class RunConfig(BaseModel):
@@ -93,3 +95,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+print(settings.db.url)
