@@ -7,11 +7,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 
 from backend.api.conrollers.health import router_health
-from backend.api.conrollers.company import router_company
+from backend.api.conrollers.company.company import router_company
+from backend.api.conrollers.company.auth import router_auth_company
 from backend.core.config import settings
 from backend.core.db_helper import db_helper
-from backend.api.middleware.auth_middleware import AuthCompanyMiddleware
-from backend.di_container.di_container import di_container
 
 
 @asynccontextmanager
@@ -31,12 +30,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(
-    AuthCompanyMiddleware,
-    exclude_path=["docs", "openapi", "health", "login", "register"],
-    token_use_case=di_container.get_token_use_case(),
-    company_use_case=di_container.get_company_use_cases()
-)
 
 app.include_router(
     router_health,
@@ -48,9 +41,13 @@ app.include_router(
     prefix=settings.api_v1.prefix,
 )
 
+app.include_router(
+    router_auth_company,
+    prefix=settings.api_v1.prefix,
+)
+
 if __name__ == "__main__":
     logging.info(f'Start server: {settings.run.port}')
     uvicorn.run("main:app",
-                host=settings.run.host,
                 port=settings.run.port,
                 reload=True)

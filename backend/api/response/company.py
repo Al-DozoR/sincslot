@@ -16,5 +16,14 @@ class CompanyByIdResponse(BaseModel):
     address: Optional[str]
 
 
+class CompaniesList(BaseModel):
+    companies: list[CompanyByIdResponse]
+
+
 class CompanyErrorResponse(BaseModel):
     message: str
+
+
+class CompanyRecoverPasswordResponse(BaseModel):
+    login: str
+    new_password: str

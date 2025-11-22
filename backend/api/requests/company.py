@@ -12,9 +12,14 @@ class CompanyCreateRequest(BaseModel):
 
 
 class CompanyLoginRequest(BaseModel):
-    email: str
+    email: Optional[str]
+    phone: Optional[str]
     password: str
 
 
 class CompanyRefreshTokenRequest(BaseModel):
     refresh_token: str
+
+
+class CompanyRecoverPasswordRequest(BaseModel):
+    email: str
