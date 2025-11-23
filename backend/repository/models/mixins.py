@@ -11,7 +11,7 @@ def get_current_dt() -> datetime:
 
 class UpdatedAtMixin:
     updated_at: Mapped[datetime] = mapped_column(
-        onupdate=True,
+        onupdate=func.now(),
         nullable=False,
         default=get_current_dt,
         server_default=func.now(),

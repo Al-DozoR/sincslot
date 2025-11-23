@@ -16,9 +16,10 @@ class Company(CreatedAtMixin, UpdatedAtMixin, Base):
         default="",
         server_default="",
     )
-    address: Mapped[str] = mapped_column(String(255), unique=False)
+    address: Mapped[str] = mapped_column(String(255))
     email: Mapped[str] = mapped_column(String(254), unique=True)
     phone: Mapped[str] = mapped_column(String(255), unique=True)
+    filename: Mapped[str] = mapped_column()
     hash_password: Mapped[str] = mapped_column(unique=True)
     is_active: Mapped[bool] = mapped_column(
         default=True,
