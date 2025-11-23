@@ -1,0 +1,70 @@
+openapi: 3.0.3
+info:
+  title: Auth API
+  version: 1.0.0
+
+paths:
+  /auth/login:
+    post:
+      summary: Авторизация компании
+      description: Возвращает access и refresh токены
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - email
+                - password
+      responses:
+        "200":
+          description: Успешная авторизация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: Короткоживущий токен
+                  refreshToken:
+                    type: string
+                    description: Долгоживущий токен
+        "401":
+          description: Неверный логин или пароль
+
+  /auth/refresh:
+    post:
+      summary: Обновление access токена
+      description: Принимает refresh токен и возвращает новые access/refresh токены
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+              required:
+                - refreshToken
+      responses:
+        "200":
+          description: Успешное обновление токенов
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+        "401":
+          description: Refresh токен недействителен или истёк
