@@ -18,6 +18,7 @@ class ICompanyRepository(ABC):
             phone: str,
             address: str,
             password: str,
+            filename: str,
     ) -> int:
         raise NotImplemented
 
@@ -31,6 +32,10 @@ class ICompanyRepository(ABC):
 
     @abstractmethod
     async def get_company_by_phone(self, session: AsyncSession, phone: str) -> CompanyEntity:
+        raise NotImplemented
+
+    @abstractmethod
+    async def get_company_by_name(self, session: AsyncSession, name: str) -> CompanyEntity | None:
         raise NotImplemented
 
     @abstractmethod
@@ -48,6 +53,7 @@ class CompanyRepository(ICompanyRepository):
             phone: str,
             address: str,
             password: str,
+            filename: str,
     ) -> int:
 
         new_company = Company(
@@ -56,6 +62,7 @@ class CompanyRepository(ICompanyRepository):
             phone=phone,
             address=address,
             hash_password=password,
+            filename=filename,
         )
 
         async with UnitOfWork(session) as uow:
@@ -103,6 +110,23 @@ class CompanyRepository(ICompanyRepository):
     async def get_company_by_phone(self, session: AsyncSession, phone: str) -> CompanyEntity | None:
         async with UnitOfWork(session) as uow:
             query = select(Company).where(Company.phone == phone)
+            company = await uow.execute_query(query)
+            company_scalar = company.scalar()
+            if company_scalar is None:
+                return
+
+        return CompanyEntity(
+            id=company_scalar.id,
+            name=company_scalar.name,
+            description=company_scalar.description,
+            email=company_scalar.email,
+            phone=company_scalar.phone,
+            password=company_scalar.hash_password,
+            address=company_scalar.address)
+
+    async def get_company_by_name(self, session: AsyncSession, name: str) -> CompanyEntity | None:
+        async with UnitOfWork(session) as uow:
+            query = select(Company).where(Company.name == name)
             company = await uow.execute_query(query)
             company_scalar = company.scalar()
             if company_scalar is None:
