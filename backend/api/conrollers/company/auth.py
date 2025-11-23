@@ -15,7 +15,12 @@ from backend.api.requests.company import (
 )
 from backend.entity.company import CompanyEntity
 from backend.logger.logger import init_logger
-from backend.api.response.company import CompanyTokensResponse, CompanyErrorResponse, CompanyRecoverPasswordResponse
+from backend.api.response.company import (
+    CompanyTokensResponse,
+    CompanyErrorResponse,
+    CompanyRecoverPasswordResponse,
+    CompanyRecoverPassword
+)
 from backend.di_container.di_container import di_container
 from backend.use_case.company_use_case import ICompanyUseCase
 from backend.use_case.file_use_case import IFileStorage
@@ -85,13 +90,13 @@ async def register(
         logger.warning("Failed to register a company %s Incorrect phone number %s Error: %s", name, phone, str(ex))
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content=CompanyErrorResponse(message="incorrect phone number").model_dump()
+            content=CompanyErrorResponse(error="incorrect phone number").model_dump()
         )
 
     if password.strip() != repeat_password.strip():
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content=CompanyErrorResponse(message="passwords do not match").model_dump()
+            content=CompanyErrorResponse(error="passwords do not match").model_dump()
         )
 
     company_by_email = await company_use_case.get_company_by_email(session, email)
@@ -99,7 +104,7 @@ async def register(
         logger.warning("Failed to create a company with email %s it is already exist", email)
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
-            content=CompanyErrorResponse(message=f"user with email {email} is already exist").model_dump()
+            content=CompanyErrorResponse(error=f"user with email {email} is already exist").model_dump()
         )
 
     company_by_phone = await company_use_case.get_company_by_phone(session, phone)
@@ -107,7 +112,7 @@ async def register(
         logger.warning("Failed to create a company with phone %s it is already exist", phone)
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
-            content=CompanyErrorResponse(message=f"user with phone {phone} is already exist").model_dump()
+            content=CompanyErrorResponse(error=f"user with phone {phone} is already exist").model_dump()
         )
 
     company_by_name = await company_use_case.get_company_by_name(session, name)
@@ -115,14 +120,14 @@ async def register(
         logger.warning("Failed to create a company with name %s it is already exist", name)
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
-            content=CompanyErrorResponse(message=f"user with name {name} is already exist").model_dump()
+            content=CompanyErrorResponse(error=f"user with name {name} is already exist").model_dump()
         )
 
     if not await file_storage_use_case.is_valid_extension(file.filename):
         logger.warning("Failed to create a company with logo %s it has incorrect extension", file.filename)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content=CompanyErrorResponse(message=f"file logo has invalid extension").model_dump()
+            content=CompanyErrorResponse(error=f"file logo has invalid extension").model_dump()
         )
 
     try:
@@ -140,7 +145,7 @@ async def register(
         logger.error(f"Error occurred while registering new company: {str(ex)}")
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content=CompanyErrorResponse(message=f"Failed to register company").model_dump()
+            content=CompanyErrorResponse(error=f"Failed to register company").model_dump()
         )
 
     return JSONResponse(
@@ -167,7 +172,7 @@ async def login(
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content=CompanyErrorResponse(
-                message=f"Company with email {login_input.email} does not exist"
+                error=f"Company with email {login_input.email} does not exist"
             ).model_dump()
         )
 
@@ -176,7 +181,7 @@ async def login(
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content=CompanyErrorResponse(
-                message=f"Incorrect password"
+                error=f"Incorrect password"
             ).model_dump()
         )
 
@@ -186,7 +191,7 @@ async def login(
         logger.error(f"Error occurred while log in company: {str(ex)}")
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content=CompanyErrorResponse(message=f"Failed to log in").model_dump()
+            content=CompanyErrorResponse(error=f"Failed to log in").model_dump()
         )
 
     return JSONResponse(
@@ -213,14 +218,14 @@ async def refresh_tokens(
         logger.error("Failed to parse refresh token: %s", str(ex))
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content=CompanyErrorResponse(message=f"Failed to parse refresh token").model_dump()
+            content=CompanyErrorResponse(error=f"Failed to parse refresh token").model_dump()
         )
 
     is_refresh = await token_use_case.is_refresh_token(decoded_token)
     if not is_refresh:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content=CompanyErrorResponse(message=f"Provided token is not refresh token").model_dump()
+            content=CompanyErrorResponse(error=f"Provided token is not refresh token").model_dump()
         )
 
     try:
@@ -229,7 +234,7 @@ async def refresh_tokens(
         logger.error(f"Error occurred while refreshing tokens %s:", str(ex), exc_info=True)
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content=CompanyErrorResponse(message=f"Failed to register company").model_dump()
+            content=CompanyErrorResponse(error=f"Failed to register company").model_dump()
         )
 
     return JSONResponse(
@@ -241,7 +246,10 @@ async def refresh_tokens(
     )
 
 
-@router_auth_company.post("/recover")
+@router_auth_company.post("/recover", responses={
+    status.HTTP_200_OK: {"model": CompanyRecoverPassword},
+    status.HTTP_404_NOT_FOUND: {"model": CompanyErrorResponse}
+})
 async def recover_password(
         recover_pass: CompanyRecoverPasswordRequest,
         company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
@@ -252,7 +260,7 @@ async def recover_password(
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content=CompanyErrorResponse(
-                message=f"user with email {recover_pass.email} does not exist"
+                error=f"user with email {recover_pass.email} does not exist"
             ).model_dump()
         )
 
@@ -262,7 +270,7 @@ async def recover_password(
         logger.error(f"Error occurred while recovering: {str(ex)}")
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content=CompanyErrorResponse(message=f"Failed to recover password").model_dump()
+            content=CompanyErrorResponse(error=f"Failed to recover password").model_dump()
         )
 
     return JSONResponse(

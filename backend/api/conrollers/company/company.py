@@ -38,7 +38,7 @@ async def get_company_by_id(
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=CompanyErrorResponse(
-                message=f"failed to find a company with id {company_id}"
+                error=f"failed to find a company with id {company_id}"
             ).model_dump()
         )
 
@@ -47,7 +47,7 @@ async def get_company_by_id(
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content=CompanyErrorResponse(
-                message=f"failed to find a company with id {company_id}"
+                error=f"failed to find a company with id {company_id}"
             ).model_dump()
         )
 
@@ -73,7 +73,7 @@ async def get_list_companies(
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=CompanyErrorResponse(
-                message=f"failed to get companies"
+                error=f"failed to get companies"
             ).model_dump()
         )
 

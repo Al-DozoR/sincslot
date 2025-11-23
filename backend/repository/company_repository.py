@@ -63,6 +63,7 @@ class CompanyRepository(ICompanyRepository):
             address=address,
             hash_password=password,
             filename=filename,
+            is_active=True,
         )
 
         async with UnitOfWork(session) as uow:

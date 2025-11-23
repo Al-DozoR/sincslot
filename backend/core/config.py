@@ -36,7 +36,7 @@ class JWT(BaseModel):
 
 
 class RunConfig(BaseModel):
-    host: str = "0.0.0.0"
+    host: str = "127.0.0.1"
     port: int = 10004
 
 
@@ -86,7 +86,7 @@ class ApiV1Prefix(BaseModel):
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=(".env",),
+        env_file=(".env", ".env_example"),
         case_sensitive=False,
         env_nested_delimiter="__",
         env_prefix="SYNC_SLOT__",

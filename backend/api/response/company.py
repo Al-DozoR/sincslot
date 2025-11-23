@@ -21,9 +21,13 @@ class CompaniesList(BaseModel):
 
 
 class CompanyErrorResponse(BaseModel):
-    message: str
+    error: str
 
 
 class CompanyRecoverPasswordResponse(BaseModel):
     login: str
     new_password: str
+
+class CompanyRecoverPassword(BaseModel):
+    email: str
+    recover: str
