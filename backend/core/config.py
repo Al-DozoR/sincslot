@@ -1,5 +1,7 @@
 import logging
+import os
 from typing import Literal
+from pathlib import Path
 from pydantic import PostgresDsn
 from pydantic import BaseModel
 from pydantic_settings import (
@@ -11,6 +13,14 @@ LOG_DEFAULT_FORMAT = (
     "[%(asctime)s.%(msecs)03d] %(module)10s:%(lineno)-3d %(levelname)-7s - %(message)s"
 )
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+class FileCompanyLogoSettings(BaseModel):
+    path_file: str = os.path.join(BASE_DIR, "storage")
+    valid_extentions: tuple = ("png", "jpg", "jpeg")
+    max_file_size_mb: int = 5
+
 
 class Password(BaseModel):
     salt: str = "Tom&Jerry"
@@ -19,8 +29,8 @@ class Password(BaseModel):
 class JWT(BaseModel):
     secret_key: str = "MickeyMouse"
     algorithm: str = "HS256"
-    access_token_expire_minutes: int = 120
-    refresh_token_expire_minutes: int = 1440
+    access_token_expire_minutes: int = 1440
+    refresh_token_expire_minutes: int = 43200
     token_type_access: str = "access"
     token_type_refresh: str = "refresh"
 
@@ -70,11 +80,8 @@ class LoggingConfig(BaseModel):
 
 
 class ApiV1Prefix(BaseModel):
-    prefix: str = "/api/v1"
+    prefix_company: str = "/api/v1/company"
 
-
-class ApiPrefix(BaseModel):
-    prefix: str = "/api"
 
 
 class Settings(BaseSettings):
@@ -87,12 +94,11 @@ class Settings(BaseSettings):
     run: RunConfig = RunConfig()
     gunicorn: GunicornConfig = GunicornConfig()
     logging: LoggingConfig = LoggingConfig()
-    api: ApiPrefix = ApiPrefix()
     api_v1: ApiV1Prefix = ApiV1Prefix()
     db: DatabaseConfig
     jwt: JWT = JWT()
     password: Password = Password()
+    file_company_logo_settings: FileCompanyLogoSettings = FileCompanyLogoSettings()
 
 
 settings = Settings()
-print(settings.db.url)

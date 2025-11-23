@@ -1,19 +1,19 @@
-from pydantic import BaseModel
-from typing import Optional
+from typing import Annotated, Union
+import phonenumbers
+from pydantic_extra_types.phone_numbers import PhoneNumberValidator
 
+from pydantic import BaseModel, EmailStr
 
-class CompanyCreateRequest(BaseModel):
-    name: str
-    address: Optional[str] = None
-    email: str
-    phone: Optional[str] = None
-    password: str
-    repeat_password: str
+E164NumberType = Annotated[
+        Union[str, phonenumbers.PhoneNumber], PhoneNumberValidator(number_format="E164")
+    ]
+
+class CompanyPhoneNumberRequest(BaseModel):
+    phone: E164NumberType
 
 
 class CompanyLoginRequest(BaseModel):
-    email: Optional[str]
-    phone: Optional[str]
+    email: EmailStr
     password: str
 
 

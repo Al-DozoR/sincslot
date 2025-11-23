@@ -1,14 +1,20 @@
 import secrets
 import string
-
+from typing import BinaryIO
 from abc import ABC, abstractmethod
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from passlib.context import CryptContext
 
+from backend.logger.logger import init_logger
+from backend.use_case.file_use_case import IFileStorage
 from backend.use_case.token_use_case import IToken
 from backend.entity.company import CompanyEntity
 from backend.entity.token import TokenEntity
 from backend.repository.company_repository import ICompanyRepository
+from backend.core.config import Password
+
+logger = init_logger('company_use_case', 'INFO')
 
 
 class ICompanyUseCase(ABC):
@@ -21,8 +27,10 @@ class ICompanyUseCase(ABC):
             email: str,
             phone: str,
             address: str,
-            password: str
-    ) -> TokenEntity:
+            password: str,
+            filename: str,
+            file: BinaryIO,
+    ) -> TokenEntity | None:
         raise NotImplemented
 
     @abstractmethod
@@ -38,7 +46,11 @@ class ICompanyUseCase(ABC):
         raise NotImplemented
 
     @abstractmethod
-    async def login(self, session: AsyncSession, email: str, input_password: str) -> dict | None:
+    async def get_company_by_name(self, session: AsyncSession, name: str) -> CompanyEntity | None:
+        raise NotImplemented
+
+    @abstractmethod
+    async def login(self, session: AsyncSession, company: CompanyEntity) -> TokenEntity:
         raise NotImplemented
 
     @abstractmethod
@@ -49,12 +61,30 @@ class ICompanyUseCase(ABC):
     async def get_companies(self, session: AsyncSession) -> list[CompanyEntity]:
         raise NotImplemented
 
+    @abstractmethod
+    async def hash_password(self, password: str) -> str:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def verify_password(self, plain_password: str, hashed_password: str) -> bool:
+        raise NotImplementedError
+
 
 class CompanyUseCase(ICompanyUseCase):
 
-    def __init__(self, company_repository: ICompanyRepository, token: IToken):
+    def __init__(
+            self,
+            company_repository: ICompanyRepository,
+            token: IToken,
+            file_storage: IFileStorage,
+            password_settings: Password,
+            crypt_hasher: CryptContext,
+    ):
         self.company_repository = company_repository
         self.token = token
+        self.file_storage = file_storage
+        self.password_settings = password_settings
+        self.crypt_hasher = crypt_hasher
 
     async def save_company(
             self,
@@ -63,26 +93,40 @@ class CompanyUseCase(ICompanyUseCase):
             email: str,
             phone: str,
             address: str,
-            password: str
-    ) -> TokenEntity:
+            password: str,
+            filename: str,
+            file: BinaryIO,
+    ) -> TokenEntity | None:
 
-        hash_password = await self.token.hash_password(password)
+        password_salt = password + self.password_settings.salt
 
-        company_id = await self.company_repository.save_company(
-            session,
-            name,
-            email,
-            phone,
-            address,
-            hash_password,
-        )
+        hash_password = await self.hash_password(password_salt)
 
-        access_token = await self.token.create_access_token(company_id=company_id)
-        refresh_token = await self.token.create_refresh_token(company_id=company_id)
+        filename = f"{name}_{filename}"
 
-        tokens = await self.token.save_tokens(session, access_token, refresh_token, is_revoke=True)
+        try:
+            await self.file_storage.save_file(filename, file)
 
-        return tokens
+            company_id = await self.company_repository.save_company(
+                session,
+                name,
+                email,
+                phone,
+                address,
+                hash_password,
+                filename,
+            )
+        except Exception as ex:
+            logger.error("Failed to create company %s Error: %s", name, str(ex), exc_info=True)
+            await self.file_storage.remove_file(filename)
+        else:
+
+            access_token = await self.token.create_access_token(company_id=company_id)
+            refresh_token = await self.token.create_refresh_token(company_id=company_id)
+
+            tokens = await self.token.save_tokens(session, access_token, refresh_token, is_revoke=False)
+
+            return tokens
 
     async def get_company_by_id(self, session: AsyncSession, company_id: int) -> CompanyEntity | None:
         return await self.company_repository.get_company_by_id(session, company_id)
@@ -93,25 +137,17 @@ class CompanyUseCase(ICompanyUseCase):
     async def get_company_by_phone(self, session: AsyncSession, phone: str) -> CompanyEntity | None:
         return await self.company_repository.get_company_by_phone(session, phone)
 
-    async def login(self, session: AsyncSession, email_or_phone: str, input_password: str) -> dict | None:
-        company_by_email = await self.company_repository.get_company_by_email(session, email_or_phone)
+    async def get_company_by_name(self, session: AsyncSession, name: str) -> CompanyEntity | None:
+        return await self.company_repository.get_company_by_name(session, name)
 
-        company_by_phone = await self.company_repository.get_company_by_phone(session, email_or_phone)
-
-        company: CompanyEntity | None = company_by_email if company_by_email else company_by_phone
-        if company is None:
-            return
-
-        if not await self.token.verify_password(input_password, company.password):
-            return
+    async def login(self, session: AsyncSession, company: CompanyEntity) -> TokenEntity:
 
         access_token = await self.token.create_access_token(company_id=company.id)
         refresh_token = await self.token.create_refresh_token(company_id=company.id)
 
-        return {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-        }
+        tokens = await self.token.save_tokens(session, access_token, refresh_token, is_revoke=False)
+
+        return tokens
 
     async def get_companies(self, session: AsyncSession) -> list[CompanyEntity]:
         return await self.company_repository.get_companies(session)
@@ -119,9 +155,15 @@ class CompanyUseCase(ICompanyUseCase):
     async def recover_company_by_email(self, session: AsyncSession, email: str, length: int = 10) -> str | None:
         company_by_email = await self.company_repository.get_company_by_email(session, email)
         if company_by_email is None:
+            logger.warning("Failed to ger company by email %s to recover password", email)
             return
 
         chars = string.ascii_letters + string.digits + "!@#$%^&*"
         random_pass = ''.join(secrets.choice(chars) for _ in range(length))
         return random_pass
 
+    async def hash_password(self, password: str) -> str:
+        return self.crypt_hasher.hash(password)
+
+    async def verify_password(self, plain_password: str, hashed_password: str) -> bool:
+        return self.crypt_hasher.verify(plain_password + self.password_settings.salt, hashed_password)
