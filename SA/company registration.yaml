@@ -1,19 +1,28 @@
 openapi: 3.0.0
 info:
-  title: API регистрации компании
-  version: 1.0.1
-  description: |
-    Метод для регистрации компании в приложении бронирования услуг.
-    После регистрации владелец компании может входить в систему по email и паролю.
+  title: API Регистрации компании
+  version: 1.1.0
+  description: Регистрация компании и создание единственного аккаунта. Включает проверку сложности пароля.
+
 paths:
-  /auth/register-company:
+  /auth/register:
     post:
       summary: Регистрация компании
       description: |
-        Создаёт новую компанию и аккаунт владельца.
-        Аккаунт владельца является единственным администратором компании.
+        Создаёт новую компанию и её единственный аккаунт.
+        Уникальными должны быть: `email`, `companyName`, `phone`.
+
+        Требования к паролю:
+        - минимум 8 символов  
+        - хотя бы одна заглавная буква (A–Z)  
+        - хотя бы одна строчная буква (a–z)  
+        - хотя бы одна цифра (0–9)  
+        - хотя бы один спецсимвол: !@#$%^&*()_+-=  
+        - пароль и повтор должны совпадать  
+
       tags:
-        - Авторизация и регистрация
+        - auth
+
       requestBody:
         required: true
         content:
@@ -21,82 +30,110 @@ paths:
             schema:
               type: object
               required:
-                - name
+                - companyName
                 - address
                 - email
                 - phone
                 - password
-                - password_repeat
+                - passwordRepeat
               properties:
-                name:
+                companyName:
                   type: string
-                  example: "Салон красоты 'Ирис'"
-                  description: "Название компании"
+                  description: Название компании
+                  example: "Barber Bros"
                 address:
                   type: string
-                  example: "г. Екатеринбург, ул. Кирова, 20"
-                  description: "Адрес компании"
+                  description: Адрес компании
+                  example: "Екатеринбург, Ленина 12"
                 email:
                   type: string
                   format: email
-                  example: "owner@company.com"
-                  description: "Email владельца (используется для входа и восстановления пароля)"
+                  description: Email аккаунта компании
+                  example: "barber@example.com"
                 phone:
                   type: string
-                  example: "+7 900 555-22-11"
-                  description: "Телефон компании"
+                  description: Номер телефона компании
+                  example: "+79991234567"
                 password:
                   type: string
-                  example: "MySecretPassword123"
-                  description: "Пароль владельца компании"
-                password_repeat:
+                  format: password
+                  description: Пароль аккаунта
+                  example: "StrongPass123!"
+                passwordRepeat:
                   type: string
-                  example: "MySecretPassword123"
-                  description: "Повтор пароля"
+                  format: password
+                  description: Повтор пароля
+                  example: "StrongPass123!"
+
       responses:
-        '201':
+
+        "201":
           description: Компания успешно зарегистрирована
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  company_id:
-                    type: string
-                    example: "b1cde972-1c11-4d44-9a77-012345678abc"
-                  owner_id:
-                    type: string
-                    example: "e91a7d04-bb76-4b6b-87e1-abcdef123456"
                   message:
                     type: string
                     example: "Компания успешно зарегистрирована"
-        '400':
-          description: Ошибка валидации
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+
+        "400":
+          description: Ошибка валидации данных
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  error:
+                  message:
                     type: string
                     example: "Пароли не совпадают"
-        '409':
-          description: Компания или владелец с таким email уже зарегистрированы
+
+        "422":
+          description: Пароль не соответствует требованиям безопасности
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  error:
+                  message:
                     type: string
-                    example: "Email уже используется"
-        '500':
-          description: Внутренняя ошибка сервера
+                    description: Описание ошибки
+                    example: "Пароль слишком простой"
+                  reasons:
+                    type: array
+                    description: Какие требования не выполнены
+                    items:
+                      type: string
+                      enum:
+                        - TOO_SHORT
+                        - NO_UPPERCASE
+                        - NO_LOWERCASE
+                        - NO_DIGIT
+                        - NO_SPECIAL_CHAR
+                      example: NO_SPECIAL_CHAR
+
+        "409":
+          description: Конфликт — нарушено уникальное поле
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  error:
+                  message:
                     type: string
-                    example: "Ошибка сервера"
+                    example: "Компания с таким email уже существует"
+                  reason:
+                    type: string
+                    enum:
+                      - EMAIL_EXISTS
+                      - COMPANY_NAME_EXISTS
+                      - PHONE_EXISTS
+                    example: EMAIL_EXISTS
+
+        "429":
+          description: Слишком много запросов — ограничение по времени
