@@ -57,26 +57,3 @@ async def get_company_by_id(
             **company.to_dict()
         ).model_dump()
     )
-
-
-@router_company.get("/", responses={
-    status.HTTP_200_OK: {"model": CompaniesList},
-})
-async def get_list_companies(
-        company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
-        session: AsyncSession = Depends(db_helper.session_getter),
-) -> JSONResponse:
-    try:
-        companies = await company_use_case.get_companies(session)
-    except Exception as ex:
-        logger.error("Error occurred while getting list companies. Error: %s", str(ex), exc_info=True)
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content=CompanyErrorResponse(
-                error=f"failed to get companies"
-            ).model_dump()
-        )
-
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=CompaniesList(companies=[CompanyByIdResponse(**c.to_dict()) for c in companies]).model_dump())

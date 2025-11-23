@@ -58,10 +58,6 @@ class ICompanyUseCase(ABC):
         raise NotImplemented
 
     @abstractmethod
-    async def get_companies(self, session: AsyncSession) -> list[CompanyEntity]:
-        raise NotImplemented
-
-    @abstractmethod
     async def hash_password(self, password: str) -> str:
         raise NotImplementedError
 
@@ -148,9 +144,6 @@ class CompanyUseCase(ICompanyUseCase):
         tokens = await self.token.save_tokens(session, access_token, refresh_token, is_revoke=False)
 
         return tokens
-
-    async def get_companies(self, session: AsyncSession) -> list[CompanyEntity]:
-        return await self.company_repository.get_companies(session)
 
     async def recover_company_by_email(self, session: AsyncSession, email: str, length: int = 10) -> str | None:
         company_by_email = await self.company_repository.get_company_by_email(session, email)

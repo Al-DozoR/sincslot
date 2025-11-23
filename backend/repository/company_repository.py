@@ -38,10 +38,6 @@ class ICompanyRepository(ABC):
     async def get_company_by_name(self, session: AsyncSession, name: str) -> CompanyEntity | None:
         raise NotImplemented
 
-    @abstractmethod
-    async def get_companies(self, session: AsyncSession) -> list[CompanyEntity]:
-        raise NotImplemented
-
 
 class CompanyRepository(ICompanyRepository):
 
@@ -141,24 +137,3 @@ class CompanyRepository(ICompanyRepository):
             phone=company_scalar.phone,
             password=company_scalar.hash_password,
             address=company_scalar.address)
-
-    async def get_companies(self, session: AsyncSession) -> list[CompanyEntity]:
-        async with UnitOfWork(session) as uow:
-            query = select(Company)
-            companies = await uow.execute_query(query)
-
-        result = []
-
-        for company in companies.scalars():
-            result.append(
-                CompanyEntity(
-                    id=company.id,
-                    name=company.name,
-                    description=company.description,
-                    email=company.email,
-                    phone=company.phone,
-                    password=company.hash_password,
-                    address=company.address)
-            )
-
-        return result
