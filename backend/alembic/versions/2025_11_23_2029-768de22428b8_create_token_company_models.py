@@ -1,8 +1,8 @@
-"""create_company_token_model
+"""create token company models
 
-Revision ID: 08224da4de73
+Revision ID: 768de22428b8
 Revises: 
-Create Date: 2025-11-23 12:49:09.196331
+Create Date: 2025-11-23 20:29:43.907452
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '08224da4de73'
+revision: str = '768de22428b8'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,11 +24,11 @@ def upgrade() -> None:
     op.create_table('company',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=255), nullable=False),
-    sa.Column('description', sa.Text(), server_default='', nullable=False),
-    sa.Column('address', sa.String(length=255), nullable=False),
+    sa.Column('description', sa.Text(), server_default='', nullable=True),
+    sa.Column('address', sa.String(length=255), nullable=True),
     sa.Column('email', sa.String(length=254), nullable=False),
     sa.Column('phone', sa.String(length=255), nullable=False),
-    sa.Column('filename', sa.String(), nullable=False),
+    sa.Column('filename', sa.String(), nullable=True),
     sa.Column('hash_password', sa.String(), nullable=False),
     sa.Column('is_active', sa.Boolean(), server_default=sa.text('true'), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),

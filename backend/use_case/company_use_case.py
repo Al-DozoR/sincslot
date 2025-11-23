@@ -28,8 +28,6 @@ class ICompanyUseCase(ABC):
             phone: str,
             address: str,
             password: str,
-            filename: str,
-            file: BinaryIO,
     ) -> TokenEntity | None:
         raise NotImplemented
 
@@ -90,39 +88,27 @@ class CompanyUseCase(ICompanyUseCase):
             phone: str,
             address: str,
             password: str,
-            filename: str,
-            file: BinaryIO,
     ) -> TokenEntity | None:
 
         password_salt = password + self.password_settings.salt
 
         hash_password = await self.hash_password(password_salt)
 
-        filename = f"{name}_{filename}"
+        company_id = await self.company_repository.save_company(
+            session,
+            name,
+            email,
+            phone,
+            address,
+            hash_password,
+        )
 
-        try:
-            await self.file_storage.save_file(filename, file)
+        access_token = await self.token.create_access_token(company_id=company_id)
+        refresh_token = await self.token.create_refresh_token(company_id=company_id)
 
-            company_id = await self.company_repository.save_company(
-                session,
-                name,
-                email,
-                phone,
-                address,
-                hash_password,
-                filename,
-            )
-        except Exception as ex:
-            logger.error("Failed to create company %s Error: %s", name, str(ex), exc_info=True)
-            await self.file_storage.remove_file(filename)
-        else:
+        tokens = await self.token.save_tokens(session, access_token, refresh_token, is_revoke=False)
 
-            access_token = await self.token.create_access_token(company_id=company_id)
-            refresh_token = await self.token.create_refresh_token(company_id=company_id)
-
-            tokens = await self.token.save_tokens(session, access_token, refresh_token, is_revoke=False)
-
-            return tokens
+        return tokens
 
     async def get_company_by_id(self, session: AsyncSession, company_id: int) -> CompanyEntity | None:
         return await self.company_repository.get_company_by_id(session, company_id)

@@ -83,10 +83,10 @@ class ApiV1Prefix(BaseModel):
     prefix_company: str = "/api/v1/company"
 
 
-
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=(".env", ".env_example"),
+        env_file=(os.path.join(BASE_DIR, ".env"), os.path.join(BASE_DIR, ".env_example")),
+        env_file_encoding="utf-8",
         case_sensitive=False,
         env_nested_delimiter="__",
         env_prefix="SYNC_SLOT__",

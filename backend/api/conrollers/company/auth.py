@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from jose import JWTError
 
 from backend.api.requests.company import (
+    CompanyCreateRequest,
     CompanyLoginRequest,
     CompanyRefreshTokenRequest,
     CompanyRecoverPasswordRequest,
@@ -70,76 +71,52 @@ async def get_current_company_from_token(
 
 @router_auth_company.post("/register", responses={
     status.HTTP_200_OK: {"model": CompanyTokensResponse},
-    status.HTTP_400_BAD_REQUEST: {"model": CompanyErrorResponse}
+    status.HTTP_400_BAD_REQUEST: {"model": CompanyErrorResponse},
+    status.HTTP_409_CONFLICT: {"model": CompanyErrorResponse},
 })
 async def register(
-        name: str = Form(...),
-        address: Optional[str] = Form(default=None),
-        email: EmailStr = Form(),
-        phone: str = Form(...),
-        password: str = Form(),
-        repeat_password: str = Form(),
-        file: UploadFile = File(...),
+        company: CompanyCreateRequest,
         company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
-        file_storage_use_case: IFileStorage = Depends(di_container.get_file_storage_use_case),
         session: AsyncSession = Depends(db_helper.session_getter)
 ) -> JSONResponse:
-    try:
-        phone = CompanyPhoneNumberRequest(phone=phone).phone
-    except ValidationError as ex:
-        logger.warning("Failed to register a company %s Incorrect phone number %s Error: %s", name, phone, str(ex))
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content=CompanyErrorResponse(error="incorrect phone number").model_dump()
-        )
-
-    if password.strip() != repeat_password.strip():
+    if company.password.strip() != company.repeat_password.strip():
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content=CompanyErrorResponse(error="passwords do not match").model_dump()
         )
 
-    company_by_email = await company_use_case.get_company_by_email(session, email)
+    company_by_email = await company_use_case.get_company_by_email(session, company.email)
     if company_by_email is not None:
-        logger.warning("Failed to create a company with email %s it is already exist", email)
+        logger.warning("Failed to create a company with email %s it is already exist", company.email)
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
-            content=CompanyErrorResponse(error=f"user with email {email} is already exist").model_dump()
+            content=CompanyErrorResponse(error=f"user with email {company.email} is already exist").model_dump()
         )
 
-    company_by_phone = await company_use_case.get_company_by_phone(session, phone)
+    company_by_phone = await company_use_case.get_company_by_phone(session, company.phone)
     if company_by_phone is not None:
-        logger.warning("Failed to create a company with phone %s it is already exist", phone)
+        logger.warning("Failed to create a company with phone %s it is already exist", company.phone)
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
-            content=CompanyErrorResponse(error=f"user with phone {phone} is already exist").model_dump()
+            content=CompanyErrorResponse(error=f"user with phone {company.phone} is already exist").model_dump()
         )
 
-    company_by_name = await company_use_case.get_company_by_name(session, name)
+    company_by_name = await company_use_case.get_company_by_name(session, company.name)
     if company_by_name is not None:
-        logger.warning("Failed to create a company with name %s it is already exist", name)
+        logger.warning("Failed to create a company with name %s it is already exist", company.name)
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
-            content=CompanyErrorResponse(error=f"user with name {name} is already exist").model_dump()
-        )
-
-    if not await file_storage_use_case.is_valid_extension(file.filename):
-        logger.warning("Failed to create a company with logo %s it has incorrect extension", file.filename)
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content=CompanyErrorResponse(error=f"file logo has invalid extension").model_dump()
+            content=CompanyErrorResponse(error=f"user with name {company.name} is already exist").model_dump()
         )
 
     try:
         new_tokens = await company_use_case.save_company(
             session,
-            name=name,
-            email=email,
-            phone=phone,
-            address=address,
-            password=password,
-            filename=file.filename,
-            file=file.file,
+            name=company.name,
+            email=company.email,
+            phone=company.phone,
+            address=company.address,
+            password=company.password,
         )
     except Exception as ex:
         logger.error(f"Error occurred while registering new company: {str(ex)}")

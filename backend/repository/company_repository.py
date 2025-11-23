@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from backend.entity.company import CompanyEntity
 from backend.repository.models.company import Company
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, update, delete
+from sqlalchemy import select
 from backend.repository.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -18,7 +18,6 @@ class ICompanyRepository(ABC):
             phone: str,
             address: str,
             password: str,
-            filename: str,
     ) -> int:
         raise NotImplemented
 
@@ -49,7 +48,6 @@ class CompanyRepository(ICompanyRepository):
             phone: str,
             address: str,
             password: str,
-            filename: str,
     ) -> int:
 
         new_company = Company(
@@ -58,7 +56,6 @@ class CompanyRepository(ICompanyRepository):
             phone=phone,
             address=address,
             hash_password=password,
-            filename=filename,
             is_active=True,
         )
 
