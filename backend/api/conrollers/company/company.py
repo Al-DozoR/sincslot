@@ -7,9 +7,12 @@ from backend.api.response.company import (
     CompaniesList,
     CompanyErrorResponse,
 )
+from backend.logger.logger import init_logger
 from backend.di_container.di_container import di_container
 from backend.use_case.company_use_case import ICompanyUseCase
 from backend.core.db_helper import db_helper
+
+logger = init_logger('company', 'INFO')
 
 router_company = APIRouter(tags=["company"])
 
@@ -26,6 +29,12 @@ async def get_company_by_id(
     try:
         company = await company_use_case.get_company_by_id(session, company_id)
     except Exception as ex:
+        logger.error(
+            "Error occurred while getting company by id. Company id: %s Error: %s",
+            company_id,
+            str(ex),
+            exc_info=True
+        )
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=CompanyErrorResponse(
@@ -34,6 +43,7 @@ async def get_company_by_id(
         )
 
     if company is None:
+        logger.warning("Failed to find company by id. Company id: %s", company_id)
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content=CompanyErrorResponse(
@@ -55,10 +65,11 @@ async def get_company_by_id(
 async def get_list_companies(
         company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
         session: AsyncSession = Depends(db_helper.session_getter),
-):
+) -> JSONResponse:
     try:
         companies = await company_use_case.get_companies(session)
     except Exception as ex:
+        logger.error("Error occurred while getting list companies. Error: %s", str(ex), exc_info=True)
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=CompanyErrorResponse(

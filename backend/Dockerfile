@@ -22,4 +22,4 @@ ENV PYTHONPATH="${PYTHONPATH}:/syncslot"
 
 RUN chmod a+x ./start.sh
 
-ENTRYPOINT ["./start.sh"]
+ENTRYPOINT ["/syncslot/backend/start.sh"]

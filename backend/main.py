@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     await db_helper.dispose()
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, title="Syncslot backend")
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,20 +30,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 app.include_router(
     router_health,
-    prefix=settings.api.prefix,
 )
 
 app.include_router(
     router_company,
-    prefix=settings.api_v1.prefix,
+    prefix=settings.api_v1.prefix_company,
 )
 
 app.include_router(
     router_auth_company,
-    prefix=settings.api_v1.prefix,
+    prefix=settings.api_v1.prefix_company,
 )
 
 if __name__ == "__main__":
