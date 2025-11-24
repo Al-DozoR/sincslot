@@ -20,7 +20,7 @@ from backend.api.response.company import (
     CompanyTokensResponse,
     CompanyErrorResponse,
     CompanyRecoverPasswordResponse,
-    CompanyRecoverPassword
+    CompanyRecoverPasswordResponse
 )
 from backend.di_container.di_container import di_container
 from backend.use_case.company_use_case import ICompanyUseCase
@@ -223,7 +223,7 @@ async def refresh_tokens(
 
 
 @router_auth_company.post("/recover", responses={
-    status.HTTP_200_OK: {"model": CompanyRecoverPassword},
+    status.HTTP_200_OK: {"model": CompanyRecoverPasswordResponse},
     status.HTTP_404_NOT_FOUND: {"model": CompanyErrorResponse}
 })
 async def recover_password(
@@ -252,7 +252,7 @@ async def recover_password(
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=CompanyRecoverPasswordResponse(
-            login=recover_pass.email,
-            new_password=random_pass
+            email=recover_pass.email,
+            password=random_pass
         ).model_dump()
     )
