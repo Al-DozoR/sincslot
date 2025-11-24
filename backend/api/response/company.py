@@ -35,6 +35,6 @@ class CompanyRecoverPasswordResponse(BaseModel):
     password: str
 
 
-class CompanyRecoverPassword(BaseModel):
+class CompanyRecoverPasswordResponse(BaseModel):
     email: str
-    recover: str
+    password: str
