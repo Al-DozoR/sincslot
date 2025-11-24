@@ -18,7 +18,7 @@ async def health():
     return JSONResponse(status_code=status.HTTP_200_OK, content="ok")
 
 
-@router_health.get("/health_auth")
+@router_health.get("/health-auth")
 async def health(token: str = Depends(oauth2_scheme), company = Depends(get_current_company_from_token)):
     logger.info("health auth ok. Company id: %s", company.id)
     return JSONResponse(status_code=status.HTTP_200_OK, content="ok")

@@ -179,7 +179,7 @@ async def login(
     )
 
 
-@router_auth_company.post("/refresh_token", responses={
+@router_auth_company.post("/refresh-token", responses={
     status.HTTP_201_CREATED: {"model": CompanyTokensResponse},
     status.HTTP_400_BAD_REQUEST: {"model": CompanyErrorResponse}
 })
