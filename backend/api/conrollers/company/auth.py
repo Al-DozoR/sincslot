@@ -24,7 +24,6 @@ from backend.api.response.company import (
 )
 from backend.di_container.di_container import di_container
 from backend.use_case.company_use_case import ICompanyUseCase
-from backend.use_case.file_use_case import IFileStorage
 from backend.use_case.token_use_case import IToken
 from backend.core.db_helper import db_helper
 
@@ -130,7 +129,7 @@ async def register(
         content=CompanyTokensResponse(
             access_token=new_tokens.access_token,
             refresh_token=new_tokens.refresh_token,
-        ).model_dump()
+        ).model_dump(by_alias=True)
     )
 
 
@@ -219,7 +218,7 @@ async def refresh_tokens(
         content=CompanyTokensResponse(
             access_token=new_tokens.access_token,
             refresh_token=new_tokens.refresh_token,
-        ).model_dump()
+        ).model_dump(by_alias=True)
     )
 
 

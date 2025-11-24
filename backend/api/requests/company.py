@@ -2,7 +2,8 @@ from typing import Annotated, Union, Optional
 
 import phonenumbers
 from pydantic_extra_types.phone_numbers import PhoneNumberValidator
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
+
 
 E164NumberType = Annotated[
     Union[str, phonenumbers.PhoneNumber], PhoneNumberValidator(number_format="E164")
@@ -19,7 +20,7 @@ class CompanyCreateRequest(BaseModel):
     email: EmailStr
     phone: E164NumberType = None
     password: str
-    repeat_password: str
+    repeat_password: str = Field(alias="repeatPassword")
 
 
 class CompanyLoginRequest(BaseModel):
@@ -28,7 +29,7 @@ class CompanyLoginRequest(BaseModel):
 
 
 class CompanyRefreshTokenRequest(BaseModel):
-    refresh_token: str
+    refresh_token: str = Field(alias="refreshToken")
 
 
 class CompanyRecoverPasswordRequest(BaseModel):
