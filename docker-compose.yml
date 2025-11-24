@@ -13,6 +13,14 @@ services:
     networks:
       - syncslot_network
 
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "80:80"
+    networks:
+      - syncslot_network
+
   syncslot_db:
     image: postgres:17.1
     container_name: "syncslot_db"
