@@ -10,6 +10,7 @@ class Token(CreatedAtMixin, UpdatedAtMixin, Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     access_token: Mapped[str] = mapped_column(unique=True)
     refresh_token: Mapped[str] = mapped_column(unique=True)
+    is_revoke: Mapped[bool] = mapped_column()
 
     @classmethod
     def to_token_model(cls, obj: TokenEntity):

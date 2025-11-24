@@ -10,19 +10,22 @@ from sqlalchemy.orm import mapped_column
 
 class Company(CreatedAtMixin, UpdatedAtMixin, Base):
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(255), unique=True)
+    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     description: Mapped[str] = mapped_column(
         Text,
         default="",
         server_default="",
+        nullable=True,
     )
-    address: Mapped[str] = mapped_column(String(255), unique=False)
-    email: Mapped[str] = mapped_column(String(254), unique=True)
-    phone: Mapped[str] = mapped_column(String(255), unique=True)
-    hash_password: Mapped[str] = mapped_column(unique=True)
+    address: Mapped[str] = mapped_column(String(255), nullable=True)
+    email: Mapped[str] = mapped_column(String(254), unique=True, nullable=False)
+    phone: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    filename: Mapped[str] = mapped_column(nullable=True)
+    hash_password: Mapped[str] = mapped_column(unique=True, nullable=False)
     is_active: Mapped[bool] = mapped_column(
         default=True,
         server_default=true(),
+        nullable=False,
     )
 
     @classmethod

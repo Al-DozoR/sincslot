@@ -5,6 +5,7 @@ from backend.repository.company_repository import ICompanyRepository, CompanyRep
 from backend.repository.token_repository import ITokenRepository, TokenRepository
 from backend.use_case.company_use_case import ICompanyUseCase, CompanyUseCase
 from backend.use_case.token_use_case import IToken, Token
+from backend.use_case.file_use_case import IFileStorage, FileCompanyLogoStorage
 from backend.core.config import settings
 
 
@@ -15,9 +16,11 @@ class DIContainer:
     container.add_transient(ITokenRepository, TokenRepository)
     container.add_transient(ICompanyUseCase, CompanyUseCase)
     container.add_transient(IToken, Token)
+    container.add_transient(IFileStorage, FileCompanyLogoStorage)
     container.add_instance(CryptContext(schemes=["bcrypt"], deprecated="auto"))
     container.add_instance(settings.jwt)
     container.add_instance(settings.password)
+    container.add_instance(settings.file_company_logo_settings)
 
 
     def get_company_use_cases(self) -> ICompanyUseCase:
@@ -25,6 +28,9 @@ class DIContainer:
 
     def get_token_use_case(self) -> IToken:
         return self.container.resolve(IToken)
+
+    def get_file_storage_use_case(self) -> IFileStorage:
+        return self.container.resolve(IFileStorage)
 
 
 di_container = DIContainer()

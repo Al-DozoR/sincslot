@@ -7,11 +7,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 
 from backend.api.conrollers.health import router_health
-from backend.api.conrollers.company import router_company
+from backend.api.conrollers.company.company import router_company
+from backend.api.conrollers.company.auth import router_auth_company
 from backend.core.config import settings
 from backend.core.db_helper import db_helper
-from backend.api.middleware.auth_middleware import AuthCompanyMiddleware
-from backend.di_container.di_container import di_container
 
 
 @asynccontextmanager
@@ -21,7 +20,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     await db_helper.dispose()
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, title="Syncslot backend")
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,21 +30,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(
-    AuthCompanyMiddleware,
-    exclude_path=["docs", "openapi", "health", "login", "register"],
-    token_use_case=di_container.get_token_use_case(),
-    company_use_case=di_container.get_company_use_cases()
-)
-
 app.include_router(
     router_health,
-    prefix=settings.api.prefix,
 )
 
 app.include_router(
     router_company,
-    prefix=settings.api_v1.prefix,
+    prefix=settings.api_v1.prefix_company,
+)
+
+app.include_router(
+    router_auth_company,
+    prefix=settings.api_v1.prefix_company,
 )
 
 if __name__ == "__main__":

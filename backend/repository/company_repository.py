@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from backend.entity.company import CompanyEntity
 from backend.repository.models.company import Company
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, update, delete
+from sqlalchemy import select
 from backend.repository.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -26,7 +26,15 @@ class ICompanyRepository(ABC):
         raise NotImplemented
 
     @abstractmethod
-    async def get_company_by_email(self,  session: AsyncSession, email: str) -> CompanyEntity:
+    async def get_company_by_email(self, session: AsyncSession, email: str) -> CompanyEntity:
+        raise NotImplemented
+
+    @abstractmethod
+    async def get_company_by_phone(self, session: AsyncSession, phone: str) -> CompanyEntity:
+        raise NotImplemented
+
+    @abstractmethod
+    async def get_company_by_name(self, session: AsyncSession, name: str) -> CompanyEntity | None:
         raise NotImplemented
 
 
@@ -48,6 +56,7 @@ class CompanyRepository(ICompanyRepository):
             phone=phone,
             address=address,
             hash_password=password,
+            is_active=True,
         )
 
         async with UnitOfWork(session) as uow:
@@ -60,10 +69,9 @@ class CompanyRepository(ICompanyRepository):
         async with UnitOfWork(session) as uow:
             query = select(Company).where(Company.id == company_id)
             company = await uow.execute_query(query)
-            if company is None:
+            company_scalar = company.scalar()
+            if company_scalar is None:
                 return
-
-        company_scalar = company.scalar()
 
         return CompanyEntity(
             id=company_scalar.id,
@@ -73,7 +81,6 @@ class CompanyRepository(ICompanyRepository):
             phone=company_scalar.phone,
             password=company_scalar.hash_password,
             address=company_scalar.address,
-
         )
 
     async def get_company_by_email(self, session: AsyncSession, email: str) -> CompanyEntity | None:
@@ -81,10 +88,43 @@ class CompanyRepository(ICompanyRepository):
         async with UnitOfWork(session) as uow:
             query = select(Company).where(Company.email == email)
             company = await uow.execute_query(query)
-            if company is None:
+            company_scalar = company.scalar()
+            if company_scalar is None:
                 return
 
-        company_scalar = company.scalar()
+        return CompanyEntity(
+            id=company_scalar.id,
+            name=company_scalar.name,
+            description=company_scalar.description,
+            email=company_scalar.email,
+            phone=company_scalar.phone,
+            password=company_scalar.hash_password,
+            address=company_scalar.address)
+
+    async def get_company_by_phone(self, session: AsyncSession, phone: str) -> CompanyEntity | None:
+        async with UnitOfWork(session) as uow:
+            query = select(Company).where(Company.phone == phone)
+            company = await uow.execute_query(query)
+            company_scalar = company.scalar()
+            if company_scalar is None:
+                return
+
+        return CompanyEntity(
+            id=company_scalar.id,
+            name=company_scalar.name,
+            description=company_scalar.description,
+            email=company_scalar.email,
+            phone=company_scalar.phone,
+            password=company_scalar.hash_password,
+            address=company_scalar.address)
+
+    async def get_company_by_name(self, session: AsyncSession, name: str) -> CompanyEntity | None:
+        async with UnitOfWork(session) as uow:
+            query = select(Company).where(Company.name == name)
+            company = await uow.execute_query(query)
+            company_scalar = company.scalar()
+            if company_scalar is None:
+                return
 
         return CompanyEntity(
             id=company_scalar.id,
