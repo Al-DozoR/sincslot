@@ -1,7 +1,36 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import styles from './SchedulePage.module.css';
+import {authService} from "../../services/authService.js";
 
 const SchedulePage = () => {
+
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const result = await authService.checkToken();
+        console.log("checkToken result:", result);
+      } catch (err) {
+        console.error("checkToken error:", err);
+      }
+    };
+
+    check();
+  }, []);
+
+  useEffect(() => {
+    const testRefreshToken = async () => {
+      try {
+        const result = await authService.refreshToken();
+        localStorage.setItem("accessToken", result.accessToken);
+        console.log("Новый access token:", result.accessToken);
+      } catch (err) {
+        console.error("Ошибка обновления токена:", err.response?.data);
+      }
+    };
+
+    testRefreshToken();
+  }, []);
+
   // Тестовые данные для демонстрации
   const [appointments, setAppointments] = useState([
     {

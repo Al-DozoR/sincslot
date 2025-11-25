@@ -30,7 +30,7 @@ const CompanySettingsPage = () => {
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
-    confirmPassword: ''
+    repeatPassword: ''
   });
 
   const [logoPreview, setLogoPreview] = useState(null);
@@ -123,7 +123,7 @@ const CompanySettingsPage = () => {
     setPasswordData({
       currentPassword: '',
       newPassword: '',
-      confirmPassword: ''
+      repeatPassword: ''
     });
     setLogoPreview(null);
     alert('Изменения сброшены!');
@@ -321,7 +321,7 @@ const CompanySettingsPage = () => {
                 <input
                   type="password"
                   id="confirmPassword"
-                  value={passwordData.confirmPassword}
+                  value={passwordData.repeatPassword}
                   onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
                   className={styles.input}
                 />

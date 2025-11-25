@@ -20,7 +20,7 @@ const Register = () => {
     email: '',
     phone: '',
     password: '',
-    confirmPassword: ''
+    repeatPassword: ''
   });
 
   const [errors, setErrors] = useState({});
@@ -49,10 +49,10 @@ const Register = () => {
 
         newErrors[name] = validateField(name, newValue, newFormData);
 
-        if ((name === 'password' || name === 'confirmPassword') && newFormData.confirmPassword) {
-          newErrors.confirmPassword = validateField(
-            'confirmPassword',
-            newFormData.confirmPassword,
+        if ((name === 'password' || name === 'repeatPassword') && newFormData.repeatPassword) {
+          newErrors.repeatPassword = validateField(
+            'repeatPassword',
+            newFormData.repeatPassword,
             newFormData
           );
         }
@@ -73,18 +73,20 @@ const Register = () => {
       const result = await authService.register(formData);
 
       // Сохраняем токен
-      localStorage.setItem("token", result.accessToken);
+      localStorage.setItem("accessToken", result.accessToken);
 
       console.log('Регистрация успешна:', formData);
 
       // Перенаправляем на главную
-      navigate("/records");
+      navigate("/schedule");
 
     } catch (error) {
       console.error("Ошибка регистрации:", error);
 
-      // можно показать ошибку пользователю
-      toast.error("Ошибка регистрации, попробуйте позже");
+      const serverError = error?.response?.data?.error;
+
+      // Если сервер прислал строку — выводим её, иначе fallback
+      toast.error(serverError || "Ошибка регистрации. Попробуйте позже");
     }
   };
 
@@ -111,9 +113,25 @@ const Register = () => {
         const phoneRegex = /^\+?\d{11}$/;
         return phoneRegex.test(value.replace(/\s+/g, '')) ? '' : 'Введите корректный телефон';
       }
-      case 'password':
-        return value.length >= 6 ? '' : 'Пароль должен содержать минимум 6 символов';
-      case 'confirmPassword':
+      case 'password': {
+        const errors = [];
+
+        if (value.length < 6) {
+          errors.push('Минимум 6 символов');
+        }
+        if (!/[A-Z]/.test(value)) {
+          errors.push('Хотя бы одна заглавная буква (A–Z)');
+        }
+        if (!/[a-z]/.test(value)) {
+          errors.push('Хотя бы одна строчная буква (a–z)');
+        }
+        if (!/[!@#$%^&*()_+\-=]/.test(value)) {
+          errors.push('Хотя бы один спецсимвол: !@#$%^&*()_+-=');
+        }
+
+        return errors.join(', ');
+      }
+      case 'repeatPassword':
         return value === currentFormData.password ? '' : 'Пароли не совпадают';
       default:
         return '';
@@ -131,7 +149,7 @@ const Register = () => {
     {label: 'Email', name: 'email', type: 'email', placeholder: 'example@mail.ru'},
     {label: 'Телефон', name: 'phone', type: 'tel', placeholder: '+7 XXX XXX XX XX'},
     {label: 'Пароль', name: 'password', type: 'password', placeholder: 'Придумайте надежный пароль'},
-    {label: 'Повторите пароль', name: 'confirmPassword', type: 'password', placeholder: 'Повторите ваш пароль'}
+    {label: 'Повторите пароль', name: 'repeatPassword', type: 'password', placeholder: 'Повторите ваш пароль'}
   ];
 
   return (
@@ -159,7 +177,7 @@ const Register = () => {
                 autoComplete={
                   field.name === 'email'
                     ? 'email'
-                    : field.name === 'password' || field.name === 'confirmPassword'
+                    : field.name === 'password' || field.name === 'repeatPassword'
                       ? 'new-password'
                       : undefined
                 }
