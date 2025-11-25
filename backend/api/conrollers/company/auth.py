@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Depends, HTTPException
+from fastapi import APIRouter, status, Depends, HTTPException, Cookie, Request
 from fastapi.security import OAuth2PasswordBearer
 from starlette.responses import JSONResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -201,12 +201,20 @@ async def login(
     status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": CompanyErrorResponse}
 })
 async def refresh_tokens(
-        refresh_token: CompanyRefreshTokenRequest,
+        request: Request,
         token_use_case: IToken = Depends(di_container.get_token_use_case),
         session: AsyncSession = Depends(db_helper.session_getter),
 ) -> JSONResponse:
+    refresh_token = request.cookies.get("refreshToken")
+    if refresh_token is None:
+        logger.error("Refresh token was not provided")
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=CompanyErrorResponse(error="Refresh token was not provided").model_dump()
+        )
+
     try:
-        decoded_token = await token_use_case.decode_token(refresh_token.refresh_token)
+        decoded_token = await token_use_case.decode_token(refresh_token)
     except JWTError as ex:
         logger.error("Failed to parse refresh token: %s", str(ex))
         return JSONResponse(
@@ -222,7 +230,7 @@ async def refresh_tokens(
         )
 
     try:
-        new_tokens = await token_use_case.update_tokens(session, refresh_token.refresh_token)
+        new_tokens = await token_use_case.update_tokens(session, refresh_token)
     except Exception as ex:
         logger.error(f"Error occurred while refreshing tokens %s:", str(ex), exc_info=True)
         return JSONResponse(
@@ -230,13 +238,29 @@ async def refresh_tokens(
             content=CompanyErrorResponse(error=f"Failed to register company").model_dump()
         )
 
-    return JSONResponse(
+    if new_tokens is None:
+        logger.error(f"Failed to update tokens. Probably refresh token was not in db %s:", refresh_token)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=CompanyErrorResponse(error=f"Failed to update tokens").model_dump()
+        )
+
+    response = JSONResponse(
         status_code=status.HTTP_201_CREATED,
         content=CompanyTokensResponse(
             access_token=new_tokens.access_token,
-            refresh_token=new_tokens.refresh_token,
-        ).model_dump(by_alias=True)
+        ).model_dump())
+
+    response.set_cookie(
+        key="refreshToken",
+        value=new_tokens.refresh_token,
+        httponly=True,
+        secure=True,
+        samesite="strict",
+        path="/api/v1/company/refresh-token"
     )
+
+    return response
 
 
 @router_auth_company.post("/recover", responses={
