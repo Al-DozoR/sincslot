@@ -22,7 +22,7 @@ class IToken(ABC):
         raise NotImplemented
 
     @abstractmethod
-    async def update_tokens(self, session: AsyncSession, refresh_token: str) -> TokenEntity:
+    async def update_tokens(self, session: AsyncSession, refresh_token: str) -> TokenEntity | None:
         raise NotImplemented
 
     @abstractmethod
@@ -65,8 +65,10 @@ class Token(IToken):
     ) -> TokenEntity:
         return await self.token_repository.save_tokens(session, access_token, refresh_token, is_revoke)
 
-    async def update_tokens(self, session: AsyncSession, refresh_token: str) -> TokenEntity:
+    async def update_tokens(self, session: AsyncSession, refresh_token: str) -> TokenEntity | None:
         tokens = await self.token_repository.get_tokens_by_refresh_token(session, refresh_token)
+        if tokens is None:
+            return
 
         payload = await self.decode_token(tokens.access_token)
 
