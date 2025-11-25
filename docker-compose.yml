@@ -19,6 +19,8 @@ services:
       - "80:80"
     networks:
       - syncslot_network
+    environment:
+      VITE_API_URL: "http://backend:10004"
 
   syncslot_db:
     image: postgres:17.1
