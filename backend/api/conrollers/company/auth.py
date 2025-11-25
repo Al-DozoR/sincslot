@@ -1,7 +1,4 @@
-from typing import Optional
-
-from pydantic import EmailStr, ValidationError
-from fastapi import APIRouter, status, Depends, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, status, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from starlette.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,14 +9,12 @@ from backend.api.requests.company import (
     CompanyLoginRequest,
     CompanyRefreshTokenRequest,
     CompanyRecoverPasswordRequest,
-    CompanyPhoneNumberRequest,
 )
 from backend.entity.company import CompanyEntity
 from backend.logger.logger import init_logger
 from backend.api.response.company import (
     CompanyTokensResponse,
     CompanyErrorResponse,
-    CompanyRecoverPasswordResponse,
     CompanyRecoverPasswordResponse
 )
 from backend.di_container.di_container import di_container
@@ -72,6 +67,7 @@ async def get_current_company_from_token(
     status.HTTP_200_OK: {"model": CompanyTokensResponse},
     status.HTTP_400_BAD_REQUEST: {"model": CompanyErrorResponse},
     status.HTTP_409_CONFLICT: {"model": CompanyErrorResponse},
+    status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": CompanyErrorResponse}
 })
 async def register(
         company: CompanyCreateRequest,
@@ -124,18 +120,29 @@ async def register(
             content=CompanyErrorResponse(error=f"Failed to register company").model_dump()
         )
 
-    return JSONResponse(
+    response = JSONResponse(
         status_code=status.HTTP_201_CREATED,
         content=CompanyTokensResponse(
             access_token=new_tokens.access_token,
-            refresh_token=new_tokens.refresh_token,
         ).model_dump(by_alias=True)
     )
+
+    response.set_cookie(
+        key="refreshToken",
+        value=new_tokens.refresh_token,
+        httponly=True,
+        secure=True,
+        samesite="strict",
+        path="/api/v1/company/refresh-token"
+    )
+
+    return response
 
 
 @router_auth_company.post("/login", responses={
     status.HTTP_201_CREATED: {"model": CompanyTokensResponse},
-    status.HTTP_400_BAD_REQUEST: {"model": CompanyErrorResponse}
+    status.HTTP_404_NOT_FOUND: {"model": CompanyErrorResponse},
+    status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": CompanyErrorResponse}
 })
 async def login(
         login_input: CompanyLoginRequest,
@@ -170,18 +177,28 @@ async def login(
             content=CompanyErrorResponse(error=f"Failed to log in").model_dump()
         )
 
-    return JSONResponse(
+    response = JSONResponse(
         status_code=status.HTTP_201_CREATED,
         content=CompanyTokensResponse(
             access_token=new_tokens.access_token,
-            refresh_token=new_tokens.refresh_token,
-        ).model_dump()
+        ).model_dump())
+
+    response.set_cookie(
+        key="refreshToken",
+        value=new_tokens.refresh_token,
+        httponly=True,
+        secure=True,
+        samesite="strict",
+        path="/api/v1/company/refresh-token"
     )
+
+    return response
 
 
 @router_auth_company.post("/refresh-token", responses={
     status.HTTP_201_CREATED: {"model": CompanyTokensResponse},
-    status.HTTP_400_BAD_REQUEST: {"model": CompanyErrorResponse}
+    status.HTTP_400_BAD_REQUEST: {"model": CompanyErrorResponse},
+    status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": CompanyErrorResponse}
 })
 async def refresh_tokens(
         refresh_token: CompanyRefreshTokenRequest,
@@ -224,7 +241,8 @@ async def refresh_tokens(
 
 @router_auth_company.post("/recover", responses={
     status.HTTP_200_OK: {"model": CompanyRecoverPasswordResponse},
-    status.HTTP_404_NOT_FOUND: {"model": CompanyErrorResponse}
+    status.HTTP_404_NOT_FOUND: {"model": CompanyErrorResponse},
+    status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": CompanyErrorResponse},
 })
 async def recover_password(
         recover_pass: CompanyRecoverPasswordRequest,

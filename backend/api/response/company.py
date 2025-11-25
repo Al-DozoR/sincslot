@@ -5,7 +5,6 @@ from pydantic.alias_generators import to_camel
 
 class CompanyTokensResponse(BaseModel):
     access_token: str = Field(alias="accessToken")
-    refresh_token: str = Field(alias="refreshToken")
     model_config = ConfigDict(
         alias_generator=to_camel,
         populate_by_name=True,
