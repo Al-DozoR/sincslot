@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from jose import JWTError
 
@@ -248,7 +248,7 @@ async def recover_password(
         recover_pass: CompanyRecoverPasswordRequest,
         company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
         session: AsyncSession = Depends(db_helper.session_getter)
-) -> JSONResponse:
+) -> Response:
     company_by_email = await company_use_case.get_company_by_email(session, recover_pass.email)
     if company_by_email is None:
         return JSONResponse(
@@ -259,7 +259,7 @@ async def recover_password(
         )
 
     try:
-        random_pass = await company_use_case.recover_company_by_email(session, recover_pass.email)
+        await company_use_case.recover_company_by_email(session, recover_pass.email)
     except Exception as ex:
         logger.error(f"Error occurred while recovering: {str(ex)}")
         return JSONResponse(
@@ -267,10 +267,4 @@ async def recover_password(
             content=CompanyErrorResponse(error=f"Failed to recover password").model_dump()
         )
 
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=CompanyRecoverPasswordResponse(
-            email=recover_pass.email,
-            password=random_pass
-        ).model_dump()
-    )
+    return Response(status_code=status.HTTP_200_OK)
