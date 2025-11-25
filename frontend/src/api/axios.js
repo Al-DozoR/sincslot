@@ -1,12 +1,12 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:4000",
+  baseURL: "http://localhost:10004",
   withCredentials: true,
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("accessToken");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -42,7 +42,7 @@ api.interceptors.response.use(
       if (!isRefreshing) {
         isRefreshing = true;
         try {
-          const { data } = await axios.post("http://localhost:4000/refresh-token", {}, { withCredentials: true });
+          const { data } = await axios.post("http://localhost:10004/api/v1/company/refresh-token", {}, { withCredentials: true });
           localStorage.setItem("token", data.accessToken);
           isRefreshing = false;
           processQueue(null, data.accessToken);
