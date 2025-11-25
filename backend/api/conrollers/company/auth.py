@@ -7,7 +7,6 @@ from jose import JWTError
 from backend.api.requests.company import (
     CompanyCreateRequest,
     CompanyLoginRequest,
-    CompanyRefreshTokenRequest,
     CompanyRecoverPasswordRequest,
 )
 from backend.entity.company import CompanyEntity
@@ -15,7 +14,6 @@ from backend.logger.logger import init_logger
 from backend.api.response.company import (
     CompanyTokensResponse,
     CompanyErrorResponse,
-    CompanyRecoverPasswordResponse
 )
 from backend.di_container.di_container import di_container
 from backend.use_case.company_use_case import ICompanyUseCase
@@ -264,7 +262,6 @@ async def refresh_tokens(
 
 
 @router_auth_company.post("/recover", responses={
-    status.HTTP_200_OK: {"model": CompanyRecoverPasswordResponse},
     status.HTTP_404_NOT_FOUND: {"model": CompanyErrorResponse},
     status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": CompanyErrorResponse},
 })

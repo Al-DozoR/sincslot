@@ -27,13 +27,3 @@ class CompaniesList(BaseModel):
 
 class CompanyErrorResponse(BaseModel):
     error: str
-
-
-class CompanyRecoverPasswordResponse(BaseModel):
-    login: str
-    password: str
-
-
-class CompanyRecoverPasswordResponse(BaseModel):
-    email: str
-    password: str
