@@ -131,8 +131,8 @@ async def register(
         key="refreshToken",
         value=new_tokens.refresh_token,
         httponly=True,
-        secure=True,
-        samesite="strict",
+        secure=False,
+        samesite="lax",
         path="/api/v1/company/refresh-token"
     )
 
@@ -187,8 +187,8 @@ async def login(
         key="refreshToken",
         value=new_tokens.refresh_token,
         httponly=True,
-        secure=True,
-        samesite="strict",
+        secure=False,
+        samesite="lax",
         path="/api/v1/company/refresh-token"
     )
 
@@ -249,14 +249,14 @@ async def refresh_tokens(
         status_code=status.HTTP_201_CREATED,
         content=CompanyTokensResponse(
             access_token=new_tokens.access_token,
-        ).model_dump())
+        ).model_dump(by_alias=True))
 
     response.set_cookie(
         key="refreshToken",
         value=new_tokens.refresh_token,
         httponly=True,
-        secure=True,
-        samesite="strict",
+        secure=False,
+        samesite="lax",
         path="/api/v1/company/refresh-token"
     )
 
