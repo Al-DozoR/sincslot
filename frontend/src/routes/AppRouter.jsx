@@ -6,6 +6,9 @@ import ForgotPasswordPage from "../pages/AuthPages/ForgotPasswordPage/ForgotPass
 import HomePage from "../pages/HomePage/HomePage.jsx";
 import SchedulePage from "../pages/SchedulePage/SchedulePage.jsx"; 
 import ServicesPage from "../pages/ServicesPage/ServicesPage.jsx";
+import ClientBookingPage from "../pages/ClientBookingPage/ClientBookingPage.jsx";
+import BookingDetailsPage from "../pages/BookingDetailsPage/BookingDetailsPage.jsx";
+import BookingConfirmationPage from "../pages/BookingConfirmationPage/BookingConfirmationPage.jsx";
 import CompanySettingsPage from "../pages/CompanySettingsPage/CompanySettingsPage.jsx";
 import PrivateRoute from "./PrivateRoute.jsx";
 
@@ -20,6 +23,7 @@ function AppRouter() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/schedule" element={<SchedulePage />} />
         
         {/* Услуги */}
         <Route path="/services" element={<ServicesPage />} />
@@ -37,6 +41,14 @@ function AppRouter() {
             </PrivateRoute>
           }
         />
+
+       {/*Запись клиента*/}
+       <Route path="/booking" element={<ClientBookingPage />} />
+
+       {/*Детали записи и подтверждение*/}
+       <Route path="/booking-details" element={<BookingDetailsPage />} />
+       <Route path="/booking-confirmation" element={<BookingConfirmationPage />} />
+
       </Routes>
     </BrowserRouter>
   );

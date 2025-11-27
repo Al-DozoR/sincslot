@@ -380,3 +380,197 @@
     font-size: 1.3rem;
   }
 }
+
+/* Стили для секции удаления */
+.deleteSection {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid #fecaca;
+  background: #fef2f2;
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+.deleteWarning {
+  color: #dc2626;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.deleteButton {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  width: 100%;
+}
+
+.deleteButton:hover {
+  background: #dc2626;
+}
+
+/* Модальное окно подтверждения удаления */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.deleteModal {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.deleteModalIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.deleteModalTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.deleteModalContent {
+  margin-bottom: 2rem;
+}
+
+.deleteModalText {
+  color: #6b7280;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.deleteModalText strong {
+  color: #1f2937;
+}
+
+.deleteModalWarning {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  color: #dc2626;
+  font-size: 0.9rem;
+}
+
+.deleteModalList {
+  margin: 0.5rem 0 0 1rem;
+  padding: 0;
+}
+
+.deleteModalList li {
+  margin-bottom: 0.25rem;
+}
+
+.deleteModalConfirmText {
+  color: #374151;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.deleteModalInput {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  text-align: center;
+  transition: border-color 0.2s ease;
+}
+
+.deleteModalInput:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.deleteModalActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.deleteModalCancel {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.deleteModalCancel:hover {
+  background: #e5e7eb;
+}
+
+.deleteModalConfirm {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  flex: 1;
+}
+
+.deleteModalConfirm:hover {
+  background: #b91c1c;
+}
+
+/* Адаптивность для модального окна удаления */
+@media (max-width: 768px) {
+  .deleteModal {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+
+  .deleteModalActions {
+    flex-direction: column;
+  }
+
+  .deleteSection {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .deleteModalTitle {
+    font-size: 1.3rem;
+  }
+
+  .deleteModalText {
+    font-size: 0.9rem;
+  }
+}
