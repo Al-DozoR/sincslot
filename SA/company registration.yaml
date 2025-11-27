@@ -5,12 +5,12 @@ info:
   description: Регистрация компании и создание единственного аккаунта. Включает проверку сложности пароля.
 
 paths:
-  /auth/register:
+  /api/v1/auth/company/register:
     post:
       summary: Регистрация компании
       description: |
         Создаёт новую компанию и её аккаунт.
-        Уникальными должны быть: `email`, `companyName`, `phone`.
+        Уникальными должны быть: `email`, `company-name`, `phone`.
 
         Требования к паролю:
         - минимум 8 символов  
@@ -30,14 +30,14 @@ paths:
             schema:
               type: object
               required:
-                - companyName
+                - company-name
                 - address
                 - email
                 - phone
                 - password
-                - passwordRepeat
+                - password-repeat
               properties:
-                companyName:
+                company-name:
                   type: string
                   description: Название компании
                   example: "Barber Bros"
@@ -59,7 +59,7 @@ paths:
                   format: password
                   description: Пароль аккаунта
                   example: "StrongPass123!"
-                passwordRepeat:
+                password-repeat:
                   type: string
                   format: password
                   description: Повтор пароля
@@ -77,9 +77,9 @@ paths:
                   message:
                     type: string
                     example: "Компания успешно зарегистрирована"
-                  accessToken:
+                  access-token:
                     type: string
-                  refreshToken:
+                  refresh-token:
                     type: string
 
         "400":
