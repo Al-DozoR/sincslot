@@ -1,24 +1,77 @@
-import React, {useState} from 'react';
-import {Link} from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import styles from '../Auth.module.css';
+import { authService } from "../../../services/authService";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Login = () => {
+  const navigate = useNavigate();
+
+  const inputRefs = useRef([]);
+  useEffect(() => {
+    inputRefs.current[0]?.focus();
+  }, []);
+
   const [formData, setFormData] = useState({
-    email: '',
+    emailOrPhone: '',
     password: ''
   });
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
+  const [errors, setErrors] = useState({});
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  const validateField = (name, value) => {
+    if (name === 'emailOrPhone') {
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const phonePattern = /^\+?\d{11}$/; 
+      if (!value) return 'Поле обязательно для заполнения';
+      if (!emailPattern.test(value) && !phonePattern.test(value)) return 'Введите корректный email или телефон';
+    }
+    return '';
+  };
+
+const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => {
+      const newFormData = { ...prev, [name]: value };
+
+      setErrors((prevErrors) => {
+        const newErrors = { ...prevErrors };
+        newErrors[name] = validateField(name, value);
+
+        // Проверка валидности всей формы
+        setIsFormValid(!Object.values(newErrors).some(error => error));
+
+        return newErrors;
+      });
+
+      return newFormData;
     });
   };
 
-  const handleSubmit = (e) => {
+ const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Вход:', formData);
-    // Здесь будет логика входа
+
+    if (!isFormValid) return;
+
+    try {
+      const result = await authService.login(formData);
+      
+      // Сохраняем токен
+      localStorage.setItem("accessToken", result.accessToken);
+
+      console.log('Вход успешен:', formData);
+
+      // Перенаправляем на главную
+      navigate("/schedule");
+
+    } catch (error) {
+      console.error("Ошибка входа:", error);
+      const serverError = error?.response?.data?.error;
+      toast.error(serverError || "Ошибка входа. Попробуйте позже");
+    }
   };
 
   return (
@@ -35,8 +88,8 @@ const Login = () => {
             <input
               type="text"
               id="email"
-              name="email"
-              value={formData.email}
+              name="emailOrPhone"
+              value={formData.emailOrPhone}
               onChange={handleChange}
               placeholder="example@mail.ru или +7 XXX XXX XX XX"
               required
@@ -56,7 +109,11 @@ const Login = () => {
             />
           </div>
 
-          <button type="submit" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnFull}`}>
+          <button
+            type="submit"
+            className={`${styles.btn} ${styles.btnPrimary} ${styles.btnFull}`}
+            disabled={!isFormValid} // кнопка неактивна, пока есть ошибки
+          >
             Войти
           </button>
 
