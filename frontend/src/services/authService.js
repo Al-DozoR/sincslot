@@ -19,5 +19,10 @@ export const authService = {
   checkToken: async (token) => {
     const response = await api.get("/health-auth");
     return response.data;
+  },
+
+  login: async (data) => {
+    const response = await api.post("/api/v1/company/login", data);
+    return response.data;
   }
 };

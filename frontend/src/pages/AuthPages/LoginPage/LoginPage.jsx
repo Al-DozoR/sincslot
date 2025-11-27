@@ -14,7 +14,7 @@ const Login = () => {
   }, []);
 
   const [formData, setFormData] = useState({
-    emailOrPhone: '',
+    email: '',
     password: ''
   });
 
@@ -22,7 +22,7 @@ const Login = () => {
   const [isFormValid, setIsFormValid] = useState(false);
 
   const validateField = (name, value) => {
-    if (name === 'emailOrPhone') {
+    if (name === 'email') {
       const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       const phonePattern = /^\+?\d{11}$/; 
       if (!value) return 'Поле обязательно для заполнения';
@@ -88,8 +88,8 @@ const handleChange = (e) => {
             <input
               type="text"
               id="email"
-              name="emailOrPhone"
-              value={formData.emailOrPhone}
+              name="email"
+              value={formData.email}
               onChange={handleChange}
               placeholder="example@mail.ru или +7 XXX XXX XX XX"
               required
