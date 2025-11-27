@@ -67,7 +67,7 @@ paths:
 
       responses:
 
-        "201":
+        "200":
           description: Компания успешно зарегистрирована
           content:
             application/json:
@@ -133,6 +133,139 @@ paths:
                       - EMAIL_EXISTS
                       - COMPANY_NAME_EXISTS
                       - PHONE_EXISTS
+                    example: EMAIL_EXISTS
+
+        "429":
+          description: Слишком много запросов — ограничение по времени
+  /api/v1/client/auth/register:
+    post:
+      summary: Регистрация пользователя
+      description: |
+        Создаёт нового пользователя и его аккаунт.
+        Уникальными должны быть: `email`
+
+        Требования к паролю:
+        - минимум 8 символов  
+        - хотя бы одна заглавная буква (A–Z)  
+        - хотя бы одна строчная буква (a–z)  
+        - хотя бы одна цифра (0–9)  
+        - хотя бы один спецсимвол: !@#$%^&*()_+-=  
+        - пароль и повтор должны совпадать  
+
+      tags:
+        - auth
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - phone
+                - password
+                - password-repeat
+              properties:
+                name:
+                  type: string
+                  description: Имя
+                  example: Иван
+                last-name:
+                  type: string
+                  description: Фамилия
+                  example: Иванов
+                middle-name:
+                  type: string
+                  description: Отчество
+                  example: Иванович
+                email:
+                  type: string
+                  format: email
+                  description: Email пользователя
+                  example: "ivanovii@example.com"
+                phone:
+                  type: string
+                  description: Номер телефона пользователя
+                  example: "+79991234567"
+                password:
+                  type: string
+                  format: password
+                  description: Пароль аккаунта
+                  example: "StrongPass123!"
+                password-repeat:
+                  type: string
+                  format: password
+                  description: Повтор пароля
+                  example: "StrongPass123!"
+
+      responses:
+
+        "200":
+          description: Аккаунт успешно зарегистрирован
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Аккаунт успешно зарегистрирован"
+                  access-token:
+                    type: string
+                  refresh-token:
+                    type: string
+
+        "400":
+          description: Ошибка валидации данных
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Пароли не совпадают"
+
+        "422":
+          description: Пароль не соответствует требованиям безопасности
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Описание ошибки
+                    example: "Пароль слишком простой"
+                  reasons:
+                    type: array
+                    description: Какие требования не выполнены
+                    items:
+                      type: string
+                      enum:
+                        - TOO_SHORT
+                        - NO_UPPERCASE
+                        - NO_LOWERCASE
+                        - NO_DIGIT
+                        - NO_SPECIAL_CHAR
+                      example: NO_SPECIAL_CHAR
+
+        "409":
+          description: Конфликт — нарушено уникальное поле
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Аккаунт с таким email уже существует"
+                  reason:
+                    type: string
+                    enum:
+                      - EMAIL_EXISTS
                     example: EMAIL_EXISTS
 
         "429":
