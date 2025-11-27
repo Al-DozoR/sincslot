@@ -38,7 +38,40 @@ paths:
                     description: Долгоживущий токен
         "401":
           description: Неверный логин или пароль
-
+  /api/v1/client/auth/login:
+    post:
+      summary: Авторизация клиента
+      description: Возвращает access и refresh токены
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - email
+                - password
+      responses:
+        "200":
+          description: Успешная авторизация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access-token:
+                    type: string
+                    description: Короткоживущий токен
+                  refresh-token:
+                    type: string
+                    description: Долгоживущий токен
+        "401":
+          description: Неверный логин или пароль
   /api/v1/auth/refresh:
     post:
       summary: Обновление access токена
