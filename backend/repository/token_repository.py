@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from backend.entity.token import TokenEntity
 from backend.repository.models.token import Token
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, update, delete
+from sqlalchemy import select, update
 from backend.repository.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -34,6 +34,10 @@ class ITokenRepository(ABC):
             tokens: TokenEntity,
             refresh_token: str
     ) -> TokenEntity:
+        raise NotImplemented
+
+    @abstractmethod
+    async def update_revoke(self, session: AsyncSession, refresh_token: str, is_revoke: bool) -> None:
         raise NotImplemented
 
 
@@ -76,7 +80,6 @@ class TokenRepository(ITokenRepository):
         )
 
     async def update_tokens(self, session: AsyncSession, tokens: TokenEntity, refresh_token: str) -> TokenEntity:
-
         async with UnitOfWork(session) as uow:
             query = update(Token).where(Token.refresh_token == tokens.refresh_token).values(
                 access_token=tokens.access_token,
@@ -86,3 +89,10 @@ class TokenRepository(ITokenRepository):
             await uow.execute_query(query)
 
         return tokens
+
+    async def update_revoke(self, session: AsyncSession, refresh_token: str, is_revoke: bool):
+        async with UnitOfWork(session) as uow:
+            query = update(Token).where(Token.refresh_token == refresh_token).values(
+                is_revoke=is_revoke,
+            )
+            await uow.execute_query(query)

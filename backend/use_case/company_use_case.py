@@ -124,8 +124,8 @@ class CompanyUseCase(ICompanyUseCase):
 
     async def login(self, session: AsyncSession, company: CompanyEntity) -> TokenEntity:
 
-        access_token = await self.token.create_access_token(company_id=company.id)
-        refresh_token = await self.token.create_refresh_token(company_id=company.id)
+        access_token = await self.token.create_access_token(company_id=company.id, is_revoke=False)
+        refresh_token = await self.token.create_refresh_token(company_id=company.id, is_revoke=False)
 
         tokens = await self.token.save_tokens(session, access_token, refresh_token, is_revoke=False)
 

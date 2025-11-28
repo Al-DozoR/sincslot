@@ -30,10 +30,8 @@ class CompanyErrorResponse(BaseModel):
 
 
 class CompanyRecoverPasswordResponse(BaseModel):
-    login: str
-    password: str
+    pass
 
 
-class CompanyRecoverPasswordResponse(BaseModel):
-    email: str
-    password: str
+class CompanyLogoutResponse(BaseModel):
+    message: str
