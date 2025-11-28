@@ -1,0 +1,215 @@
+openapi: 3.0.3
+info:
+  title: Company Settings API
+  version: 1.0.0
+  description: API для управления настройками компании, загрузкой логотипа и обновлением расписания.
+
+paths:
+
+  /company/settings:
+    post:
+      summary: Обновление настроек компании
+      description: |
+        Обновляет основные данные компании: название, телефон, email, адрес, ссылку для бронирования, а также смену пароля.
+        Если выполняется смена пароля — необходимо указать текущий пароль, новый пароль и подтверждение нового пароля.
+      operationId: update-company-settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - company-name
+                - phone
+                - email
+                - address
+                - booking-uri
+              properties:
+                company-name:
+                  type: string
+                  description: Название компании.
+                  minLength: 2
+                phone:
+                  type: string
+                  description: Телефон компании.
+                  pattern: '^\+79\d{9}$'
+                email:
+                  type: string
+                  format: email
+                  description: Email компании.
+                address:
+                  type: string
+                  description: Адрес компании.
+                booking-uri:
+                  type: string
+                  description: |
+                    Уникальная ссылка компании для страницы записи.
+                    Разрешены латиница, цифры, дефисы.
+                  pattern: '^[a-zA-Z0-9-]+$'
+                current-password:
+                  type: string
+                  description: Текущий пароль для проверки при смене.
+                new-password:
+                  type: string
+                  description: Новый пароль.
+                  minLength: 8
+                  pattern: '^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).+$'
+                new-password-confirm:
+                  type: string
+                  description: Подтверждение нового пароля.
+      responses:
+        '200':
+          description: Настройки компании успешно обновлены.
+        '400':
+          description: Ошибка валидации данных.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Ошибка при проверке текущего пароля.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidCurrentPasswordError'
+        '409':
+          description: Конфликт уникальных данных (email, телефон, booking-uri).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
+
+  /company/logo:
+    put:
+      summary: Загрузка логотипа компании
+      description: |
+        Загружает изображение логотипа компании.  
+        Допустимые форматы: png, jpg, jpeg.  
+        Максимальный размер файла: 5 МБ.
+      operationId: upload-company-logo
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Файл изображения.
+      responses:
+        '200':
+          description: Логотип успешно обновлён.
+        '400':
+          description: Ошибка файла (неверный формат или превышен размер).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileUploadError'
+
+  /company/schedule:
+    post:
+      summary: Обновление расписания компании
+      description: |
+        Обновляет график работы компании.  
+        Ожидается массив из 7 объектов — по одному на каждый день недели.
+      operationId: update-company-schedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              maxItems: 7
+              items:
+                type: object
+                required:
+                  - day-of-week
+                  - work-start
+                  - work-end
+                properties:
+                  day-of-week:
+                    type: integer
+                    description: День недели (1 — Пн, 7 — Вс).
+                    minimum: 1
+                    maximum: 7
+                  work-start:
+                    type: string
+                    description: Время начала работы (HH:MM).
+                    pattern: '^([01]\d|2[0-3]):[0-5]\d$'
+                  work-end:
+                    type: string
+                    description: Время окончания работы (HH:MM).
+                    pattern: '^([01]\d|2[0-3]):[0-5]\d$'
+      responses:
+        '200':
+          description: Расписание обновлено.
+        '400':
+          description: Ошибка валидации расписания.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+
+components:
+  schemas:
+
+    ValidationError:
+      type: object
+      properties:
+        error-code:
+          type: string
+          enum:
+            - validation-error
+            - missing-required-field
+            - invalid-format
+            - weak-password
+            - password-mismatch
+            - invalid-booking-uri
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: string
+
+    InvalidCurrentPasswordError:
+      type: object
+      properties:
+        error-code:
+          type: string
+          enum: [ invalid-current-password ]
+        message:
+          type: string
+          example: Текущий пароль указан неверно.
+
+    ConflictError:
+      type: object
+      properties:
+        error-code:
+          type: string
+          enum:
+            - email-taken
+            - phone-taken
+            - booking-uri-taken
+        message:
+          type: string
+
+    FileUploadError:
+      type: object
+      properties:
+        error-code:
+          type: string
+          enum:
+            - invalid-file-format
+            - file-too-large
+        message:
+          type: string
+          example: Недопустимый формат файла. Разрешены png, jpg, jpeg.
+
