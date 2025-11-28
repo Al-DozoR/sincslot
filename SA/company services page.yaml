@@ -1,0 +1,321 @@
+openapi: 3.0.3
+info:
+  title: Управление услугами компании
+  version: '1.0.0'
+  description: |
+    Эндпоинты для создания, редактирования, удаления и получения списка услуг компании.
+    Действия разрешены только владельцу компании.
+
+paths:
+
+  /company/{company-id}/services:
+    get:
+      summary: Получение списка услуг компании
+      description: Возвращает полный список услуг, доступных для указанной компании.
+      tags:
+        - Services
+      parameters:
+        - name: company-id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Список услуг успешно получен.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Service'
+        '401':
+          description: Необходима авторизация.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorized'
+        '403':
+          description: Нет прав доступа к данным этой компании.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbidden'
+        '404':
+          description: Компания не найдена.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFound'
+
+    post:
+      summary: Создание новой услуги
+      description: Создаёт новую услугу для компании.
+      tags:
+        - Services
+      parameters:
+        - name: company-id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceCreateRequest'
+      responses:
+        '201':
+          description: Услуга успешно создана.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '400':
+          description: Ошибка валидации входных данных.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidation'
+        '401':
+          description: Необходима авторизация.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorized'
+        '403':
+          description: Нет прав для создания услуги в этой компании.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbidden'
+        '404':
+          description: Компания не найдена.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFound'
+        '500':
+          description: Внутренняя ошибка сервера.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternal'
+
+  /company/{company-id}/services/{service-id}:
+    patch:
+      summary: Обновление данных услуги
+      description: Позволяет изменить поля существующей услуги компании.
+      tags:
+        - Services
+      parameters:
+        - name: company-id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: service-id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceUpdateRequest'
+      responses:
+        '200':
+          description: Услуга успешно обновлена.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '400':
+          description: Ошибка валидации входных данных.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidation'
+        '401':
+          description: Необходима авторизация.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorized'
+        '403':
+          description: Нет прав редактировать услугу этой компании.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbidden'
+        '404':
+          description: Компания или услуга не найдены.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFound'
+        '500':
+          description: Внутренняя ошибка сервера.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternal'
+
+    delete:
+      summary: Удаление услуги
+      description: Удаляет услугу по её идентификатору.
+      tags:
+        - Services
+      parameters:
+        - name: company-id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: service-id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Услуга успешно удалена, тело ответа отсутствует.
+        '401':
+          description: Необходима авторизация.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorUnauthorized'
+        '403':
+          description: Нет прав удалить услугу этой компании.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorForbidden'
+        '404':
+          description: Компания или услуга не найдены.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorNotFound'
+        '500':
+          description: Внутренняя ошибка сервера.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInternal'
+
+components:
+  schemas:
+
+    Service:
+      type: object
+      properties:
+        service-id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        duration:
+          type: integer
+          description: Длительность услуги в минутах.
+        price:
+          type: integer
+          description: Стоимость услуги в рублях.
+        created-at:
+          type: string
+          format: date-time
+        updated-at:
+          type: string
+          format: date-time
+
+    ServiceCreateRequest:
+      type: object
+      required:
+        - name
+        - duration
+        - price
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 2000
+        duration:
+          type: integer
+          minimum: 1
+          maximum: 600
+        price:
+          type: integer
+          minimum: 0
+          maximum: 1000000
+
+    ServiceUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 2000
+        duration:
+          type: integer
+          minimum: 1
+          maximum: 600
+        price:
+          type: integer
+          minimum: 0
+          maximum: 1000000
+
+    ErrorValidation:
+      type: object
+      properties:
+        error:
+          type: string
+        fields:
+          type: object
+          additionalProperties:
+            type: string
+
+    ErrorUnauthorized:
+      type: object
+      properties:
+        error:
+          type: string
+          enum: [unauthorized]
+
+    ErrorForbidden:
+      type: object
+      properties:
+        error:
+          type: string
+          enum: [forbidden]
+
+    ErrorNotFound:
+      type: object
+      properties:
+        error:
+          type: string
+          enum: [not-found]
+
+    ErrorInternal:
+      type: object
+      properties:
+        error:
+          type: string
+          enum: [internal-server-error]
