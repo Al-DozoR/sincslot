@@ -250,7 +250,7 @@ async def refresh_tokens(
             content=CompanyErrorResponse(error=f"Failed to parse refresh token").model_dump()
         )
 
-    is_refresh = await token_use_case.is_refresh_token(decoded_token)
+    is_refresh = await token_use_case.is_refresh_token(decoded_token.get("type"))
     if not is_refresh:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
