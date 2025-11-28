@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Depends, HTTPException, Cookie, Request
+from fastapi import APIRouter, status, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
 from starlette.responses import JSONResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,7 +7,6 @@ from jose import JWTError
 from backend.api.requests.company import (
     CompanyCreateRequest,
     CompanyLoginRequest,
-    CompanyRefreshTokenRequest,
     CompanyRecoverPasswordRequest,
 )
 from backend.entity.company import CompanyEntity
@@ -15,7 +14,8 @@ from backend.logger.logger import init_logger
 from backend.api.response.company import (
     CompanyTokensResponse,
     CompanyErrorResponse,
-    CompanyRecoverPasswordResponse
+    CompanyRecoverPasswordResponse,
+    CompanyLogoutResponse,
 )
 from backend.di_container.di_container import di_container
 from backend.use_case.company_use_case import ICompanyUseCase
@@ -30,28 +30,55 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/login")
 
 
 async def get_current_company_from_token(
+        request: Request,
         token: str = Depends(oauth2_scheme),
         token_use_case: IToken = Depends(di_container.get_token_use_case),
         company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
         session: AsyncSession = Depends(db_helper.session_getter)
 ) -> CompanyEntity | JSONResponse:
+    refresh_token = request.cookies.get("refreshToken")
+    if refresh_token is None:
+        logger.error("Refresh token was not provided")
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=CompanyErrorResponse(error="Refresh token was not provided").model_dump()
+        )
+
+    is_revoke = await token_use_case.is_revoke(session, refresh_token)
+    if is_revoke is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Refresh token was not found",
+        )
+
+    if is_revoke is True:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token is already revoked",
+        )
+
     try:
-        payload = await token_use_case.decode_token(token)
+        payload_access_token = await token_use_case.decode_token(token)
+        payload_refresh_token = await token_use_case.decode_token(refresh_token)
     except JWTError as ex:
         logger.error("Error occurred while parsing token: %s. Error: %s", token, str(ex))
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Failed to parse token",
+            detail="Failed to parse token. Probably token is expired",
         )
 
-    company_id = payload.get("company_id")
-    expired = payload.get("exp")
-
-    if not await token_use_case.is_expired(expired):
+    if not int(payload_access_token.get("company_id")) == int(payload_refresh_token.get("company_id")):
+        logger.error(
+            "Company id from access token %s and refresh token %s do not match",
+            payload_access_token.get("company_id"),
+            payload_refresh_token.get("company_id")
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token expired",
+            detail="Company id from access token and refresh token do not match"
         )
+
+    company_id = payload_access_token.get("company_id")
 
     company = await company_use_case.get_company_by_id(session, company_id)
     if company is None:
@@ -206,6 +233,7 @@ async def refresh_tokens(
         session: AsyncSession = Depends(db_helper.session_getter),
 ) -> JSONResponse:
     refresh_token = request.cookies.get("refreshToken")
+    print(refresh_token)
     if refresh_token is None:
         logger.error("Refresh token was not provided")
         return JSONResponse(
@@ -222,7 +250,7 @@ async def refresh_tokens(
             content=CompanyErrorResponse(error=f"Failed to parse refresh token").model_dump()
         )
 
-    is_refresh = await token_use_case.is_refresh_token(decoded_token)
+    is_refresh = await token_use_case.is_refresh_token(decoded_token.get("type"))
     if not is_refresh:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -292,3 +320,46 @@ async def recover_password(
         )
 
     return Response(status_code=status.HTTP_200_OK)
+
+
+@router_auth_company.delete("/logout", responses={
+    status.HTTP_200_OK: {"model": CompanyLogoutResponse},
+    status.HTTP_404_NOT_FOUND: {"model": CompanyErrorResponse},
+    status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": CompanyErrorResponse},
+})
+async def logout(
+        request: Request,
+        company=Depends(get_current_company_from_token),
+        token_use_case: IToken = Depends(di_container.get_token_use_case),
+        session: AsyncSession = Depends(db_helper.session_getter)
+):
+    refresh_token = request.cookies.get("refreshToken")
+    if refresh_token is None:
+        logger.error("Refresh token was not provided")
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=CompanyErrorResponse(error="Refresh token was not provided").model_dump()
+        )
+
+    payload = await token_use_case.decode_token(refresh_token)
+    if not int(payload.get("company_id")) == company.id:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=CompanyErrorResponse(
+                error="Companies ids from access token and from refresh token do not match"
+            ).model_dump()
+        )
+
+    try:
+        await token_use_case.revoke_tokens(session, refresh_token, True)
+    except Exception as ex:
+        logger.error(f"Error occurred while revoking tokens: {str(ex)}")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=CompanyErrorResponse(error=f"Failed to revoke token").model_dump()
+        )
+
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=CompanyLogoutResponse(message="Success logout").model_dump()
+    )

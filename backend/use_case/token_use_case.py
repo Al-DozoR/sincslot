@@ -34,6 +34,14 @@ class IToken(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    async def revoke_tokens(self, session: AsyncSession, refresh_token: str, is_revoke: bool) -> None:
+        raise NotImplemented
+
+    @abstractmethod
+    async def is_revoke(self, session: AsyncSession, refresh_token: str) -> bool | None:
+        raise NotImplemented
+
+    @abstractmethod
     async def decode_token(self, token: str) -> dict:
         raise NotImplementedError
 
@@ -92,7 +100,6 @@ class Token(IToken):
             exp=int(
                 (datetime.now() + timedelta(minutes=self.jwt_settings.access_token_expire_minutes)).timestamp()
             )
-
         )
 
         encoded_access_jwt = jwt.encode(
@@ -109,8 +116,7 @@ class Token(IToken):
             type=self.jwt_settings.token_type_refresh,
             exp=int(
                 (datetime.now() + timedelta(minutes=self.jwt_settings.refresh_token_expire_minutes)).timestamp()
-            )
-
+            ),
         )
 
         encoded_refresh_jwt = jwt.encode(
@@ -121,6 +127,16 @@ class Token(IToken):
 
         return encoded_refresh_jwt
 
+    async def revoke_tokens(self, session: AsyncSession, refresh_token: str, is_revoke: bool) -> None:
+        await self.token_repository.update_revoke(session, refresh_token, is_revoke)
+
+    async def is_revoke(self, session: AsyncSession, refresh_token: str) -> bool | None:
+        tokens = await self.token_repository.get_tokens_by_refresh_token(session, refresh_token)
+        if tokens is None:
+            return
+
+        return tokens.is_revoke
+
     async def decode_token(self, token: str) -> dict:
         payload = jwt.decode(token, self.jwt_settings.secret_key, algorithms=[self.jwt_settings.algorithm])
         return payload
@@ -129,5 +145,5 @@ class Token(IToken):
         now = int(datetime.now().timestamp())
         return expired > now
 
-    async def is_refresh_token(self, payload: dict) -> bool:
-        return payload.get("type") == self.jwt_settings.token_type_refresh
+    async def is_refresh_token(self, type_token: str) -> bool:
+        return type_token == self.jwt_settings.token_type_refresh

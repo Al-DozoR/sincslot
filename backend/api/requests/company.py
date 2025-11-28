@@ -40,9 +40,5 @@ class CompanyLoginRequest(BaseModel):
     password: str
 
 
-class CompanyRefreshTokenRequest(BaseModel):
-    refresh_token: str = Field(alias="refreshToken")
-
-
 class CompanyRecoverPasswordRequest(BaseModel):
     email: str
