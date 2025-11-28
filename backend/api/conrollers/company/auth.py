@@ -53,12 +53,13 @@ async def get_current_company_from_token(
 
     if is_revoke is True:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token is already revoked",
         )
 
     try:
-        payload = await token_use_case.decode_token(token)
+        payload_access_token = await token_use_case.decode_token(token)
+        payload_refresh_token = await token_use_case.decode_token(refresh_token)
     except JWTError as ex:
         logger.error("Error occurred while parsing token: %s. Error: %s", token, str(ex))
         raise HTTPException(
@@ -66,14 +67,18 @@ async def get_current_company_from_token(
             detail="Failed to parse token. Probably token is expired",
         )
 
-    is_revoke = payload.get("is_revoke")
-    if is_revoke:
+    if not int(payload_access_token.get("company_id")) == int(payload_refresh_token.get("company_id")):
+        logger.error(
+            "Company id from access token %s and refresh token %s do not match",
+            payload_access_token.get("company_id"),
+            payload_refresh_token.get("company_id")
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token is revoked",
+            detail="Company id from access token and refresh token do not match"
         )
 
-    company_id = payload.get("company_id")
+    company_id = payload_access_token.get("company_id")
 
     company = await company_use_case.get_company_by_id(session, company_id)
     if company is None:
@@ -324,6 +329,7 @@ async def recover_password(
 })
 async def logout(
         request: Request,
+        company=Depends(get_current_company_from_token),
         token_use_case: IToken = Depends(di_container.get_token_use_case),
         session: AsyncSession = Depends(db_helper.session_getter)
 ):
@@ -335,17 +341,13 @@ async def logout(
             content=CompanyErrorResponse(error="Refresh token was not provided").model_dump()
         )
 
-    is_revoke = await token_use_case.is_revoke(session, refresh_token)
-    if is_revoke is None:
+    payload = await token_use_case.decode_token(refresh_token)
+    if not int(payload.get("company_id")) == company.id:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
-            content=CompanyErrorResponse(error="Refresh token was not found").model_dump()
-        )
-
-    if is_revoke is True:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content=CompanyErrorResponse(error="Token is already revoked").model_dump()
+            content=CompanyErrorResponse(
+                error="Companies ids from access token and from refresh token do not match"
+            ).model_dump()
         )
 
     try:
