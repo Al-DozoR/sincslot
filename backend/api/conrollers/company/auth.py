@@ -15,7 +15,7 @@ from backend.api.response.company import (
     CompanyTokensResponse,
     CompanyErrorResponse,
     CompanyRecoverPasswordResponse,
-    CompanyLogoutResponse,
+    CompanySuccessResponse,
 )
 from backend.di_container.di_container import di_container
 from backend.use_case.company_use_case import ICompanyUseCase
@@ -323,7 +323,7 @@ async def recover_password(
 
 
 @router_auth_company.delete("/logout", responses={
-    status.HTTP_200_OK: {"model": CompanyLogoutResponse},
+    status.HTTP_200_OK: {"model": CompanySuccessResponse},
     status.HTTP_404_NOT_FOUND: {"model": CompanyErrorResponse},
     status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": CompanyErrorResponse},
 })
@@ -361,5 +361,5 @@ async def logout(
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=CompanyLogoutResponse(message="Success logout").model_dump()
+        content=CompanySuccessResponse(message="Success logout").model_dump()
     )

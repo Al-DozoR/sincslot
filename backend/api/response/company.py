@@ -21,8 +21,8 @@ class CompanyByIdResponse(BaseModel):
     address: Optional[str]
 
 
-class CompaniesList(BaseModel):
-    companies: list[CompanyByIdResponse]
+class CompanySuccessResponse(BaseModel):
+    message: str
 
 
 class CompanyErrorResponse(BaseModel):
@@ -31,7 +31,3 @@ class CompanyErrorResponse(BaseModel):
 
 class CompanyRecoverPasswordResponse(BaseModel):
     pass
-
-
-class CompanyLogoutResponse(BaseModel):
-    message: str
