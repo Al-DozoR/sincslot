@@ -14,10 +14,6 @@ E164NumberType = Annotated[
 ]
 
 
-class CompanyPhoneNumberRequest(BaseModel):
-    phone: E164NumberType
-
-
 class CompanyCreateRequest(BaseModel):
     name: str = Field(default="Apple")
     address: Optional[str] = None
@@ -37,6 +33,7 @@ class CompanyCreateRequest(BaseModel):
             raise ValueError('Пароль должен содержать хотя бы одну цифру (0–9)')
         if not re.search(r'[!@#$%^&*()_+\-=]', password):
             raise ValueError('Пароль должен содержать хотя бы один спецсимвол: !@#$%^&*()_+-=')
+
         return password
 
 

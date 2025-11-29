@@ -31,7 +31,7 @@ async def refresh_tokens(
         session: AsyncSession = Depends(db_helper.session_getter),
 ) -> JSONResponse:
     refresh_token = request.cookies.get("refreshToken")
-    print(refresh_token)
+
     if refresh_token is None:
         logger.error("Refresh token was not provided")
         return JSONResponse(
