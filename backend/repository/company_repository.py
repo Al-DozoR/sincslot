@@ -48,6 +48,10 @@ class ICompanyRepository(ABC):
     ) -> CompanyEntity | None:
         raise NotImplemented
 
+    @abstractmethod
+    async def get_work_schedule_by_company_id(self, session: AsyncSession, company_id) -> dict | None:
+        raise NotImplemented
+
 
 class CompanyRepository(ICompanyRepository):
 
@@ -59,6 +63,7 @@ class CompanyRepository(ICompanyRepository):
             phone: str,
             address: str,
             password: str,
+            booking_url: str,
     ) -> int:
 
         new_company = Company(
@@ -67,6 +72,7 @@ class CompanyRepository(ICompanyRepository):
             phone=phone,
             address=address,
             hash_password=password,
+            booking_url=booking_url,
             is_active=True,
         )
 
@@ -133,3 +139,13 @@ class CompanyRepository(ICompanyRepository):
                 return
 
         return company_updated_scalar.to_company_entity()
+
+    async def get_work_schedule_by_company_id(self, session: AsyncSession, company_id) -> dict | None:
+        async with UnitOfWork(session) as uow:
+            query = select(Company).where(Company.id == company_id)
+            company = await uow.execute_query(query)
+            company_scalar: Company | None = company.scalar()
+            if company_scalar is None:
+                return None
+
+            return company_scalar.work_schedule

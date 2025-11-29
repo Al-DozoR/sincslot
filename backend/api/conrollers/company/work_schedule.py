@@ -19,11 +19,37 @@ logger = init_logger('company', 'INFO')
 router = APIRouter(tags=["company"])
 
 
+@router.get("/schedule/")
+async def get_work_schedule_company(company=Depends(get_current_company_from_token),
+                                    company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
+                                    session: AsyncSession = Depends(db_helper.session_getter)):
+    try:
+        work_schedule = await company_use_case.get_work_schedule_by_company_id(session=session, company_id=company.id)
+    except Exception as ex:
+        logger.error("Failed to get company work schedule by id %s Error: %s", company.id, str(ex), exc_info=True)
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=CompanyErrorResponse(error=f"Failed to get company work schedule by id").model_dump()
+        )
+
+    if work_schedule is None:
+        logger.error("Failed to get company work schedule by id %s", company.id)
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=CompanyErrorResponse(error=f"Failed to get company work schedule by id").model_dump()
+        )
+
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=work_schedule,
+    )
+
+
 @router.post("/schedule")
 async def create_or_update_work_schedule(work_schedule: CompanyWorkScheduleRequest,
                                          company=Depends(get_current_company_from_token),
                                          company_use_case: ICompanyUseCase = Depends(
-                                            di_container.get_company_use_cases
+                                             di_container.get_company_use_cases
                                          ),
                                          session: AsyncSession = Depends(db_helper.session_getter)):
     try:
