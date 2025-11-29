@@ -1,6 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel, Field, ConfigDict
 from pydantic.alias_generators import to_camel
+from backend.entity.company import DaysOfWeek
 
 
 class CompanyTokensResponse(BaseModel):
@@ -31,3 +32,25 @@ class CompanyErrorResponse(BaseModel):
 
 class CompanyRecoverPasswordResponse(BaseModel):
     pass
+
+
+class CompanyWorkDay(BaseModel):
+    day_of_week: DaysOfWeek = Field(default=DaysOfWeek.Monday)
+    work_start: str = Field(default="9:00", alias="workStart")
+    work_end: str = Field(default="18:00", alias="workEnd")
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        from_attributes=True,
+    )
+
+
+class CompanyResponseWorkSchedule(BaseModel):
+    work_schedule: list[CompanyWorkDay] = Field(alias="workSchedule")
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        from_attributes=True,
+    )
