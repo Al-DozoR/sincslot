@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 
-from backend.entity.company import CompanyEntity
-from backend.repository.models.company import Company
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
+
+from backend.entity.company import CompanyEntity
+from backend.repository.models.company import Company
 from backend.repository.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -38,7 +39,12 @@ class ICompanyRepository(ABC):
         raise NotImplemented
 
     @abstractmethod
-    async def update_company_by_id(self, session: AsyncSession, company_id: int, data_to_update: dict):
+    async def update_company_by_id(
+            self,
+            session: AsyncSession,
+            company_id: int,
+            data_to_update: dict
+    ) -> CompanyEntity | None:
         raise NotImplemented
 
 
@@ -77,15 +83,7 @@ class CompanyRepository(ICompanyRepository):
             if company_scalar is None:
                 return
 
-        return CompanyEntity(
-            id=company_scalar.id,
-            name=company_scalar.name,
-            description=company_scalar.description,
-            email=company_scalar.email,
-            phone=company_scalar.phone,
-            password=company_scalar.hash_password,
-            address=company_scalar.address,
-        )
+        return company_scalar.to_company_entity()
 
     async def get_company_by_email(self, session: AsyncSession, email: str) -> CompanyEntity | None:
 
@@ -96,54 +94,41 @@ class CompanyRepository(ICompanyRepository):
             if company_scalar is None:
                 return
 
-        return CompanyEntity(
-            id=company_scalar.id,
-            name=company_scalar.name,
-            description=company_scalar.description,
-            email=company_scalar.email,
-            phone=company_scalar.phone,
-            password=company_scalar.hash_password,
-            address=company_scalar.address)
+        return company_scalar.to_company_entity()
 
     async def get_company_by_phone(self, session: AsyncSession, phone: str) -> CompanyEntity | None:
         async with UnitOfWork(session) as uow:
             query = select(Company).where(Company.phone == phone)
             company = await uow.execute_query(query)
-            company_scalar = company.scalar()
+            company_scalar: Company | None = company.scalar()
             if company_scalar is None:
                 return
 
-        return CompanyEntity(
-            id=company_scalar.id,
-            name=company_scalar.name,
-            description=company_scalar.description,
-            email=company_scalar.email,
-            phone=company_scalar.phone,
-            password=company_scalar.hash_password,
-            address=company_scalar.address)
+        return company_scalar.to_company_entity()
 
     async def get_company_by_name(self, session: AsyncSession, name: str) -> CompanyEntity | None:
         async with UnitOfWork(session) as uow:
             query = select(Company).where(Company.name == name)
             company = await uow.execute_query(query)
-            company_scalar = company.scalar()
+            company_scalar: Company | None = company.scalar()
             if company_scalar is None:
                 return
 
-        return CompanyEntity(
-            id=company_scalar.id,
-            name=company_scalar.name,
-            description=company_scalar.description,
-            email=company_scalar.email,
-            phone=company_scalar.phone,
-            password=company_scalar.hash_password,
-            address=company_scalar.address)
+        return company_scalar.to_company_entity()
 
-    async def update_company_by_id(self, session: AsyncSession, company_id: int, data_to_update: dict):
+    async def update_company_by_id(
+            self,
+            session: AsyncSession,
+            company_id: int,
+            data_to_update: dict
+    ) -> CompanyEntity | None:
         async with UnitOfWork(session) as uow:
             query = update(Company).where(Company.id == company_id).values(
                 **data_to_update
-            )
-            await uow.execute_query(query)
+            ).returning(Company)
+            company_updated = await uow.execute_query(query)
+            company_updated_scalar: Company | None = company_updated.scalar()
+            if company_updated_scalar is None:
+                return
 
-        return data_to_update
+        return company_updated_scalar.to_company_entity()

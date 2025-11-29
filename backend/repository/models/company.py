@@ -3,9 +3,9 @@ from sqlalchemy import true
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import inspect
 
-
-from backend.entity.company import CompanyEntity
+from backend.entity.company import CompanyEntity, WorkSchedule
 from backend.repository.models.base import Base
 from backend.repository.models.mixins import CreatedAtMixin, UpdatedAtMixin
 
@@ -42,6 +42,29 @@ class Company(CreatedAtMixin, UpdatedAtMixin, Base):
             hash_password=obj.password,
             updated_at=obj.updated_at,
             created_at=obj.created_at,
+        )
+
+    def to_company_entity(self) -> CompanyEntity:
+
+        if self.work_schedule:
+            result = []
+            for ws in self.work_schedule:
+                result.append(WorkSchedule.to_model(ws))
+
+            self.work_schedule = result
+
+        return CompanyEntity(
+            id=self.id,
+            name=self.name,
+            email=self.email,
+            password=self.hash_password,
+            phone=self.phone,
+            work_schedule=self.work_schedule,
+            filename=self.filename,
+            updated_at=int(self.updated_at.timestamp()),
+            created_at=int(self.created_at.timestamp()),
+            description=self.description,
+            address=self.address,
         )
 
     def __str__(self):
