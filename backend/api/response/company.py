@@ -36,8 +36,8 @@ class CompanyRecoverPasswordResponse(BaseModel):
 
 class CompanyWorkDay(BaseModel):
     day_of_week: DaysOfWeek = Field(default=DaysOfWeek.Monday)
-    work_start: str = Field(default="9:00", alias="workStart")
-    work_end: str = Field(default="18:00", alias="workEnd")
+    work_start: str = Field(examples=["9:00"], alias="workStart")
+    work_end: str = Field(examples=["18:00"], alias="workEnd")
 
     model_config = ConfigDict(
         alias_generator=to_camel,
@@ -46,8 +46,8 @@ class CompanyWorkDay(BaseModel):
     )
 
 
-class CompanyResponseWorkSchedule(BaseModel):
-    work_schedule: list[CompanyWorkDay] = Field(alias="workSchedule")
+class CompanyWorkScheduleResponse(BaseModel):
+    work_schedule: list[dict] = Field(alias="workSchedule")
 
     model_config = ConfigDict(
         alias_generator=to_camel,

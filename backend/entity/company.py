@@ -35,9 +35,18 @@ class WorkSchedule:
     def to_dict(self):
         return {
             "day_of_week": self.day_of_week.value,
-            "work_start": self.work_start,
-            "work_end": self.work_end,
+            "work_start": datetime.strftime(self.work_start, "%H:%M"),
+            "work_end": datetime.strftime(self.work_end, "%H:%M"),
         }
+
+    @classmethod
+    def to_model(cls, dict_obj: dict):
+        ws = {
+            "day_of_week": DaysOfWeek(dict_obj.get("day_of_week")),
+            "work_start": datetime.strptime(dict_obj.get("work_start"), "%H:%M"),
+            "work_end": datetime.strptime(dict_obj.get("work_end"), "%H:%M"),
+        }
+        return cls(**ws)
 
 
 @dataclass
@@ -47,7 +56,7 @@ class CompanyEntity:
     password: str
     phone: str
     work_schedule: list[WorkSchedule] = field(default=None)
-    file_path: str = field(default=None)
+    filename: str = field(default=None)
     updated_at: Optional[int] = field(default=None)
     created_at: Optional[int] = field(default=None)
     description: Optional[str] = field(default=None)
@@ -56,7 +65,3 @@ class CompanyEntity:
 
     def to_dict(self) -> dict:
         return self.__dict__
-
-    @classmethod
-    def to_model(cls, dict_obj):
-        return cls(**dict_obj)

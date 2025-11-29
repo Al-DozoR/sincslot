@@ -51,12 +51,21 @@ class ICompanyUseCase(ABC):
         raise NotImplemented
 
     @abstractmethod
+    async def update_company_by_id(
+            self,
+            session: AsyncSession,
+            company_id: int,
+            company: dict
+    ) -> CompanyEntity | None:
+        raise NotImplemented
+
+    @abstractmethod
     async def update_work_schedule(
             self,
             session: AsyncSession,
             company_id: int,
             work_schedule: dict
-    ) -> int:
+    ) -> list[WorkSchedule] | None:
         raise NotImplemented
 
     @abstractmethod
@@ -139,12 +148,20 @@ class CompanyUseCase(ICompanyUseCase):
 
         return tokens
 
+    async def update_company_by_id(
+            self,
+            session: AsyncSession,
+            company_id: int,
+            company: CompanyEntity
+    ) -> CompanyEntity | None:
+        return await self.company_repository.update_company_by_id(session, company_id, company.to_dict())
+
     async def update_work_schedule(
             self,
             session: AsyncSession,
             company_id: int,
             work_schedule: dict
-    ) -> int:
+    ) -> list[WorkSchedule] | None:
 
         data_to_update = []
 
@@ -155,13 +172,16 @@ class CompanyUseCase(ICompanyUseCase):
 
         work_schedule["work_schedule"] = data_to_update
 
-        updated_data = await self.company_repository.update_company_by_id(
+        updated_data: CompanyEntity | None = await self.company_repository.update_company_by_id(
             session=session,
             company_id=company_id,
             data_to_update=work_schedule
         )
 
-        return updated_data
+        if updated_data is None:
+            return
+
+        return [w.to_dict() for w in updated_data.work_schedule]
 
     async def recover_company_by_email(self, session: AsyncSession, email: str, length: int = 10) -> str | None:
         company_by_email = await self.company_repository.get_company_by_email(session, email)
