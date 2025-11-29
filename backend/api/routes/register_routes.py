@@ -10,6 +10,7 @@ from backend.api.conrollers.company.auth.recover_password import router as route
 from backend.api.conrollers.company.auth.refresh_token import router as router_refresh_token
 from backend.api.conrollers.company.auth.register import router as router_register
 from backend.api.conrollers.company.settings_company import router as router_company_settings
+from backend.api.conrollers.service.create_service import router as router_create_service
 
 
 routes = APIRouter()
@@ -25,3 +26,5 @@ routes.include_router(router=router_logout, prefix=settings.api_v1.prefix_compan
 routes.include_router(router=router_recover_password, prefix=settings.api_v1.prefix_company)
 routes.include_router(router=router_refresh_token, prefix=settings.api_v1.prefix_company)
 routes.include_router(router=router_register, prefix=settings.api_v1.prefix_company)
+
+routes.include_router(router=router_create_service, prefix=settings.api_v1.prefix_service)

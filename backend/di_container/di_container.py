@@ -3,9 +3,11 @@ from passlib.context import CryptContext
 
 from backend.repository.company_repository import ICompanyRepository, CompanyRepository
 from backend.repository.token_repository import ITokenRepository, TokenRepository
+from backend.repository.service_repository import IServiceRepository, ServiceRepository
 from backend.use_case.company_use_case import ICompanyUseCase, CompanyUseCase
 from backend.use_case.token_use_case import IToken, Token
 from backend.use_case.file_use_case import IFileStorage, FileCompanyLogoStorage
+from backend.use_case.service_use_case import IServiceUseCase, ServiceUseCase
 from backend.core.config import settings
 
 
@@ -14,9 +16,11 @@ class DIContainer:
 
     container.add_transient(ICompanyRepository, CompanyRepository)
     container.add_transient(ITokenRepository, TokenRepository)
+    container.add_transient(IServiceRepository, ServiceRepository)
     container.add_transient(ICompanyUseCase, CompanyUseCase)
     container.add_transient(IToken, Token)
     container.add_transient(IFileStorage, FileCompanyLogoStorage)
+    container.add_transient(IServiceUseCase, ServiceUseCase)
     container.add_instance(CryptContext(schemes=["bcrypt"], deprecated="auto"))
     container.add_instance(settings.jwt)
     container.add_instance(settings.password)
@@ -32,6 +36,9 @@ class DIContainer:
 
     def get_file_storage_use_case(self) -> IFileStorage:
         return self.container.resolve(IFileStorage)
+
+    def get_service_use_case(self) -> IServiceUseCase:
+        return self.container.resolve(IServiceUseCase)
 
 
 di_container = DIContainer()

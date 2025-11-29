@@ -55,6 +55,7 @@ class DatabaseConfig(BaseModel):
 
 class ApiV1Prefix(BaseModel):
     prefix_company: str = "/api/v1/company"
+    prefix_service: str = "/api/v1/service"
 
 
 class Settings(BaseSettings):

@@ -4,15 +4,20 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy  import CheckConstraint
 
+from backend.entity.service import ServiceEntity
 from backend.repository.models.base import Base
 from backend.repository.models.mixins import CreatedAtMixin, UpdatedAtMixin
 
 
 class Service(CreatedAtMixin, UpdatedAtMixin, Base):
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    price: Mapped[int] = mapped_column(Integer, CheckConstraint("price > 0", name="check_price_positive"))
-    duration: Mapped[int] = mapped_column(Integer, CheckConstraint("duration > 0", name="check_price_positive"))
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    price: Mapped[int] = mapped_column(
+        Integer, CheckConstraint("price > 0", name="check_price_positive"), nullable=False
+    )
+    duration: Mapped[int] = mapped_column(
+        Integer, CheckConstraint("duration > 0", name="check_price_positive"), nullable=False
+    )
     description: Mapped[str] = mapped_column(
         String(255),
         default="",
@@ -25,4 +30,16 @@ class Service(CreatedAtMixin, UpdatedAtMixin, Base):
         nullable=False,
     )
     company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
-    client_id: Mapped[int] = mapped_column(ForeignKey("client.id"), nullable=True)
+
+    def to_service_entity(self) -> ServiceEntity:
+        return ServiceEntity(
+            id=self.id,
+            name=self.name,
+            price=self.price,
+            duration=self.duration,
+            description=self.description,
+            company_id=self.company_id,
+            is_active=self.is_active,
+            created_at=int(self.created_at.timestamp()),
+            updated_at=int(self.updated_at.timestamp()),
+        )
