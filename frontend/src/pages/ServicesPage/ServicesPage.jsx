@@ -42,7 +42,10 @@ const ServicesPage = () => {
   ]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editingService, setEditingService] = useState(null);
+  const [serviceToDelete, setServiceToDelete] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -62,10 +65,32 @@ const ServicesPage = () => {
     setIsModalOpen(true);
   };
 
-  // Закрытие модального окна
+  // Открытие модального окна для добавления
+  const handleAddClick = () => {
+    setEditingService(null);
+    setFormData({
+      name: '',
+      description: '',
+      duration: '',
+      price: ''
+    });
+    setIsAddModalOpen(true);
+  };
+
+  // Открытие модального окна подтверждения удаления
+  const handleDeleteClick = (service, e) => {
+    e.stopPropagation();
+    setServiceToDelete(service);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Закрытие всех модальных окон
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setIsAddModalOpen(false);
+    setIsDeleteModalOpen(false);
     setEditingService(null);
+    setServiceToDelete(null);
     setFormData({
       name: '',
       description: '',
@@ -88,6 +113,7 @@ const ServicesPage = () => {
     e.preventDefault();
     
     if (editingService) {
+      // Редактирование существующей услуги
       const updatedServices = services.map(service =>
         service.id === editingService.id
           ? { ...service, ...formData }
@@ -96,6 +122,27 @@ const ServicesPage = () => {
       setServices(updatedServices);
     }
     
+    handleCloseModal();
+  };
+
+  // Добавление новой услуги
+  const handleAddService = (e) => {
+    e.preventDefault();
+    
+    const newService = {
+      id: Math.max(...services.map(s => s.id)) + 1, // Генерируем новый ID
+      ...formData
+    };
+    
+    setServices(prev => [...prev, newService]);
+    handleCloseModal();
+  };
+
+  // Подтверждение удаления услуги
+  const handleConfirmDelete = () => {
+    if (serviceToDelete) {
+      setServices(prev => prev.filter(service => service.id !== serviceToDelete.id));
+    }
     handleCloseModal();
   };
 
@@ -108,16 +155,31 @@ const ServicesPage = () => {
         duration: editingService.duration,
         price: editingService.price
       });
+    } else {
+      setFormData({
+        name: '',
+        description: '',
+        duration: '',
+        price: ''
+      });
     }
   };
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 className={styles.title}>Услуги</h1>
-        <div className={styles.stats}>
-          Всего услуг: <span className={styles.count}>{services.length}</span>
+        <div className={styles.headerLeft}>
+          <h1 className={styles.title}>Услуги</h1>
+          <div className={styles.stats}>
+            Всего услуг: <span className={styles.count}>{services.length}</span>
+          </div>
         </div>
+        <button
+          className={styles.addButton}
+          onClick={handleAddClick}
+        >
+          + Добавить услугу
+        </button>
       </div>
 
       <div className={styles.servicesGrid}>
@@ -129,7 +191,16 @@ const ServicesPage = () => {
           >
             <div className={styles.serviceHeader}>
               <h3 className={styles.serviceName}>{service.name}</h3>
-              <span className={styles.serviceDuration}>{service.duration}</span>
+              <div className={styles.serviceActions}>
+                <span className={styles.serviceDuration}>{service.duration}</span>
+                <button
+                  className={styles.deleteButton}
+                  onClick={(e) => handleDeleteClick(service, e)}
+                  title="Удалить услугу"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
             <div className={styles.servicePrice}>{service.price}</div>
             <p className={styles.serviceDescription}>{service.description}</p>
@@ -137,6 +208,18 @@ const ServicesPage = () => {
           </div>
         ))}
       </div>
+
+      {services.length === 0 && (
+        <div className={styles.emptyState}>
+          <p>Услуги пока не добавлены</p>
+          <button
+            className={styles.addButton}
+            onClick={handleAddClick}
+          >
+            + Добавить первую услугу
+          </button>
+        </div>
+      )}
 
       {/* Модальное окно редактирования */}
       {isModalOpen && (
@@ -225,6 +308,127 @@ const ServicesPage = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Модальное окно добавления */}
+      {isAddModalOpen && (
+        <div className={styles.modalOverlay} onClick={handleCloseModal}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2>Добавление услуги</h2>
+              <button
+                className={styles.closeButton}
+                onClick={handleCloseModal}
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleAddService} className={styles.modalForm}>
+              <div className={styles.formGroup}>
+                <label htmlFor="name">Название услуги</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                  className={styles.input}
+                  placeholder="Введите название услуги"
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="description">Описание услуги</label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  rows="3"
+                  required
+                  className={styles.textarea}
+                  placeholder="Опишите услугу"
+                />
+              </div>
+
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="duration">Длительность</label>
+                  <input
+                    type="text"
+                    id="duration"
+                    name="duration"
+                    value={formData.duration}
+                    onChange={handleInputChange}
+                    placeholder="60 мин"
+                    required
+                    className={styles.input}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="price">Стоимость</label>
+                  <input
+                    type="text"
+                    id="price"
+                    name="price"
+                    value={formData.price}
+                    onChange={handleInputChange}
+                    placeholder="1500 ₽"
+                    required
+                    className={styles.input}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.modalActions}>
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className={styles.resetButton}
+                >
+                  Сбросить
+                </button>
+                <button
+                  type="submit"
+                  className={styles.saveButton}
+                >
+                  Добавить услугу
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Модальное окно подтверждения удаления */}
+      {isDeleteModalOpen && serviceToDelete && (
+        <div className={styles.modalOverlay} onClick={handleCloseModal}>
+          <div className={styles.deleteModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.deleteModalIcon}>⚠️</div>
+            <h2 className={styles.deleteModalTitle}>Удалить услугу</h2>
+            <p className={styles.deleteModalText}>
+              Вы уверены, что хотите удалить услугу <strong>«{serviceToDelete.name}»</strong>?
+              Это действие нельзя отменить.
+            </p>
+            <div className={styles.deleteModalActions}>
+              <button
+                className={styles.deleteModalCancel}
+                onClick={handleCloseModal}
+              >
+                Отмена
+              </button>
+              <button
+                className={styles.deleteModalConfirm}
+                onClick={handleConfirmDelete}
+              >
+                Удалить
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -30,10 +30,11 @@ const CompanySettingsPage = () => {
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
-    repeatPassword: ''
+    confirmPassword: ''
   });
 
   const [logoPreview, setLogoPreview] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // Обработчики изменений основной информации
   const handleBasicInfoChange = (field, value) => {
@@ -92,6 +93,24 @@ const CompanySettingsPage = () => {
       });
   };
 
+  // Открытие модального окна удаления
+  const handleDeleteClick = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  // Закрытие модального окна удаления
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+  };
+
+  // Подтверждение удаления профиля
+  const handleConfirmDelete = () => {
+    console.log('Удаление профиля компании');
+    alert('Профиль компании удален');
+    handleCloseDeleteModal();
+    // Здесь будет логика реального удаления профиля
+  };
+
   // Сохранение изменений
   const handleSave = (e) => {
     e.preventDefault();
@@ -123,18 +142,10 @@ const CompanySettingsPage = () => {
     setPasswordData({
       currentPassword: '',
       newPassword: '',
-      repeatPassword: ''
+      confirmPassword: ''
     });
     setLogoPreview(null);
     alert('Изменения сброшены!');
-  };
-
-  // Удаление профиля
-  const handleDeleteProfile = () => {
-    if (window.confirm('Вы уверены, что хотите удалить профиль компании? Это действие нельзя отменить.')) {
-      console.log('Удаление профиля компании');
-      alert('Профиль компании удален');
-    }
   };
 
   const daysOfWeek = [
@@ -321,7 +332,7 @@ const CompanySettingsPage = () => {
                 <input
                   type="password"
                   id="confirmPassword"
-                  value={passwordData.repeatPassword}
+                  value={passwordData.confirmPassword}
                   onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
                   className={styles.input}
                 />
@@ -351,9 +362,13 @@ const CompanySettingsPage = () => {
 
           {/* Удаление профиля */}
           <div className={styles.deleteSection}>
+            <h3 className={styles.subsectionTitle}>Опасная зона</h3>
+            <p className={styles.deleteWarning}>
+              Удаление профиля компании приведет к безвозвратной потере всех данных, включая записи клиентов и настройки.
+            </p>
             <button
               type="button"
-              onClick={handleDeleteProfile}
+              onClick={handleDeleteClick}
               className={styles.deleteButton}
             >
               Удалить профиль компании
@@ -378,6 +393,55 @@ const CompanySettingsPage = () => {
           </button>
         </div>
       </form>
+
+      {/* Модальное окно подтверждения удаления */}
+      {isDeleteModalOpen && (
+        <div className={styles.modalOverlay} onClick={handleCloseDeleteModal}>
+          <div className={styles.deleteModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.deleteModalIcon}>⚠️</div>
+            <h2 className={styles.deleteModalTitle}>Удалить профиль компании</h2>
+            <div className={styles.deleteModalContent}>
+              <p className={styles.deleteModalText}>
+                Вы уверены, что хотите удалить профиль компании <strong>«{companyData.name}»</strong>?
+              </p>
+              <div className={styles.deleteModalWarning}>
+                <strong>Это действие нельзя отменить!</strong> Будут безвозвратно удалены:
+                <ul className={styles.deleteModalList}>
+                  <li>Все данные компании</li>
+                  <li>Расписание и услуги</li>
+                  <li>История записей клиентов</li>
+                  <li>Настройки и конфигурации</li>
+                </ul>
+              </div>
+              <div className={styles.deleteModalConfirmText}>
+                Для подтверждения введите название вашей компании:
+              </div>
+              <input
+                type="text"
+                placeholder={companyData.name}
+                className={styles.deleteModalInput}
+                onChange={(e) => {
+                  // Можно добавить проверку на совпадение с названием компании
+                }}
+              />
+            </div>
+            <div className={styles.deleteModalActions}>
+              <button
+                className={styles.deleteModalCancel}
+                onClick={handleCloseDeleteModal}
+              >
+                Отмена
+              </button>
+              <button
+                className={styles.deleteModalConfirm}
+                onClick={handleConfirmDelete}
+              >
+                Удалить профиль
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

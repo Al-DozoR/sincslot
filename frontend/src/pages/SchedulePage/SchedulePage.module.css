@@ -214,3 +214,223 @@
     font-size: 0.85rem;
   }
 }
+/* Стили для колонки действий */
+.actionsHeader {
+  background: #f8fafc;
+  padding: 1rem;
+  text-align: center;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+  font-size: 1.15rem;
+}
+
+.actionsCell {
+  padding: 1rem;
+  text-align: center;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* Кнопки действий */
+.cancelButton {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.cancelButton:hover {
+  background: #fde68a;
+  color: #78350f;
+}
+
+.restoreButton {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.restoreButton:hover {
+  background: #a7f3d0;
+  color: #064e3b;
+}
+
+/* Модальное окно отмены записи */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.cancelModal {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.cancelModalIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.cancelModalTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.cancelModalContent {
+  margin-bottom: 2rem;
+}
+
+.cancelModalText {
+  color: #6b7280;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.cancelModalText strong {
+  color: #1f2937;
+}
+
+.appointmentDetails {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.detailItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.detailItem:last-child {
+  margin-bottom: 0;
+}
+
+.detailLabel {
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.detailValue {
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.cancelModalActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.cancelModalCancel {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.cancelModalCancel:hover {
+  background: #e5e7eb;
+}
+
+.cancelModalConfirm {
+  background: #f59e0b;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  flex: 1;
+}
+
+.cancelModalConfirm:hover {
+  background: #d97706;
+}
+
+/* Адаптивность для новых элементов */
+@media (max-width: 768px) {
+  .actionsHeader {
+    font-size: 1rem;
+    padding: 0.75rem 0.5rem;
+  }
+
+  .actionsCell {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .cancelButton,
+  .restoreButton {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .cancelModal {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+
+  .cancelModalActions {
+    flex-direction: column;
+  }
+
+  .detailItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .cancelModalTitle {
+    font-size: 1.3rem;
+  }
+
+  .cancelModalText {
+    font-size: 0.9rem;
+  }
+}

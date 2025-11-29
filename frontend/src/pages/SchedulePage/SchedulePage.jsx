@@ -1,37 +1,8 @@
-import React, {useEffect, useState} from 'react';
+import React, { useState } from 'react';
 import styles from './SchedulePage.module.css';
-import {authService} from "../../services/authService.js";
 
 const SchedulePage = () => {
-
-  useEffect(() => {
-    const check = async () => {
-      try {
-        const result = await authService.checkToken();
-        console.log("checkToken result:", result);
-      } catch (err) {
-        console.error("checkToken error:", err);
-      }
-    };
-
-    check();
-  }, []);
-
-  useEffect(() => {
-    const testRefreshToken = async () => {
-      try {
-        const result = await authService.refreshToken();
-        localStorage.setItem("accessToken", result.accessToken);
-        console.log("Новый access token:", result.accessToken);
-      } catch (err) {
-        console.error("Ошибка обновления токена:", err.response?.data);
-      }
-    };
-
-    testRefreshToken();
-  }, []);
-
-  // Тестовые данные для демонстрации
+  // Моковые данные для демонстрации
   const [appointments, setAppointments] = useState([
     {
       id: 1,
@@ -81,6 +52,8 @@ const SchedulePage = () => {
   ]);
 
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [appointmentToCancel, setAppointmentToCancel] = useState(null);
 
   // Функция для сортировки
   const handleSort = (key) => {
@@ -113,10 +86,50 @@ const SchedulePage = () => {
     }
   };
 
-  // Функция для отображения значка сортировки 
+  // Функция для отображения значка сортировки (без эмодзи)
   const getSortIcon = (key) => {
     if (sortConfig.key !== key) return null;
     return sortConfig.direction === 'asc' ? '↑' : '↓';
+  };
+
+  // Открытие модального окна отмены записи
+  const handleCancelClick = (appointment, e) => {
+    e.stopPropagation(); // Предотвращаем другие обработчики
+    if (appointment.status === 'Отменен') {
+      return; // Нельзя отменить уже отмененную запись
+    }
+    setAppointmentToCancel(appointment);
+    setIsCancelModalOpen(true);
+  };
+
+  // Закрытие модального окна
+  const handleCloseCancelModal = () => {
+    setIsCancelModalOpen(false);
+    setAppointmentToCancel(null);
+  };
+
+  // Подтверждение отмены записи
+  const handleConfirmCancel = () => {
+    if (appointmentToCancel) {
+      const updatedAppointments = appointments.map(appointment =>
+        appointment.id === appointmentToCancel.id
+          ? { ...appointment, status: 'Отменен' }
+          : appointment
+      );
+      setAppointments(updatedAppointments);
+    }
+    handleCloseCancelModal();
+  };
+
+  // Восстановление записи (отмена отмены)
+  const handleRestoreClick = (appointment, e) => {
+    e.stopPropagation();
+    const updatedAppointments = appointments.map(apt =>
+      apt.id === appointment.id
+        ? { ...apt, status: 'Ожидание' } // Или 'Подтвержден' в зависимости от логики
+        : apt
+    );
+    setAppointments(updatedAppointments);
   };
 
   return (
@@ -198,6 +211,7 @@ const SchedulePage = () => {
                   )}
                 </div>
               </th>
+              <th className={styles.actionsHeader}>Действия</th>
             </tr>
           </thead>
           <tbody>
@@ -215,6 +229,25 @@ const SchedulePage = () => {
                     {appointment.status}
                   </span>
                 </td>
+                <td className={styles.actionsCell}>
+                  {appointment.status !== 'Отменен' ? (
+                    <button
+                      className={styles.cancelButton}
+                      onClick={(e) => handleCancelClick(appointment, e)}
+                      title="Отменить запись"
+                    >
+                      Отменить
+                    </button>
+                  ) : (
+                    <button
+                      className={styles.restoreButton}
+                      onClick={(e) => handleRestoreClick(appointment, e)}
+                      title="Восстановить запись"
+                    >
+                      Восстановить
+                    </button>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -224,6 +257,51 @@ const SchedulePage = () => {
       {appointments.length === 0 && (
         <div className={styles.emptyState}>
           <p>Нет записей на выбранную дату</p>
+        </div>
+      )}
+
+      {/* Модальное окно подтверждения отмены */}
+      {isCancelModalOpen && appointmentToCancel && (
+        <div className={styles.modalOverlay} onClick={handleCloseCancelModal}>
+          <div className={styles.cancelModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.cancelModalIcon}>📞</div>
+            <h2 className={styles.cancelModalTitle}>Отмена записи</h2>
+            <div className={styles.cancelModalContent}>
+              <p className={styles.cancelModalText}>
+                Вы уверены, что хотите отменить запись клиента <strong>«{appointmentToCancel.clientName}»</strong>?
+              </p>
+              <div className={styles.appointmentDetails}>
+                <div className={styles.detailItem}>
+                  <span className={styles.detailLabel}>Услуга:</span>
+                  <span className={styles.detailValue}>{appointmentToCancel.service}</span>
+                </div>
+                <div className={styles.detailItem}>
+                  <span className={styles.detailLabel}>Дата и время:</span>
+                  <span className={styles.detailValue}>
+                    {new Date(appointmentToCancel.date).toLocaleDateString('ru-RU')} в {appointmentToCancel.time}
+                  </span>
+                </div>
+                <div className={styles.detailItem}>
+                  <span className={styles.detailLabel}>Телефон:</span>
+                  <span className={styles.detailValue}>{appointmentToCancel.phone}</span>
+                </div>
+              </div>
+            </div>
+            <div className={styles.cancelModalActions}>
+              <button
+                className={styles.cancelModalCancel}
+                onClick={handleCloseCancelModal}
+              >
+                Вернуться
+              </button>
+              <button
+                className={styles.cancelModalConfirm}
+                onClick={handleConfirmCancel}
+              >
+                Подтвердить отмену
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
