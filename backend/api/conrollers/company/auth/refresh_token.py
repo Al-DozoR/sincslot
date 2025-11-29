@@ -9,7 +9,6 @@ from backend.api.response.company import (
     CompanyTokensResponse,
     CompanyErrorResponse,
 )
-from backend.api.conrollers.company.auth.parse_auth_token import get_current_company_from_token
 from backend.di_container.di_container import di_container
 from backend.use_case.token_use_case import IToken
 from backend.core.db_helper import db_helper
@@ -28,7 +27,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/login")
 })
 async def refresh_tokens(
         request: Request,
-        company=Depends(get_current_company_from_token),
         token_use_case: IToken = Depends(di_container.get_token_use_case),
         session: AsyncSession = Depends(db_helper.session_getter),
 ) -> JSONResponse:
