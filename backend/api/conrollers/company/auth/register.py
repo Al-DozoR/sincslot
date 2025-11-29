@@ -42,7 +42,7 @@ async def register(
         logger.warning("Failed to create a company with email %s it is already exist", company.email)
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
-            content=CompanyErrorResponse(error=f"user with email {company.email} is already exist").model_dump()
+            content=CompanyErrorResponse(error=f"company with email {company.email} is already exist").model_dump()
         )
 
     company_by_phone = await company_use_case.get_company_by_phone(session, company.phone)
@@ -50,7 +50,7 @@ async def register(
         logger.warning("Failed to create a company with phone %s it is already exist", company.phone)
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
-            content=CompanyErrorResponse(error=f"user with phone {company.phone} is already exist").model_dump()
+            content=CompanyErrorResponse(error=f"company with phone {company.phone} is already exist").model_dump()
         )
 
     company_by_name = await company_use_case.get_company_by_name(session, company.name)
@@ -58,7 +58,7 @@ async def register(
         logger.warning("Failed to create a company with name %s it is already exist", company.name)
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
-            content=CompanyErrorResponse(error=f"user with name {company.name} is already exist").model_dump()
+            content=CompanyErrorResponse(error=f"company with name {company.name} is already exist").model_dump()
         )
 
     try:
