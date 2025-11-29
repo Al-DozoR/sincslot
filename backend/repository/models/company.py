@@ -1,11 +1,13 @@
-from backend.entity.company import CompanyEntity
-from backend.repository.models.base import Base
-from backend.repository.models.mixins import CreatedAtMixin, UpdatedAtMixin
-
 from sqlalchemy import String, Text
 from sqlalchemy import true
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
+from sqlalchemy.dialects.postgresql import JSONB
+
+
+from backend.entity.company import CompanyEntity
+from backend.repository.models.base import Base
+from backend.repository.models.mixins import CreatedAtMixin, UpdatedAtMixin
 
 
 class Company(CreatedAtMixin, UpdatedAtMixin, Base):
@@ -27,6 +29,7 @@ class Company(CreatedAtMixin, UpdatedAtMixin, Base):
         server_default=true(),
         nullable=False,
     )
+    work_schedule = mapped_column(JSONB, nullable=True)
 
     @classmethod
     def to_company_model(cls, obj: CompanyEntity):

@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from backend.entity.company import CompanyEntity
 from backend.repository.models.company import Company
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, update
 from backend.repository.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -35,6 +35,10 @@ class ICompanyRepository(ABC):
 
     @abstractmethod
     async def get_company_by_name(self, session: AsyncSession, name: str) -> CompanyEntity | None:
+        raise NotImplemented
+
+    @abstractmethod
+    async def update_company_by_id(self, session: AsyncSession, company_id: int, data_to_update: dict):
         raise NotImplemented
 
 
@@ -134,3 +138,12 @@ class CompanyRepository(ICompanyRepository):
             phone=company_scalar.phone,
             password=company_scalar.hash_password,
             address=company_scalar.address)
+
+    async def update_company_by_id(self, session: AsyncSession, company_id: int, data_to_update: dict):
+        async with UnitOfWork(session) as uow:
+            query = update(Company).where(Company.id == company_id).values(
+                **data_to_update
+            )
+            await uow.execute_query(query)
+
+        return data_to_update

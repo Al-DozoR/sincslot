@@ -1,6 +1,5 @@
 import secrets
 import string
-from typing import BinaryIO
 from abc import ABC, abstractmethod
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,7 +8,7 @@ from passlib.context import CryptContext
 from backend.logger.logger import init_logger
 from backend.use_case.file_use_case import IFileStorage
 from backend.use_case.token_use_case import IToken
-from backend.entity.company import CompanyEntity
+from backend.entity.company import CompanyEntity, WorkSchedule, DaysOfWeek
 from backend.entity.token import TokenEntity
 from backend.repository.company_repository import ICompanyRepository
 from backend.core.config import Password
@@ -49,6 +48,15 @@ class ICompanyUseCase(ABC):
 
     @abstractmethod
     async def login(self, session: AsyncSession, company: CompanyEntity) -> TokenEntity:
+        raise NotImplemented
+
+    @abstractmethod
+    async def update_work_schedule(
+            self,
+            session: AsyncSession,
+            company_id: int,
+            work_schedule: dict
+    ) -> int:
         raise NotImplemented
 
     @abstractmethod
@@ -130,6 +138,30 @@ class CompanyUseCase(ICompanyUseCase):
         tokens = await self.token.save_tokens(session, access_token, refresh_token, is_revoke=False)
 
         return tokens
+
+    async def update_work_schedule(
+            self,
+            session: AsyncSession,
+            company_id: int,
+            work_schedule: dict
+    ) -> int:
+
+        data_to_update = []
+
+        for ws in work_schedule["work_schedule"]:
+            day_of_week: DaysOfWeek = ws.get("day_of_week")
+            ws["day_of_week"] = day_of_week.value
+            data_to_update.append(ws)
+
+        work_schedule["work_schedule"] = data_to_update
+
+        updated_data = await self.company_repository.update_company_by_id(
+            session=session,
+            company_id=company_id,
+            data_to_update=work_schedule
+        )
+
+        return updated_data
 
     async def recover_company_by_email(self, session: AsyncSession, email: str, length: int = 10) -> str | None:
         company_by_email = await self.company_repository.get_company_by_email(session, email)
