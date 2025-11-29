@@ -1,6 +1,7 @@
 import secrets
 import string
 from abc import ABC, abstractmethod
+from slugify import slugify
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
@@ -11,7 +12,7 @@ from backend.use_case.token_use_case import IToken
 from backend.entity.company import CompanyEntity, WorkSchedule, DaysOfWeek
 from backend.entity.token import TokenEntity
 from backend.repository.company_repository import ICompanyRepository
-from backend.core.config import Password
+from backend.core.config import Password, BookingUrl
 
 logger = init_logger('company_use_case', 'INFO')
 
@@ -50,13 +51,27 @@ class ICompanyUseCase(ABC):
     async def login(self, session: AsyncSession, company: CompanyEntity) -> TokenEntity:
         raise NotImplemented
 
+    async def update_company_by_id(
+            self,
+            session: AsyncSession,
+            company_id: int,
+            name: str | None = None,
+            email: str | None = None,
+            password: str | None = None,
+            phone: str | None = None,
+            slug_booking_url: str | None = None,
+            description: str | None = None,
+            address: str | None = None,
+    ) -> CompanyEntity | None:
+        raise NotImplemented
+
     @abstractmethod
     async def update_work_schedule(
             self,
             session: AsyncSession,
             company_id: int,
             work_schedule: dict
-    ) -> int:
+    ) -> list[WorkSchedule] | None:
         raise NotImplemented
 
     @abstractmethod
@@ -71,6 +86,10 @@ class ICompanyUseCase(ABC):
     async def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         raise NotImplementedError
 
+    @abstractmethod
+    async def generate_booking_url(self, s: str) -> str:
+        raise NotImplemented
+
 
 class CompanyUseCase(ICompanyUseCase):
 
@@ -81,12 +100,14 @@ class CompanyUseCase(ICompanyUseCase):
             file_storage: IFileStorage,
             password_settings: Password,
             crypt_hasher: CryptContext,
+            booking_url_settings: BookingUrl,
     ):
         self.company_repository = company_repository
         self.token = token
         self.file_storage = file_storage
         self.password_settings = password_settings
         self.crypt_hasher = crypt_hasher
+        self.booking_url_settings = booking_url_settings
 
     async def save_company(
             self,
@@ -102,6 +123,8 @@ class CompanyUseCase(ICompanyUseCase):
 
         hash_password = await self.hash_password(password_salt)
 
+        booking_url: str = await self.generate_booking_url(name)
+
         company_id = await self.company_repository.save_company(
             session,
             name,
@@ -109,6 +132,7 @@ class CompanyUseCase(ICompanyUseCase):
             phone,
             address,
             hash_password,
+            booking_url,
         )
 
         access_token = await self.token.create_access_token(company_id=company_id)
@@ -139,12 +163,44 @@ class CompanyUseCase(ICompanyUseCase):
 
         return tokens
 
+    async def update_company_by_id(
+            self,
+            session: AsyncSession,
+            company_id: int,
+            name: str | None = None,
+            email: str | None = None,
+            password: str | None = None,
+            phone: str | None = None,
+            slug_booking_url: str | None = None,
+            description: str | None = None,
+            address: str | None = None,
+    ) -> CompanyEntity | None:
+
+        data_to_update = {}
+
+        if name is not None:
+            data_to_update["name"] = name
+        if email is not None:
+            data_to_update["email"] = email
+        if password is not None:
+            data_to_update["password"] = await self.hash_password(password)
+        if phone is not None:
+            data_to_update["phone"] = phone
+        if slug_booking_url is not None:
+            data_to_update["booking_url"] = await self.generate_booking_url(slug_booking_url)
+        if description is not None:
+            data_to_update["booking_url"] = await self.generate_booking_url(description)
+        if address is not None:
+            data_to_update["address"] = address
+
+        return await self.company_repository.update_company_by_id(session, company_id, data_to_update)
+
     async def update_work_schedule(
             self,
             session: AsyncSession,
             company_id: int,
             work_schedule: dict
-    ) -> int:
+    ) -> list[WorkSchedule] | None:
 
         data_to_update = []
 
@@ -155,13 +211,16 @@ class CompanyUseCase(ICompanyUseCase):
 
         work_schedule["work_schedule"] = data_to_update
 
-        updated_data = await self.company_repository.update_company_by_id(
+        updated_data: CompanyEntity | None = await self.company_repository.update_company_by_id(
             session=session,
             company_id=company_id,
             data_to_update=work_schedule
         )
 
-        return updated_data
+        if updated_data is None:
+            return
+
+        return [w.to_dict() for w in updated_data.work_schedule]
 
     async def recover_company_by_email(self, session: AsyncSession, email: str, length: int = 10) -> str | None:
         company_by_email = await self.company_repository.get_company_by_email(session, email)
@@ -178,3 +237,6 @@ class CompanyUseCase(ICompanyUseCase):
 
     async def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         return self.crypt_hasher.verify(plain_password + self.password_settings.salt, hashed_password)
+
+    async def generate_booking_url(self, s: str) -> str:
+        return self.booking_url_settings.base_url + "/" + slugify(s, separator='-')

@@ -21,6 +21,7 @@ class DIContainer:
     container.add_instance(settings.jwt)
     container.add_instance(settings.password)
     container.add_instance(settings.file_company_logo_settings)
+    container.add_instance(settings.booking_url)
 
 
     def get_company_use_cases(self) -> ICompanyUseCase:

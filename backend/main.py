@@ -6,7 +6,7 @@ import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 
-from backend.api.conrollers.routes.register_routes import routes
+from backend.api.routes.register_routes import routes
 from backend.core.config import settings
 from backend.core.db_helper import db_helper
 

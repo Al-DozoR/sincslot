@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 
-from backend.entity.token import TokenEntity
-from backend.repository.models.token import Token
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
+
+from backend.entity.token import TokenEntity
+from backend.repository.models.token import Token
 from backend.repository.unit_of_work.unit_of_work import UnitOfWork
 
 

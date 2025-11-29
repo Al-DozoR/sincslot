@@ -6,6 +6,7 @@ import phonenumbers
 from pydantic_extra_types.phone_numbers import PhoneNumberValidator
 from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator, model_validator
 from pydantic.alias_generators import to_camel
+from sqlalchemy import alias
 
 from backend.entity.company import DaysOfWeek
 
@@ -15,12 +16,12 @@ E164NumberType = Annotated[
 
 
 class CompanyCreateRequest(BaseModel):
-    name: str = Field(default="Apple")
+    name: str = Field(examples=["Apple"])
     address: Optional[str] = None
-    email: EmailStr = Field(default="SteveJobs123@example.com")
-    phone: E164NumberType = Field(default="+79126329303")
-    password: str = Field(default="Pass123!")
-    repeat_password: str = Field(default="Pass123!", alias="repeatPassword")
+    email: EmailStr = Field(examples=["SteveJobs123@example.com"])
+    phone: E164NumberType = Field(examples=["+79126329303"])
+    password: str = Field(examples=["Pass123!"])
+    repeat_password: str = Field(examples=["Pass123!"], alias="repeatPassword")
 
     @classmethod
     @field_validator('password')
@@ -48,8 +49,8 @@ class CompanyRecoverPasswordRequest(BaseModel):
 
 class CompanyWorkDay(BaseModel):
     day_of_week: DaysOfWeek = Field(default=DaysOfWeek.Monday)
-    work_start: str = Field(default="9:00", alias="workStart")
-    work_end: str = Field(default="18:00", alias="workEnd")
+    work_start: str = Field(examples=["9:00"], alias="workStart")
+    work_end: str = Field(examples=["18:00"], alias="workEnd")
 
     model_config = ConfigDict(
         alias_generator=to_camel,
@@ -76,7 +77,7 @@ class CompanyWorkDay(BaseModel):
         return self
 
 
-class CompanyRequestWorkSchedule(BaseModel):
+class CompanyWorkScheduleRequest(BaseModel):
     work_schedule: list[CompanyWorkDay] = Field(alias="workSchedule")
 
     model_config = ConfigDict(
@@ -84,3 +85,57 @@ class CompanyRequestWorkSchedule(BaseModel):
         populate_by_name=True,
         from_attributes=True,
     )
+
+
+class CompanyUpdateSettingsRequest(BaseModel):
+    name: str = Field(default="Tesla")
+    address: Optional[str | None] = None
+    email: Optional[EmailStr | None] = Field(default=None, examples=["ElonMask@example.ru"])
+    phone: Optional[E164NumberType | None] = Field(default=None, examples=["+79125483496"])
+    current_password: str = Field(default=None, examples=["currentPass123"], alias="currentPassword")
+    new_password: Optional[str | None] = Field(default=None, examples=["newPass123!"], alias="newPassword")
+    new_repeat_password: Optional[str | None] = Field(
+        default=None,
+        examples=["user@example.ru"],
+        alias="newRepeatPassword"
+    )
+    slug_booking_url: Optional[str] = Field(default=None, examples=["company name slug"], alias="slugBookingUrl")
+
+    @classmethod
+    @field_validator('new_password')
+    def validate_password_complexity(cls, new_password):
+        if not re.search(r'[A-Z]', new_password):
+            raise ValueError('Пароль должен содержать хотя бы одну заглавную букву (A–Z)')
+        if not re.search(r'[a-z]', new_password):
+            raise ValueError('Пароль должен содержать хотя бы одну строчную букву (a–z)')
+        if not re.search(r'\d', new_password):
+            raise ValueError('Пароль должен содержать хотя бы одну цифру (0–9)')
+        if not re.search(r'[!@#$%^&*()_+\-=]', new_password):
+            raise ValueError('Пароль должен содержать хотя бы один спецсимвол: !@#$%^&*()_+-=')
+
+        return new_password
+
+    @classmethod
+    @field_validator('slug_booking_url')
+    def validate_slug_booking_url(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return value
+
+        if not re.fullmatch(r"^[a-zA-Z-]+$", value):
+            raise ValueError("slug_booking_url must contain only Latin letters and hyphens (-)")
+
+        return value
+
+    @model_validator(mode='after')
+    def check_password_match(self) -> Self:
+        if self.new_password is None and self.new_repeat_password is not None:
+            raise ValueError('new_password and new_repeat_password do not match')
+
+        if self.new_password is not None and self.new_repeat_password is None:
+            raise ValueError('new_password and new_repeat_password do not match')
+
+        if self.new_password is not None and self.new_repeat_password is not None:
+            if self.new_password != self.new_repeat_password:
+                raise ValueError('new_password and new_repeat_password do not match')
+
+        return self
