@@ -43,11 +43,11 @@ async def upload_image(file: UploadFile = File(...),
         )
 
     try:
-        filename = await file_storage_use_case.save_file(company_id=company.id, extension=extension, file=file.file)
+        filename = await file_storage_use_case.save_file(company_id=company.id, file=file.file)
     except Exception as ex:
         logger.error(
             "Error occurred while getting company by id. Company id: %s Error: %s",
-            company.id,
+            1,
             str(ex),
             exc_info=True
         )

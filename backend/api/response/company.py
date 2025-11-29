@@ -54,3 +54,24 @@ class CompanyWorkScheduleResponse(BaseModel):
         populate_by_name=True,
         from_attributes=True,
     )
+
+
+class CompanyEntityResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+    password: Optional[str] = None
+    phone: str
+    booking_url: str
+    work_schedule: Optional[list[dict]] = Field(default=None, alias="workSchedule")
+    filename: Optional[str] = None
+    updated_at: Optional[int]= Field(default=None, alias="updatedAt")
+    created_at: Optional[int] = Field(default=None, alias="createdAt")
+    description: Optional[str] = None
+    address: Optional[str] = None
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        from_attributes=True,
+    )

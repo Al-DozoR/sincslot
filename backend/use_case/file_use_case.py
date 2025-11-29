@@ -2,7 +2,6 @@ import os
 import aiofiles
 from typing import BinaryIO
 from abc import ABC, abstractmethod
-import hashlib
 
 from backend.core.config import FileCompanyLogoSettings
 
@@ -22,7 +21,7 @@ class IFileStorage(ABC):
         raise NotImplemented
 
     @abstractmethod
-    async def save_file(self, company_id: int, extension: str, file: BinaryIO) -> str:
+    async def save_file(self, company_id: int, file: BinaryIO) -> str:
         raise NotImplemented
 
     @abstractmethod
@@ -49,16 +48,16 @@ class FileCompanyLogoStorage(IFileStorage):
         return filename.split(".")[-1]
 
     async def is_valid_extension(self, extension: str) -> bool:
-        return extension in self.file_company_logo_settings.valid_extentions
+        return extension in self.file_company_logo_settings.valid_extensions
 
     async def is_valid_size(self, size: int) -> bool:
         return self.file_company_logo_settings.max_file_size_mb * 1024 * 1024 > size
 
-    async def save_file(self, company_id: int, extension: str, file: BinaryIO) -> str:
+    async def save_file(self, company_id: int, file: BinaryIO) -> str:
         if not os.path.isdir(self.file_company_logo_settings.path_file):
             os.mkdir(self.file_company_logo_settings.path_file)
 
-        filename: str = f"{company_id}_company_logo.{extension}"
+        filename: str = f"{company_id}_company_logo.jpeg"
 
         path_to_save: str = os.path.join(
             self.file_company_logo_settings.path_file,

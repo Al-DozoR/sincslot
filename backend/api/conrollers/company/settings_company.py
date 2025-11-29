@@ -6,6 +6,7 @@ from backend.api.request.company import CompanyUpdateSettingsRequest
 from backend.api.response.company import (
     CompanySuccessResponse,
     CompanyErrorResponse,
+    CompanyEntityResponse,
 )
 from backend.use_case.company_use_case import ICompanyUseCase
 from backend.api.conrollers.company.auth.parse_auth_token import get_current_company_from_token
@@ -27,16 +28,16 @@ router = APIRouter(tags=["company"])
 async def update_settings_company(company_settings: CompanyUpdateSettingsRequest,
                                   company=Depends(get_current_company_from_token),
                                   company_use_case: ICompanyUseCase = Depends(
-                                            di_container.get_company_use_cases
-                                         ),
+                                      di_container.get_company_use_cases
+                                  ),
                                   session: AsyncSession = Depends(db_helper.session_getter)):
-
     company_by_email = await company_use_case.get_company_by_email(session, company_settings.email)
     if company_by_email is not None:
         logger.warning("Failed to update a company with email %s it is already exist", company_settings.email)
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
-            content=CompanyErrorResponse(error=f"company with email {company_settings.email} is already exist").model_dump()
+            content=CompanyErrorResponse(
+                error=f"company with email {company_settings.email} is already exist").model_dump()
         )
 
     company_by_phone = await company_use_case.get_company_by_phone(session, company_settings.phone)
@@ -44,7 +45,8 @@ async def update_settings_company(company_settings: CompanyUpdateSettingsRequest
         logger.warning("Failed to update a company with phone %s it is already exist", company_settings.phone)
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
-            content=CompanyErrorResponse(error=f"company with phone {company_settings.phone} is already exist").model_dump()
+            content=CompanyErrorResponse(
+                error=f"company with phone {company_settings.phone} is already exist").model_dump()
         )
 
     company_by_name = await company_use_case.get_company_by_name(session, company_settings.name)
@@ -52,7 +54,8 @@ async def update_settings_company(company_settings: CompanyUpdateSettingsRequest
         logger.warning("Failed to update a company with name %s it is already exist", company_settings.name)
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
-            content=CompanyErrorResponse(error=f"user company name {company_settings.name} is already exist").model_dump()
+            content=CompanyErrorResponse(
+                error=f"user company name {company_settings.name} is already exist").model_dump()
         )
 
     company_to_update = company_settings.model_dump(exclude_none=True)
@@ -88,5 +91,13 @@ async def update_settings_company(company_settings: CompanyUpdateSettingsRequest
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=CompanySuccessResponse(message="Company updated successfully").model_dump()
+        content=CompanyEntityResponse(
+            id=updated_data.id,
+            name=updated_data.name,
+            email=updated_data.email,
+            phone=updated_data.phone,
+            booking_url=updated_data.booking_url,
+            description=updated_data.description,
+            address=updated_data.address,
+        ).model_dump()
     )
