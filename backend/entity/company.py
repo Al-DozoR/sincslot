@@ -55,6 +55,7 @@ class CompanyEntity:
     email: str
     password: str
     phone: str
+    booking_url: str
     work_schedule: list[WorkSchedule] = field(default=None)
     filename: str = field(default=None)
     updated_at: Optional[int] = field(default=None)

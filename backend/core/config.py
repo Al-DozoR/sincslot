@@ -9,6 +9,9 @@ from pydantic_settings import (
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+class BookingUrl(BaseModel):
+    base_url: str = "https://syncslot.ru/booking"
+
 
 class FileCompanyLogoSettings(BaseModel):
     path_file: str = os.path.join(BASE_DIR, "storage")
@@ -68,6 +71,7 @@ class Settings(BaseSettings):
     jwt: JWT = JWT()
     password: Password = Password()
     file_company_logo_settings: FileCompanyLogoSettings = FileCompanyLogoSettings()
+    booking_url: BookingUrl = BookingUrl()
 
 
 settings = Settings()
