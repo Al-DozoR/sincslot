@@ -12,7 +12,6 @@ from backend.api.conrollers.company.auth.parse_auth_token import get_current_com
 from backend.logger.logger import init_logger
 from backend.di_container.di_container import di_container
 from backend.use_case.company_use_case import ICompanyUseCase
-from backend.use_case.file_use_case import IFileStorage
 from backend.core.db_helper import db_helper
 
 logger = init_logger('company', 'INFO')
