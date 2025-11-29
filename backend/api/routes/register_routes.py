@@ -3,6 +3,7 @@ from backend.core.config import settings
 from backend.api.conrollers.health import router_health
 from backend.api.conrollers.company.get_company_by_id import router as router_get_company_by_id
 from backend.api.conrollers.company.upload_image import router as router_upload_image
+from backend.api.conrollers.company.download_image import router as router_download_image
 from backend.api.conrollers.company.work_schedule import router as router_work_schedule
 from backend.api.conrollers.company.auth.login import router as router_login
 from backend.api.conrollers.company.auth.logout import router as router_logout
@@ -18,6 +19,7 @@ routes = APIRouter()
 routes.include_router(router=router_health, prefix=settings.api_v1.prefix_company)
 routes.include_router(router=router_get_company_by_id, prefix=settings.api_v1.prefix_company)
 routes.include_router(router=router_upload_image, prefix=settings.api_v1.prefix_company)
+routes.include_router(router=router_download_image, prefix=settings.api_v1.prefix_company)
 routes.include_router(router=router_work_schedule, prefix=settings.api_v1.prefix_company)
 routes.include_router(router=router_company_settings, prefix=settings.api_v1.prefix_company)
 

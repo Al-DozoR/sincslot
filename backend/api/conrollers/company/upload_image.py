@@ -47,7 +47,7 @@ async def upload_image(file: UploadFile = File(...),
     except Exception as ex:
         logger.error(
             "Error occurred while getting company by id. Company id: %s Error: %s",
-            1,
+            company.id,
             str(ex),
             exc_info=True
         )
