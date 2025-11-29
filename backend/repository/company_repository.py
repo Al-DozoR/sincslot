@@ -19,6 +19,7 @@ class ICompanyRepository(ABC):
             phone: str,
             address: str,
             password: str,
+            booking_url: str,
     ) -> int:
         raise NotImplemented
 

@@ -94,7 +94,12 @@ class CompanyUpdateSettingsRequest(BaseModel):
     phone: Optional[E164NumberType | None] = Field(default=None, examples=["+79125483496"])
     current_password: str = Field(default=None, examples=["currentPass123"], alias="currentPassword")
     new_password: Optional[str | None] = Field(default=None, examples=["newPass123!"], alias="newPassword")
-    new_repeat_password: Optional[str | None] = Field(default=None, examples=["user@example.ru"], alias="newRepeatPassword")
+    new_repeat_password: Optional[str | None] = Field(
+        default=None,
+        examples=["user@example.ru"],
+        alias="newRepeatPassword"
+    )
+    slug_booking_url: Optional[str] = Field(default=None, examples=["company name slug"], alias="slugBookingUrl")
 
     @classmethod
     @field_validator('new_password')
@@ -109,6 +114,17 @@ class CompanyUpdateSettingsRequest(BaseModel):
             raise ValueError('Пароль должен содержать хотя бы один спецсимвол: !@#$%^&*()_+-=')
 
         return new_password
+
+    @classmethod
+    @field_validator('slug_booking_url')
+    def validate_slug_booking_url(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return value
+
+        if not re.fullmatch(r"^[a-zA-Z-]+$", value):
+            raise ValueError("slug_booking_url must contain only Latin letters and hyphens (-)")
+
+        return value
 
     @model_validator(mode='after')
     def check_password_match(self) -> Self:

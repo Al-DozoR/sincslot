@@ -1,13 +1,13 @@
-from fastapi import APIRouter, status, Depends, File, UploadFile
+from fastapi import APIRouter, status, Depends
 from starlette.responses import JSONResponse
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from backend.api.request.company import CompanyUpdateSettingsRequest
 from backend.api.response.company import (
     CompanySuccessResponse,
     CompanyErrorResponse,
 )
-from backend.entity.company import CompanyEntity
 from backend.use_case.company_use_case import ICompanyUseCase
-from sqlalchemy.ext.asyncio import AsyncSession
 from backend.api.conrollers.company.auth.parse_auth_token import get_current_company_from_token
 from backend.logger.logger import init_logger
 from backend.di_container.di_container import di_container
@@ -57,8 +57,21 @@ async def update_settings_company(company_settings: CompanyUpdateSettingsRequest
 
     company_to_update = company_settings.model_dump(exclude_none=True)
 
+    if company_to_update.get("new_password") and company_to_update.get("new_repeat_password"):
+        company_to_update["password"] = company_to_update.get("new_password")
+
     try:
-        updated_data: CompanyEntity | None = await company_use_case.update_company_by_id(session,  company.id, company_to_update)
+        updated_data = await company_use_case.update_company_by_id(
+            session=session,
+            company_id=company.id,
+            name=company_to_update.get("name"),
+            email=company_to_update.get("email"),
+            password=company_to_update.get("password"),
+            phone=company_to_update.get("phone"),
+            slug_booking_url=company_to_update.get("slug_booking_url"),
+            description=company_to_update.get("description"),
+            address=company_to_update.get("address"),
+        )
     except Exception as ex:
         logger.error(f"Error occurred while updating company settings: {str(ex)}")
         return JSONResponse(
@@ -75,5 +88,5 @@ async def update_settings_company(company_settings: CompanyUpdateSettingsRequest
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=CompanySuccessResponse(error="Company updated successfully").model_dump()
+        content=CompanySuccessResponse(message="Company updated successfully").model_dump()
     )
