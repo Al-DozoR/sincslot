@@ -38,7 +38,7 @@ class IToken(ABC):
         raise NotImplemented
 
     @abstractmethod
-    async def is_revoke(self, session: AsyncSession, refresh_token: str) -> bool | None:
+    async def is_revoke(self, session: AsyncSession, access_token: str) -> bool | None:
         raise NotImplemented
 
     @abstractmethod
@@ -130,8 +130,8 @@ class Token(IToken):
     async def revoke_tokens(self, session: AsyncSession, refresh_token: str, is_revoke: bool) -> None:
         await self.token_repository.update_revoke(session, refresh_token, is_revoke)
 
-    async def is_revoke(self, session: AsyncSession, refresh_token: str) -> bool | None:
-        tokens = await self.token_repository.get_tokens_by_refresh_token(session, refresh_token)
+    async def is_revoke(self, session: AsyncSession, access_token: str) -> bool | None:
+        tokens = await self.token_repository.get_tokens_by_access_token(session, access_token)
         if tokens is None:
             return
 
