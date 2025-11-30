@@ -63,6 +63,7 @@ async def get_settings_company_by_id(
             email=company_by_id.email,
             phone=company_by_id.phone,
             booking_url=company_by_id.booking_url,
+            description=company_by_id.description,
         ).model_dump(by_alias=True)
     )
 
