@@ -1,7 +1,4 @@
-from email.policy import default
-
 from fastapi import APIRouter, status, Depends
-from passlib.handlers.django import des_crypt
 from starlette.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
