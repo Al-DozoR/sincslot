@@ -99,6 +99,7 @@ class CompanyUpdateSettingsRequest(BaseModel):
         alias="newRepeatPassword"
     )
     slug_booking_url: Optional[str] = Field(default=None, examples=["company name slug"], alias="slugBookingUrl")
+    description: Optional[str] = Field(default=None, examples=["company description"])
 
     @classmethod
     @field_validator('new_password')

@@ -69,7 +69,7 @@ class CompanyEntityResponse(BaseModel):
     email: str
     password: Optional[str] = None
     phone: str
-    booking_url: str
+    booking_url: str = Field(alias="bookingUrl")
     work_schedule: Optional[list[dict]] = Field(default=None, alias="workSchedule")
     filename: Optional[str] = None
     updated_at: Optional[int]= Field(default=None, alias="updatedAt")
