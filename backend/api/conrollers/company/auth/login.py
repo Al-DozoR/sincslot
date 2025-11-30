@@ -64,7 +64,7 @@ async def login(
         status_code=status.HTTP_201_CREATED,
         content=CompanyTokensResponse(
             access_token=new_tokens.access_token,
-        ).model_dump())
+        ).model_dump(by_alias=True))
 
     response.set_cookie(
         key="refreshToken",

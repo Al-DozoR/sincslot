@@ -20,7 +20,7 @@ from backend.api.conrollers.service.update_service_by_id import router as router
 
 routes = APIRouter()
 
-routes.include_router(router=router_health, prefix=settings.api_v1.prefix_company)
+routes.include_router(router=router_health)
 routes.include_router(router=router_get_company_by_id, prefix=settings.api_v1.prefix_company)
 routes.include_router(router=router_image, prefix=settings.api_v1.prefix_company)
 routes.include_router(router=router_work_schedule, prefix=settings.api_v1.prefix_company)

@@ -24,15 +24,8 @@ async def get_current_company_from_token(
         company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
         session: AsyncSession = Depends(db_helper.session_getter)
 ) -> CompanyEntity | JSONResponse:
-    refresh_token = request.cookies.get("refreshToken")
-    if refresh_token is None:
-        logger.error("Refresh token was not provided")
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content=CompanyErrorResponse(error="Refresh token was not provided").model_dump()
-        )
 
-    is_revoke = await token_use_case.is_revoke(session, refresh_token)
+    is_revoke = await token_use_case.is_revoke(session, token)
     if is_revoke is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -47,23 +40,11 @@ async def get_current_company_from_token(
 
     try:
         payload_access_token = await token_use_case.decode_token(token)
-        payload_refresh_token = await token_use_case.decode_token(refresh_token)
     except JWTError as ex:
         logger.error("Error occurred while parsing token: %s. Error: %s", token, str(ex))
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Failed to parse token. Probably token is expired",
-        )
-
-    if not int(payload_access_token.get("company_id")) == int(payload_refresh_token.get("company_id")):
-        logger.error(
-            "Company id from access token %s and refresh token %s do not match",
-            payload_access_token.get("company_id"),
-            payload_refresh_token.get("company_id")
-        )
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Company id from access token and refresh token do not match"
         )
 
     company_id = payload_access_token.get("company_id")

@@ -29,6 +29,14 @@ class ITokenRepository(ABC):
         raise NotImplemented
 
     @abstractmethod
+    async def get_tokens_by_access_token(
+            self,
+            session: AsyncSession,
+            access_token: str
+    ) -> TokenEntity | None:
+        raise NotImplemented
+
+    @abstractmethod
     async def update_tokens(
             self,
             session: AsyncSession,
@@ -69,6 +77,20 @@ class TokenRepository(ITokenRepository):
     async def get_tokens_by_refresh_token(self, session: AsyncSession, refresh_token: str) -> TokenEntity | None:
         async with UnitOfWork(session) as uow:
             query = select(Token).where(Token.refresh_token == refresh_token)
+            tokens = await uow.execute_query(query)
+            tokens_scalar = tokens.scalar()
+            if tokens_scalar is None:
+                return
+
+        return TokenEntity(
+            access_token=tokens_scalar.access_token,
+            refresh_token=tokens_scalar.refresh_token,
+            is_revoke=tokens_scalar.is_revoke,
+        )
+
+    async def get_tokens_by_access_token(self, session: AsyncSession, access_token: str) -> TokenEntity | None:
+        async with UnitOfWork(session) as uow:
+            query = select(Token).where(Token.access_token == access_token)
             tokens = await uow.execute_query(query)
             tokens_scalar = tokens.scalar()
             if tokens_scalar is None:
