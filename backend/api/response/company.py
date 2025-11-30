@@ -1,8 +1,15 @@
-from typing import Optional
-from pydantic import BaseModel, Field, ConfigDict
+from typing import Annotated, Union, Optional
+
+import phonenumbers
+from pydantic_extra_types.phone_numbers import PhoneNumberValidator
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from pydantic.alias_generators import to_camel
+
 from backend.entity.company import DaysOfWeek
 
+E164NumberType = Annotated[
+    Union[str, phonenumbers.PhoneNumber], PhoneNumberValidator(number_format="E164")
+]
 
 class CompanyTokensResponse(BaseModel):
     access_token: str = Field(alias="accessToken")
@@ -69,6 +76,20 @@ class CompanyEntityResponse(BaseModel):
     created_at: Optional[int] = Field(default=None, alias="createdAt")
     description: Optional[str] = None
     address: Optional[str] = None
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        from_attributes=True,
+    )
+
+
+class CompanySettingsResponse(BaseModel):
+    name: str
+    address: Optional[str | None] = None
+    email: EmailStr
+    phone: E164NumberType
+    booking_url: str = Field(alias="bookingUrl")
 
     model_config = ConfigDict(
         alias_generator=to_camel,

@@ -25,7 +25,7 @@ class IFileStorage(ABC):
         raise NotImplemented
 
     @abstractmethod
-    async def get_file(self):
+    async def get_file(self, company_id: int) -> tuple[str, str] | None:
         raise NotImplemented
 
     @abstractmethod
@@ -70,16 +70,21 @@ class FileCompanyLogoStorage(IFileStorage):
 
         return filename
 
-    async def get_file(self):
-        pass
-
-    async def remove_file(self, filename: str) -> bool:
+    async def get_file(self, company_id: int) -> tuple[str, str] | None:
         files = os.listdir(self.file_company_logo_settings.path_file)
 
-        filename_lower = filename.lower()
+        for file in files:
+            file_id = file.split("_")[0]
+            if int(file_id) == company_id:
+                return file, os.path.join(self.file_company_logo_settings.path_file, file)
+
+
+    async def remove_file(self, company_id: int) -> bool:
+        files = os.listdir(self.file_company_logo_settings.path_file)
 
         for file in files:
-            if filename_lower in file.lower():
+            file_id = file.split("_")[0]
+            if int(file_id) == company_id:
                 os.remove(os.path.join(self.file_company_logo_settings.path_file, filename))
                 return True
 

@@ -6,7 +6,6 @@ import phonenumbers
 from pydantic_extra_types.phone_numbers import PhoneNumberValidator
 from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator, model_validator
 from pydantic.alias_generators import to_camel
-from sqlalchemy import alias
 
 from backend.entity.company import DaysOfWeek
 
