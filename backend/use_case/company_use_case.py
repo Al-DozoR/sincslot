@@ -91,7 +91,7 @@ class ICompanyUseCase(ABC):
         raise NotImplemented
 
     @abstractmethod
-    async def get_work_schedule_by_company_id(self, session: AsyncSession, company_id) -> dict | None:
+    async def get_work_schedule_by_company_id(self, session: AsyncSession, company_id) -> list | None:
         raise NotImplemented
 
 
@@ -244,5 +244,5 @@ class CompanyUseCase(ICompanyUseCase):
     async def generate_booking_url(self, s: str) -> str:
         return self.booking_url_settings.base_url + "/" + slugify(s, separator='-')
 
-    async def get_work_schedule_by_company_id(self, session: AsyncSession, company_id) -> dict | None:
+    async def get_work_schedule_by_company_id(self, session: AsyncSession, company_id) -> list | None:
         return await self.company_repository.get_work_schedule_by_company_id(session, company_id)

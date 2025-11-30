@@ -41,8 +41,8 @@ class CompanyRecoverPasswordResponse(BaseModel):
     pass
 
 
-class CompanyWorkDay(BaseModel):
-    day_of_week: DaysOfWeek = Field(default=DaysOfWeek.Monday)
+class CompanyWorkDayResponse(BaseModel):
+    day_of_week: int = Field(default=DaysOfWeek.Monday)
     work_start: str = Field(examples=["9:00"], alias="workStart")
     work_end: str = Field(examples=["18:00"], alias="workEnd")
 
