@@ -192,10 +192,9 @@ class CompanyUseCase(ICompanyUseCase):
             data_to_update["phone"] = phone
         if slug_booking_url is not None:
             data_to_update["booking_url"] = await self.generate_booking_url(slug_booking_url)
-        if description is not None:
-            data_to_update["booking_url"] = await self.generate_booking_url(description)
-        if address is not None:
-            data_to_update["address"] = address
+
+        data_to_update["description"] = description
+        data_to_update["address"] = address
 
         return await self.company_repository.update_company_by_id(session, company_id, data_to_update)
 

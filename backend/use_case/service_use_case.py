@@ -6,7 +6,6 @@ from backend.logger.logger import init_logger
 from backend.repository.service_repository import IServiceRepository
 from backend.entity.service import ServiceEntity
 
-
 logger = init_logger('company_use_case', 'INFO')
 
 
@@ -26,6 +25,22 @@ class IServiceUseCase(ABC):
 
     @abstractmethod
     async def get_service_by_id(self, session: AsyncSession, service_id: int) -> ServiceEntity:
+        raise NotImplemented
+
+    @abstractmethod
+    async def get_services_by_company_id(self, session: AsyncSession, company_id: int) -> list[ServiceEntity]:
+        raise NotImplemented
+
+    @abstractmethod
+    async def update_service_by_id(
+            self,
+            session: AsyncSession,
+            service_id: int,
+            name: str,
+            duration: int,
+            price: int,
+            description: str | None = None,
+    ) -> ServiceEntity | None:
         raise NotImplemented
 
 
@@ -56,3 +71,24 @@ class ServiceUseCase(IServiceUseCase):
 
     async def get_service_by_id(self, session: AsyncSession, service_id: int):
         return await self.service_repository.get_service_by_id(session, service_id)
+
+    async def get_services_by_company_id(self, session: AsyncSession, company_id: int) -> list[ServiceEntity]:
+        return await self.service_repository.get_services_by_company_id(session, company_id)
+
+    async def update_service_by_id(
+            self,
+            session: AsyncSession,
+            service_id: int,
+            name: str,
+            duration: int,
+            price: int,
+            description: str | None = None,
+    ) -> ServiceEntity | None:
+        data_to_update = {
+            "name": name,
+            "duration": duration,
+            "price": price,
+            "description": description,
+        }
+
+        return await self.service_repository.update_service(session, service_id, data_to_update)

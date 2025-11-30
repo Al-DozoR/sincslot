@@ -5,12 +5,9 @@ from pydantic.alias_generators import to_camel
 
 class ServiceEntityResponse(BaseModel):
     id: int
+    name: str
     duration: int
     price: int
-    company_id: Optional[int] = Field(default=None, alias="companyID")
-    client_id: Optional[int] = Field(default=None, alias="companyID")
-    updated_at: Optional[int] = Field(default=None, alias="updatedAt")
-    created_at: Optional[int] = Field(default=None, alias="createdAt")
     description: Optional[str] = Field(default=None)
 
     model_config = ConfigDict(
@@ -18,6 +15,11 @@ class ServiceEntityResponse(BaseModel):
         populate_by_name=True,
         from_attributes=True,
     )
+
+
+class ServiceEntityListResponse(BaseModel):
+    services: list[ServiceEntityResponse]
+
 
 class ServiceErrorResponse(BaseModel):
     error: str

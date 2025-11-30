@@ -7,3 +7,10 @@ class ServiceCreateRequest(BaseModel):
     price: int
     duration: int
     description: Optional[str]
+
+
+class ServiceUpdateRequest(BaseModel):
+    name: str
+    price: int
+    duration: int
+    description: Optional[str]

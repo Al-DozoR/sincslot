@@ -23,7 +23,7 @@ router = APIRouter(tags=["service"])
 @router.post("/")
 async def create_service(
         service: ServiceCreateRequest,
-        # company=Depends(get_current_company_from_token),
+        company=Depends(get_current_company_from_token),
         service_use_case: IServiceUseCase = Depends(di_container.get_service_use_case),
         session: AsyncSession = Depends(db_helper.session_getter),
 ) -> JSONResponse:
@@ -35,7 +35,7 @@ async def create_service(
             price=service.price,
             duration=service.duration,
             description=service.description,
-            company_id=1,
+            company_id=company.id,
         )
     except Exception as ex:
         logger.error("Failed to save service %s", str(ex), exc_info=True)
@@ -53,5 +53,5 @@ async def create_service(
             duration=new_service.duration,
             description=new_service.description,
             company_id=new_service.company_id,
-        ).model_dump(by_alias=True)
+        ).model_dump(exclude_none=True, by_alias=True)
     )
