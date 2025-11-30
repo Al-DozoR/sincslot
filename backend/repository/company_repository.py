@@ -71,7 +71,7 @@ class CompanyRepository(ICompanyRepository):
             email=email,
             phone=phone,
             address=address,
-            hash_password=password,
+            password=password,
             booking_url=booking_url,
             is_active=True,
         )
