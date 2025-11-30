@@ -49,7 +49,7 @@ class ICompanyRepository(ABC):
         raise NotImplemented
 
     @abstractmethod
-    async def get_work_schedule_by_company_id(self, session: AsyncSession, company_id) -> dict | None:
+    async def get_work_schedule_by_company_id(self, session: AsyncSession, company_id) -> list | None:
         raise NotImplemented
 
 
@@ -140,7 +140,7 @@ class CompanyRepository(ICompanyRepository):
 
         return company_updated_scalar.to_company_entity()
 
-    async def get_work_schedule_by_company_id(self, session: AsyncSession, company_id) -> dict | None:
+    async def get_work_schedule_by_company_id(self, session: AsyncSession, company_id) -> list | None:
         async with UnitOfWork(session) as uow:
             query = select(Company).where(Company.id == company_id)
             company = await uow.execute_query(query)
@@ -148,4 +148,4 @@ class CompanyRepository(ICompanyRepository):
             if company_scalar is None:
                 return None
 
-            return company_scalar.work_schedule
+            return company_scalar.work_schedule if company_scalar.work_schedule else []

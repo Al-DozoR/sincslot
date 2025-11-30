@@ -5,7 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.api.request.company import CompanyWorkScheduleRequest
 from backend.api.response.company import (
     CompanyErrorResponse,
-    CompanyWorkScheduleResponse
+    CompanyWorkScheduleResponse,
+    CompanyWorkDayResponse,
 )
 
 from backend.api.conrollers.company.auth.parse_auth_token import get_current_company_from_token
@@ -39,9 +40,15 @@ async def get_work_schedule_company(company=Depends(get_current_company_from_tok
             content=CompanyErrorResponse(error=f"Failed to get company work schedule by id").model_dump()
         )
 
+    work_schedule = [CompanyWorkDayResponse(
+        day_of_week=ws.get("day_of_week"),
+        work_start=ws.get("work_start"),
+        work_end=ws.get("work_end")
+    ).model_dump(by_alias=True) for ws in work_schedule]
+
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=work_schedule,
+        content=CompanyWorkScheduleResponse(work_schedule=work_schedule).model_dump(by_alias=True),
     )
 
 
