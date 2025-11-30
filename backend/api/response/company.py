@@ -89,6 +89,7 @@ class CompanySettingsResponse(BaseModel):
     address: Optional[str | None] = None
     email: EmailStr
     phone: E164NumberType
+    description: Optional[str | None] = None
     booking_url: str = Field(alias="bookingUrl")
 
     model_config = ConfigDict(

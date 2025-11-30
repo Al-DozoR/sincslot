@@ -25,33 +25,33 @@ router = APIRouter(tags=["company"])
     status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": CompanyErrorResponse}
 })
 async def get_settings_company_by_id(
-        company=Depends(get_current_company_from_token),
+        # company=Depends(get_current_company_from_token),
         company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
         session: AsyncSession = Depends(db_helper.session_getter),
 ):
 
     try:
-        company_by_id = await company_use_case.get_company_by_id(session, company.id)
+        company_by_id = await company_use_case.get_company_by_id(session, 1)
     except Exception as ex:
         logger.error(
             "Error occurred while getting company by id. Company id: %s Error: %s",
-            company.id,
+            1,
             str(ex),
             exc_info=True
         )
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=CompanyErrorResponse(
-                error=f"failed to find a company with id {company.id}"
+                error=f"failed to find a company with id {1}"
             ).model_dump()
         )
 
     if company_by_id is None:
-        logger.warning("Failed to find company by id. Company id: %s", company.id)
+        logger.warning("Failed to find company by id. Company id: %s", 1)
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content=CompanyErrorResponse(
-                error=f"failed to find a company with id {company.id}"
+                error=f"failed to find a company with id {1}"
             ).model_dump()
         )
 
@@ -63,6 +63,7 @@ async def get_settings_company_by_id(
             email=company_by_id.email,
             phone=company_by_id.phone,
             booking_url=company_by_id.booking_url,
+            description=company_by_id.description,
         ).model_dump(by_alias=True)
     )
 
