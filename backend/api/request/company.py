@@ -87,7 +87,7 @@ class CompanyWorkScheduleRequest(BaseModel):
 
 
 class CompanyUpdateSettingsRequest(BaseModel):
-    name: str = Field(default="Tesla")
+    name: Optional[str | None] = Field(default=None, examples=["Tesla"])
     address: Optional[str | None] = None
     email: Optional[EmailStr | None] = Field(default=None, examples=["ElonMask@example.ru"])
     phone: Optional[E164NumberType | None] = Field(default=None, examples=["+79125483496"])

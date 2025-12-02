@@ -69,7 +69,7 @@ async def get_settings_company_by_id(
 
 
 @router.patch("/settings", responses={
-    status.HTTP_200_OK: {"model": CompanyEntityResponse},
+    status.HTTP_200_OK: {"model": CompanySettingsResponse},
     status.HTTP_400_BAD_REQUEST: {"model": CompanyErrorResponse},
     status.HTTP_409_CONFLICT: {"model": CompanyErrorResponse},
     status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": CompanyErrorResponse}
@@ -140,13 +140,12 @@ async def update_settings_company(company_settings: CompanyUpdateSettingsRequest
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=CompanyEntityResponse(
-            id=updated_data.id,
+        content=CompanySettingsResponse(
             name=updated_data.name,
+            address=updated_data.address,
             email=updated_data.email,
             phone=updated_data.phone,
             booking_url=updated_data.booking_url,
             description=updated_data.description,
-            address=updated_data.address,
         ).model_dump(by_alias=True)
     )
