@@ -54,7 +54,7 @@ class CompanyWorkDayResponse(BaseModel):
 
 
 class CompanyWorkScheduleResponse(BaseModel):
-    work_schedule: list[dict] = Field(alias="workSchedule")
+    work_schedule: list[CompanyWorkDayResponse] = Field(alias="workSchedule")
 
     model_config = ConfigDict(
         alias_generator=to_camel,

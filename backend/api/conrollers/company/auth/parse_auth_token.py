@@ -18,7 +18,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/login")
 
 
 async def get_current_company_from_token(
-        request: Request,
         token: str = Depends(oauth2_scheme),
         token_use_case: IToken = Depends(di_container.get_token_use_case),
         company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),

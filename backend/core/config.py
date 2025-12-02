@@ -37,6 +37,10 @@ class RunConfig(BaseModel):
     port: int = 10004
 
 
+class TestDatabaseConfig(BaseModel):
+    url: PostgresDsn = "postgresql+asyncpg://postgres_test:postgres_test@localhost:54349/postgres_test"
+
+
 class DatabaseConfig(BaseModel):
     url: PostgresDsn
     echo: bool = False
@@ -69,6 +73,7 @@ class Settings(BaseSettings):
     run: RunConfig = RunConfig()
     api_v1: ApiV1Prefix = ApiV1Prefix()
     db: DatabaseConfig
+    db_test: TestDatabaseConfig = TestDatabaseConfig()
     jwt: JWT = JWT()
     password: Password = Password()
     file_company_logo_settings: FileCompanyLogoSettings = FileCompanyLogoSettings()

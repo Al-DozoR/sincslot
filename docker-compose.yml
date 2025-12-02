@@ -38,6 +38,19 @@ services:
     networks:
       - syncslot_network
 
+  syncslot_db_test:
+    container_name: "syncslot_db_test"
+    image: postgres:17.1
+    restart: always
+    environment:
+      POSTGRES_DB: postgres_test
+      POSTGRES_USER: postgres_test
+      POSTGRES_PASSWORD: postgres_test
+    ports:
+      - "54349:5432"
+    networks:
+      - syncslot_network
+
 volumes:
   syncslot_data:
 
