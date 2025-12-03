@@ -12,6 +12,7 @@ from backend.repository.models.company import Company
 from backend.repository.models.token import Token
 from backend.repository.models.service import Service
 from backend.repository.models.client import Client
+from backend.repository.models.booking import Booking
 from backend.core.config import settings
 
 
