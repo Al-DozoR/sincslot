@@ -22,6 +22,7 @@ def data_login_company():
         "password": "Pass123!",
     }
 
+
 @pytest.fixture(scope="function", autouse=True)
 def data_login_company_when_company_not_exist():
     return {

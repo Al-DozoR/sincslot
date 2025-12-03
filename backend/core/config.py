@@ -9,6 +9,7 @@ from pydantic_settings import (
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
 class BookingUrl(BaseModel):
     base_url: str = "https://syncslot.ru/booking"
 
@@ -38,7 +39,7 @@ class RunConfig(BaseModel):
 
 
 class TestDatabaseConfig(BaseModel):
-    url: PostgresDsn = "postgresql+asyncpg://postgres_test:postgres_test@localhost:54349/postgres_test"
+    url: str = "postgresql+asyncpg://pguser_test:pgpassword_test@db_test:5432/syncslot_db_test"
 
 
 class DatabaseConfig(BaseModel):

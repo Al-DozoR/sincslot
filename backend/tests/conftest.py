@@ -13,6 +13,7 @@ from starlette.testclient import TestClient
 
 from backend.core.db_helper import db_helper
 from backend.main import app
+from backend.core.config import BASE_DIR
 from backend.core.config import settings
 
 CLEAN_TABLES = [
@@ -23,41 +24,22 @@ CLEAN_TABLES = [
 ]
 
 
-# @pytest.fixture(scope="session")
-# def event_loop():
-#     loop = asyncio.get_event_loop_policy().new_event_loop()
-#     yield loop
-#     loop.close()
-
-
 @pytest.fixture(scope="session", autouse=True)
 async def run_migrations(async_session_test):
-    # os.system("alembic init migrations")
-    # os.system('alembic revision --autogenerate -m "test running migrations"')
-    os.system("alembic upgrade head")
+    migration_tests: str = os.path.join(BASE_DIR, "tests", "alembic.ini")
+    os.system(f"alembic --config {migration_tests} upgrade head")
     yield
     async with async_session_test() as session:
         async with session.begin():
             for table_for_cleaning in CLEAN_TABLES:
                 await session.execute(text(f'TRUNCATE TABLE {table_for_cleaning} CASCADE;'))
 
-# "postgresql+asyncpg://postgres_test:postgres_test@localhost:54349/postgres_test"
+
 @pytest.fixture(scope="session")
 async def async_session_test():
     engine = create_async_engine(settings.db_test.url, future=True, echo=True)
     async_session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
     yield async_session
-
-
-# @pytest.fixture(scope="session", autouse=True)
-# async def clean_tables(async_session_test):
-#     """Clean data in all tables before running test function"""
-#     print("перед созданием БД")
-#     async with async_session_test() as session:
-#         async with session.begin():
-#             for table_for_cleaning in CLEAN_TABLES:
-#                 await session.execute(text(f'TRUNCATE TABLE {table_for_cleaning} CASCADE;'))
-#     print("после создания БД")
 
 
 async def _get_test_db():
@@ -100,13 +82,13 @@ async def asyncpg_pool():
 async def auth_header(client):
     resp = client.post(
         "/api/v1/company/register", json={
-        "name": "Tesla",
-        "address": "string",
-        "email": "ElonMask123@example.com",
-        "phone": "+79126329304",
-        "password": "Pass312!",
-        "repeatPassword": "Pass312!"
-    }
+            "name": "Tesla",
+            "address": "string",
+            "email": "ElonMask123@example.com",
+            "phone": "+79126329304",
+            "password": "Pass312!",
+            "repeatPassword": "Pass312!"
+        }
     )
 
     access_token = resp.json()["accessToken"]
