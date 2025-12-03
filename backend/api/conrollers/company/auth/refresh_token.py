@@ -15,7 +15,7 @@ from backend.core.db_helper import db_helper
 
 logger = init_logger('auth_company', 'INFO')
 
-router = APIRouter(tags=["company"])
+router = APIRouter()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/login")
 

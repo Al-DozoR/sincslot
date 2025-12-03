@@ -14,7 +14,7 @@ from backend.core.db_helper import db_helper
 
 logger = init_logger('company', 'INFO')
 
-router = APIRouter(tags=["company"])
+router = APIRouter()
 
 
 @router.get("/{company_id}", responses={

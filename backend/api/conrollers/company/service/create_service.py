@@ -17,7 +17,7 @@ from backend.core.db_helper import db_helper
 
 logger = init_logger('create_service', 'INFO')
 
-router = APIRouter(tags=["service"])
+router = APIRouter()
 
 
 @router.post("/", responses={

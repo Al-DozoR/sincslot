@@ -58,9 +58,20 @@ class DatabaseConfig(BaseModel):
     }
 
 
+class ApiV1Tags(BaseModel):
+    tag_company_auth: str = "company auth"
+    tag_company_settings: str = "company settings"
+    tag_company_work_schedule: str = "company work schedule"
+    tag_company_logo_image: str = "company logo image"
+    tag_company_service: str = "company service"
+
+
 class ApiV1Prefix(BaseModel):
-    prefix_company: str = "/api/v1/company"
-    prefix_service: str = "/api/v1/service"
+    prefix_company_auth: str = "/api/v1/company/auth"
+    prefix_company_settings: str = "/api/v1/company/settings"
+    prefix_company_work_schedule: str = "/api/v1/company/work-schedule"
+    prefix_company_logo_image: str = "/api/v1/company/logo-image"
+    prefix_company_service: str = "/api/v1/company/service"
 
 
 class Settings(BaseSettings):
@@ -73,6 +84,7 @@ class Settings(BaseSettings):
     )
     run: RunConfig = RunConfig()
     api_v1: ApiV1Prefix = ApiV1Prefix()
+    tags: ApiV1Tags = ApiV1Tags()
     db: DatabaseConfig
     db_test: TestDatabaseConfig = TestDatabaseConfig()
     jwt: JWT = JWT()

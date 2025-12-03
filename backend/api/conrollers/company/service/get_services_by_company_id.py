@@ -11,10 +11,10 @@ from backend.core.db_helper import db_helper
 
 logger = init_logger('get_services_by_company_id', 'INFO')
 
-router = APIRouter(tags=["service"])
+router = APIRouter()
 
 
-@router.get("/list/", responses=(
+@router.get("/list", responses=(
         {
             status.HTTP_200_OK: {"model": ServiceEntityListResponse},
             status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": ServiceErrorResponse},

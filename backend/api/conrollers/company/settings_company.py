@@ -14,17 +14,17 @@ from backend.logger.logger import init_logger
 from backend.di_container.di_container import di_container
 from backend.core.db_helper import db_helper
 
-logger = init_logger('company', 'INFO')
+logger = init_logger('company_settings', 'INFO')
 
-router = APIRouter(tags=["company"])
+router = APIRouter()
 
 
-@router.get("/settings/", responses={
+@router.get("/", responses={
     status.HTTP_200_OK: {"model": CompanySettingsResponse},
     status.HTTP_400_BAD_REQUEST: {"model": CompanyErrorResponse},
     status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": CompanyErrorResponse}
 })
-async def get_settings_company_by_id(
+async def get_settings_company(
         company=Depends(get_current_company_from_token),
         company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
         session: AsyncSession = Depends(db_helper.session_getter),
@@ -68,7 +68,7 @@ async def get_settings_company_by_id(
     )
 
 
-@router.patch("/settings", responses={
+@router.patch("/", responses={
     status.HTTP_200_OK: {"model": CompanySettingsResponse},
     status.HTTP_400_BAD_REQUEST: {"model": CompanyErrorResponse},
     status.HTTP_409_CONFLICT: {"model": CompanyErrorResponse},
