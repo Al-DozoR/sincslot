@@ -15,11 +15,11 @@ router = APIRouter(tags=["service"])
 
 
 @router.get("/{service_id}", responses=(
-    {
-        status.HTTP_200_OK: {"model": ServiceEntityResponse},
-        status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": ServiceErrorResponse},
-        status.HTTP_404_NOT_FOUND: {"model": ServiceErrorResponse},
-    }
+        {
+            status.HTTP_200_OK: {"model": ServiceEntityResponse},
+            status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": ServiceErrorResponse},
+            status.HTTP_404_NOT_FOUND: {"model": ServiceErrorResponse},
+        }
 ))
 async def get_service_by_id(
         service_id: int,
@@ -39,7 +39,7 @@ async def get_service_by_id(
     if service is None:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
-            content=ServiceErrorResponse(error=f"Failed to find service by id {service_id}: {str(ex)}").model_dump()
+            content=ServiceErrorResponse(error=f"Failed to find service by id {service_id}").model_dump()
         )
 
     return JSONResponse(
@@ -50,5 +50,5 @@ async def get_service_by_id(
             price=service.price,
             duration=service.duration,
             description=service.description,
-    ).model_dump(exclude_none=True, by_alias=True)
+        ).model_dump(exclude_none=True, by_alias=True)
     )

@@ -15,10 +15,10 @@ router = APIRouter(tags=["service"])
 
 
 @router.get("/list/", responses=(
-    {
-        status.HTTP_200_OK: {"model": ServiceEntityListResponse},
-        status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": ServiceErrorResponse},
-    }
+        {
+            status.HTTP_200_OK: {"model": ServiceEntityListResponse},
+            status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": ServiceErrorResponse},
+        }
 ))
 async def get_services_by_company_id(company=Depends(get_current_company_from_token),
                                      service_use_case: IServiceUseCase = Depends(di_container.get_service_use_case),

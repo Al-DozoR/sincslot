@@ -20,14 +20,16 @@ logger = init_logger('create_service', 'INFO')
 router = APIRouter(tags=["service"])
 
 
-@router.post("/")
+@router.post("/", responses={
+    status.HTTP_201_CREATED: {"model": ServiceEntityResponse},
+    status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": ServiceErrorResponse}
+})
 async def create_service(
         service: ServiceCreateRequest,
         company=Depends(get_current_company_from_token),
         service_use_case: IServiceUseCase = Depends(di_container.get_service_use_case),
         session: AsyncSession = Depends(db_helper.session_getter),
 ) -> JSONResponse:
-
     try:
         new_service = await service_use_case.save_service(
             session,

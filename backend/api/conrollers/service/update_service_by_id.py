@@ -17,10 +17,10 @@ router = APIRouter(tags=["service"])
 
 
 @router.patch("/{service_id}", responses=(
-    {
-        status.HTTP_200_OK: {"model": ServiceEntityResponse},
-        status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": ServiceErrorResponse},
-    }
+        {
+            status.HTTP_200_OK: {"model": ServiceEntityResponse},
+            status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": ServiceErrorResponse},
+        }
 ))
 async def update_service_by_id(
         service_id: int,
@@ -44,7 +44,7 @@ async def update_service_by_id(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=ServiceErrorResponse(error="Failed to update service").model_dump()
         )
-    print(updated_service.name)
+
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=ServiceEntityResponse(
