@@ -81,7 +81,7 @@ async def asyncpg_pool():
 @pytest.fixture(scope="session")
 async def auth_header(client):
     resp = client.post(
-        "/api/v1/company/register", json={
+        "/api/v1/company/auth/register", json={
             "name": "Tesla",
             "address": "string",
             "email": "ElonMask123@example.com",
@@ -90,7 +90,7 @@ async def auth_header(client):
             "repeatPassword": "Pass312!"
         }
     )
-
+    print(resp.json())
     access_token = resp.json()["accessToken"]
     token = f"Bearer {access_token}"
 

@@ -87,13 +87,13 @@ class CompanyWorkScheduleRequest(BaseModel):
 
 
 class CompanyUpdateSettingsRequest(BaseModel):
-    name: Optional[str | None] = Field(default=None, examples=["Tesla"])
-    address: Optional[str | None] = None
+    name: Optional[str] = Field(default=None, examples=["Tesla"])
+    address: Optional[str] = None
     email: Optional[EmailStr | None] = Field(default=None, examples=["ElonMask@example.ru"])
     phone: Optional[E164NumberType | None] = Field(default=None, examples=["+79125483496"])
-    current_password: str = Field(default=None, examples=["currentPass123"], alias="currentPassword")
-    new_password: Optional[str | None] = Field(default=None, examples=["newPass123!"], alias="newPassword")
-    new_repeat_password: Optional[str | None] = Field(
+    current_password: Optional[str] = Field(default=None, examples=["currentPass123"], alias="currentPassword")
+    new_password: Optional[str] = Field(default=None, examples=["newPass123!"], alias="newPassword")
+    new_repeat_password: Optional[str] = Field(
         default=None,
         examples=["user@example.ru"],
         alias="newRepeatPassword"
@@ -128,6 +128,9 @@ class CompanyUpdateSettingsRequest(BaseModel):
 
     @model_validator(mode='after')
     def check_password_match(self) -> Self:
+        if self.new_password is None and self.new_repeat_password is None:
+            return self
+
         if self.new_password is None and self.new_repeat_password is not None:
             raise ValueError('new_password and new_repeat_password do not match')
 
@@ -135,6 +138,9 @@ class CompanyUpdateSettingsRequest(BaseModel):
             raise ValueError('new_password and new_repeat_password do not match')
 
         if self.new_password is not None and self.new_repeat_password is not None:
+            if self.current_password is None:
+                raise ValueError('current_password is needed to update new password')
+
             if self.new_password != self.new_repeat_password:
                 raise ValueError('new_password and new_repeat_password do not match')
 

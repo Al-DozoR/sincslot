@@ -2,7 +2,6 @@ from fastapi import APIRouter
 from backend.core.config import settings
 from backend.api.conrollers.health import router_health
 
-# from backend.api.conrollers.company.get_company_by_id import router as router_get_company_by_id
 from backend.api.conrollers.company.image import router as router_image
 from backend.api.conrollers.company.work_schedule import router as router_work_schedule
 from backend.api.conrollers.company.auth.login import router as router_login
@@ -16,6 +15,7 @@ from backend.api.conrollers.company.service.create_service import router as rout
 from backend.api.conrollers.company.service.get_service_by_id import router as router_get_service_by_id
 from backend.api.conrollers.company.service.get_services_by_company_id import router as router_get_services_by_company_id
 from backend.api.conrollers.company.service.update_service_by_id import router as router_update_service_by_id
+from backend.api.conrollers.company.service.remove_service_by_id import router as router_remove_service_by_id
 
 routes = APIRouter()
 
@@ -88,6 +88,12 @@ routes.include_router(
 
 routes.include_router(
     router=router_update_service_by_id,
+    prefix=settings.api_v1.prefix_company_service,
+    tags=[settings.tags.tag_company_service]
+)
+
+routes.include_router(
+    router=router_remove_service_by_id,
     prefix=settings.api_v1.prefix_company_service,
     tags=[settings.tags.tag_company_service]
 )

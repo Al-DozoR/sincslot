@@ -48,3 +48,13 @@ def data_update_service() -> dict:
         "duration": 1000,
         "description": "description_my_service_to_update",
     }
+
+
+@pytest.fixture(scope="function", autouse=True)
+def data_remove_service() -> dict:
+    return {
+        "name": "my_service_to_remove",
+        "price": 10000,
+        "duration": 1000,
+        "description": "description_my_service_to_update",
+    }

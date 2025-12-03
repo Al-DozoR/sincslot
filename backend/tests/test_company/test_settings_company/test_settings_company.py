@@ -1,6 +1,27 @@
 import time
 from fastapi import status
 
+# resp = client.post(
+#     "/api/v1/company/auth/register", json={
+#         "name": "Tesla",
+#         "address": "string",
+#         "email": "ElonMask123@example.com",
+#         "phone": "+79126329304",
+#         "password": "Pass312!",
+#         "repeatPassword": "Pass312!"
+
+async def test_get_settings_company_by_id(client, auth_header, data_get_settings_update):
+    resp = client.get(
+        "/api/v1/company/settings/", headers=auth_header
+    )
+
+    assert resp.status_code == status.HTTP_200_OK
+    assert resp.json()["name"] == "Tesla"
+    assert resp.json()["address"] == "string"
+    assert resp.json()["email"] == "ElonMask123@example.com"
+    assert resp.json()["phone"] == "+79126329304"
+    assert resp.json()["bookingUrl"] is not None
+
 
 async def test_update_settings_company(client, auth_header, data_get_settings_update):
     resp = client.patch(
@@ -16,24 +37,10 @@ async def test_update_settings_company(client, auth_header, data_get_settings_up
     assert resp.json()["bookingUrl"] is not None
 
 
-async def test_get_settings_company_by_id(client, auth_header, data_get_settings_update):
-    resp = client.get(
-        "/api/v1/company/settings/", headers=auth_header
-    )
-
-    assert resp.status_code == status.HTTP_200_OK
-    assert resp.json()["name"] == data_get_settings_update["name"]
-    assert resp.json()["address"] == data_get_settings_update["address"]
-    assert resp.json()["email"] == data_get_settings_update["email"]
-    assert resp.json()["phone"] == data_get_settings_update["phone"]
-    assert resp.json()["description"] == data_get_settings_update["description"]
-    assert resp.json()["bookingUrl"] is not None
-
-
 async def test_login_company_after_update_settings(client, data_login_company_after_update_settings):
     time.sleep(1)
     resp = client.post(
-        "/api/v1/company/login", json=data_login_company_after_update_settings
+        "/api/v1/company/auth/login", json=data_login_company_after_update_settings
     )
 
     assert resp.status_code == status.HTTP_201_CREATED
