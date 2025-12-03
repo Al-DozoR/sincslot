@@ -30,12 +30,12 @@ async def download_image(company=Depends(get_current_company_from_token),
         )
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content=CompanyErrorResponse(error=f"failed to save logo image").model_dump()
+            content=CompanyErrorResponse(error=f"failed to get logo image").model_dump()
         )
 
     if file is None:
         return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_200_OK,
             content=CompanyErrorResponse(error=f"failed to find company logo by id {company.id}").model_dump()
         )
 
