@@ -140,11 +140,19 @@ class CompanyUpdateSettingsRequest(BaseModel):
         if self.new_password == "" and self.new_repeat_password == "":
             return self
 
+        # Не передали поле new_password, но передали new_repeat_password
+        if self.new_password == "" and self.new_repeat_password != "":
+            raise ValueError('new_password and new_repeat_password do not match')
+
+        # Не передали поле new_repeat_password, но передали new_password
+        if self.new_password != "" and self.new_repeat_password == "":
+            raise ValueError('new_password and new_repeat_password do not match')
+
         # Передали null
         if self.new_password is None or self.new_repeat_password is None:
             raise ValueError('new_password and new_repeat_password do not match')
 
-        # Поля передали и они не None
+        # Поля передали и они не null
         if self.new_password is not None and self.new_repeat_password is not None:
             if self.current_password is None:
                 raise ValueError('current_password is needed to update new password')
