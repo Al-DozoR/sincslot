@@ -2,17 +2,17 @@ import api from "../api/axios";
 
 export const authService = {
   register: async (data) => {
-    const response = await api.post("/api/v1/company/register", data);
+    const response = await api.post("/api/v1/company/auth/register", data);
     return response.data;
   },
 
   refreshToken: async () => {
-    const response = await api.post("/api/v1/company/refresh-token", {}, { withCredentials: true });
+    const response = await api.post("/api/v1/company/auth/refresh-token", {}, { withCredentials: true });
     return response.data;
   },
 
   forgotPassword: async (email) => {
-    const response = await api.post("/api/v1/company/recover", { email });
+    const response = await api.post("/api/v1/company/auth/recover", { email });
     return response.data;
   },
 
@@ -22,7 +22,7 @@ export const authService = {
   },
 
   login: async (data) => {
-    const response = await api.post("/api/v1/company/login", data);
+    const response = await api.post("/api/v1/company/auth/login", data);
     return response.data;
   }
 };

@@ -78,7 +78,7 @@ const Register = () => {
       console.log('Регистрация успешна:', formData);
 
       // Перенаправляем на главную
-      navigate("/schedule");
+      navigate("/settings");
 
     } catch (error) {
       console.error("Ошибка регистрации:", error);

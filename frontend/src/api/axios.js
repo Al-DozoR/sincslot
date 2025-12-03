@@ -43,8 +43,8 @@ api.interceptors.response.use(
       if (!isRefreshing) {
         isRefreshing = true;
         try {
-          const { data } = await axios.post(`${API_URL}/refresh-token`, {}, { withCredentials: true });
-          localStorage.setItem("token", data.accessToken);
+          const { data } = await axios.post(`${API_URL}/api/v1/company/auth/refresh-token`, {}, { withCredentials: true });
+          localStorage.setItem("accessToken", data.accessToken);
           isRefreshing = false;
           processQueue(null, data.accessToken);
         } catch (err) {
