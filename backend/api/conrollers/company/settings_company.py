@@ -30,7 +30,6 @@ async def get_settings_company(
         company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
         session: AsyncSession = Depends(db_helper.session_getter),
 ):
-
     try:
         company_by_id = await company_use_case.get_company_by_id(session, company.id)
     except Exception as ex:
@@ -111,9 +110,30 @@ async def update_settings_company(company_settings: CompanyUpdateSettingsRequest
                     error=f"user company name {company_settings.name} is already exist").model_dump()
             )
 
-    company_to_update = company_settings.model_dump(exclude_none=True)
+    company_by_slug = await company_use_case.get_company_by_booking_url_slug(
+        session,
+        company_settings.slug_booking_url
+    )
+    if company_by_slug is not None:
+        if company_by_slug.id != company.id:
+            logger.warning(
+                "Failed to update a company with booking url slug %s it is already exist", company_settings.name
+            )
+            return JSONResponse(
+                status_code=status.HTTP_409_CONFLICT,
+                content=CompanyErrorResponse(
+                    error=f"user company booking url {company_settings.slug_booking_url} is already exist").model_dump()
+            )
 
-    if company_to_update.get("new_password") is not None and company_to_update.get("new_repeat_password") is not None:
+    company_to_update = company_settings.model_dump()
+
+    new_password = company_to_update.get("new_password")
+    new_repeat_password = company_to_update.get("new_repeat_password")
+
+    is_empty_pass = new_password != "" and new_repeat_password != ""
+    is_null_pass = new_password is not None and new_repeat_password is not None
+
+    if is_empty_pass and is_null_pass:
 
         company_by_id = await company_use_case.get_company_by_id(session, company.id)
 
@@ -130,6 +150,8 @@ async def update_settings_company(company_settings: CompanyUpdateSettingsRequest
             )
 
         company_to_update["password"] = company_to_update.get("new_password")
+    else:
+        company_to_update["password"] = ""
 
     try:
         updated_data = await company_use_case.update_company_by_id(

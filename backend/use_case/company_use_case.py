@@ -48,6 +48,10 @@ class ICompanyUseCase(ABC):
         raise NotImplemented
 
     @abstractmethod
+    async def get_company_by_booking_url_slug(self, session: AsyncSession, slug_booking_url: str) -> CompanyEntity | None:
+        raise NotImplemented
+
+    @abstractmethod
     async def login(self, session: AsyncSession, company: CompanyEntity) -> TokenEntity:
         raise NotImplemented
 
@@ -55,13 +59,13 @@ class ICompanyUseCase(ABC):
             self,
             session: AsyncSession,
             company_id: int,
-            name: str | None = None,
-            email: str | None = None,
-            password: str | None = None,
-            phone: str | None = None,
-            slug_booking_url: str | None = None,
-            description: str | None = None,
-            address: str | None = None,
+            name: str,
+            email: str,
+            password: str,
+            phone: str,
+            slug_booking_url: str,
+            description: str,
+            address: str,
     ) -> CompanyEntity | None:
         raise NotImplemented
 
@@ -148,6 +152,10 @@ class CompanyUseCase(ICompanyUseCase):
     async def get_company_by_name(self, session: AsyncSession, name: str) -> CompanyEntity | None:
         return await self.company_repository.get_company_by_name(session, name)
 
+    async def get_company_by_booking_url_slug(self, session: AsyncSession, slug_booking_url: str) -> CompanyEntity | None:
+        booking_url = await self.generate_booking_url(slug_booking_url)
+        return await self.company_repository.get_company_by_booking_url(session, booking_url)
+
     async def login(self, session: AsyncSession, company: CompanyEntity) -> TokenEntity:
 
         access_token = await self.token.create_access_token(company_id=company.id)
@@ -161,30 +169,31 @@ class CompanyUseCase(ICompanyUseCase):
             self,
             session: AsyncSession,
             company_id: int,
-            name: str | None = None,
-            email: str | None = None,
-            password: str | None = None,
-            phone: str | None = None,
-            slug_booking_url: str | None = None,
-            description: str | None = None,
-            address: str | None = None,
+            name: str,
+            email: str,
+            password: str,
+            phone: str,
+            slug_booking_url: str,
+            description: str,
+            address: str,
     ) -> CompanyEntity | None:
 
         data_to_update = {}
-
-        if name is not None:
+        print(password)
+        if name != "":
             data_to_update["name"] = name
-        if email is not None:
+        if email != "":
             data_to_update["email"] = email
-        if password is not None:
+        if password != "":
             data_to_update["password"] = await self.hash_password(password)
-        if phone is not None:
+        if phone != "":
             data_to_update["phone"] = phone
-        if slug_booking_url is not None:
+        if slug_booking_url != "":
             data_to_update["booking_url"] = await self.generate_booking_url(slug_booking_url)
-
-        data_to_update["description"] = description
-        data_to_update["address"] = address
+        if description != "":
+            data_to_update["description"] = description
+        if address != "":
+            data_to_update["address"] = address
 
         return await self.company_repository.update_company_by_id(session, company_id, data_to_update)
 
