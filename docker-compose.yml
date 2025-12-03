@@ -9,6 +9,7 @@ services:
       - "10004:10004"
     depends_on:
       - syncslot_db
+      - syncslot_db_test
     networks:
       - syncslot_network
 
@@ -25,7 +26,7 @@ services:
   syncslot_db:
     image: postgres:17.1
     container_name: "syncslot_db"
-    hostname: 'db'
+    hostname: 'syncslot_db'
     volumes:
       - syncslot_data:/var/lib/postgresql/data/
     restart: always
@@ -35,6 +36,20 @@ services:
       POSTGRES_PASSWORD: pgpassword
     ports:
       - "5432:5432"
+    networks:
+      - syncslot_network
+
+  syncslot_db_test:
+    image: postgres:17.1
+    container_name: "syncslot_db_test"
+    hostname: 'db_test'
+    restart: always
+    environment:
+      POSTGRES_DB: syncslot_db_test
+      POSTGRES_USER: pguser_test
+      POSTGRES_PASSWORD: pgpassword_test
+    ports:
+      - "54349:5432"
     networks:
       - syncslot_network
 

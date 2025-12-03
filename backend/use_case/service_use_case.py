@@ -43,6 +43,10 @@ class IServiceUseCase(ABC):
     ) -> ServiceEntity | None:
         raise NotImplemented
 
+    @abstractmethod
+    async def remove_service_by_id(self, session: AsyncSession, service_id: int) -> bool:
+        raise NotImplemented
+
 
 class ServiceUseCase(IServiceUseCase):
 
@@ -66,6 +70,7 @@ class ServiceUseCase(IServiceUseCase):
                 price=price,
                 company_id=company_id,
                 description=description,
+                is_active=True,
             )
         )
 
@@ -92,3 +97,6 @@ class ServiceUseCase(IServiceUseCase):
         }
 
         return await self.service_repository.update_service(session, service_id, data_to_update)
+
+    async def remove_service_by_id(self, session: AsyncSession, service_id: int) -> bool:
+        return await self.service_repository.remove_service(session, service_id)

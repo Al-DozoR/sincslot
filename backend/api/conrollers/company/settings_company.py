@@ -14,17 +14,17 @@ from backend.logger.logger import init_logger
 from backend.di_container.di_container import di_container
 from backend.core.db_helper import db_helper
 
-logger = init_logger('company', 'INFO')
+logger = init_logger('company_settings', 'INFO')
 
-router = APIRouter(tags=["company"])
+router = APIRouter()
 
 
-@router.get("/settings/", responses={
+@router.get("/", responses={
     status.HTTP_200_OK: {"model": CompanySettingsResponse},
     status.HTTP_400_BAD_REQUEST: {"model": CompanyErrorResponse},
     status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": CompanyErrorResponse}
 })
-async def get_settings_company_by_id(
+async def get_settings_company(
         company=Depends(get_current_company_from_token),
         company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
         session: AsyncSession = Depends(db_helper.session_getter),
@@ -68,8 +68,8 @@ async def get_settings_company_by_id(
     )
 
 
-@router.patch("/settings", responses={
-    status.HTTP_200_OK: {"model": CompanyEntityResponse},
+@router.patch("/", responses={
+    status.HTTP_200_OK: {"model": CompanySettingsResponse},
     status.HTTP_400_BAD_REQUEST: {"model": CompanyErrorResponse},
     status.HTTP_409_CONFLICT: {"model": CompanyErrorResponse},
     status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": CompanyErrorResponse}
@@ -82,34 +82,52 @@ async def update_settings_company(company_settings: CompanyUpdateSettingsRequest
                                   session: AsyncSession = Depends(db_helper.session_getter)):
     company_by_email = await company_use_case.get_company_by_email(session, company_settings.email)
     if company_by_email is not None:
-        logger.warning("Failed to update a company with email %s it is already exist", company_settings.email)
-        return JSONResponse(
-            status_code=status.HTTP_409_CONFLICT,
-            content=CompanyErrorResponse(
-                error=f"company with email {company_settings.email} is already exist").model_dump()
-        )
+        if company_by_email.id != company.id:
+            logger.warning("Failed to update a company with email %s it is already exist", company_settings.email)
+            return JSONResponse(
+                status_code=status.HTTP_409_CONFLICT,
+                content=CompanyErrorResponse(
+                    error=f"company with email {company_settings.email} is already exist").model_dump()
+            )
 
     company_by_phone = await company_use_case.get_company_by_phone(session, company_settings.phone)
     if company_by_phone is not None:
-        logger.warning("Failed to update a company with phone %s it is already exist", company_settings.phone)
-        return JSONResponse(
-            status_code=status.HTTP_409_CONFLICT,
-            content=CompanyErrorResponse(
-                error=f"company with phone {company_settings.phone} is already exist").model_dump()
-        )
+        if company_by_phone.id != company.id:
+            logger.warning("Failed to update a company with phone %s it is already exist", company_settings.phone)
+            return JSONResponse(
+                status_code=status.HTTP_409_CONFLICT,
+                content=CompanyErrorResponse(
+                    error=f"company with phone {company_settings.phone} is already exist").model_dump()
+            )
 
     company_by_name = await company_use_case.get_company_by_name(session, company_settings.name)
     if company_by_name is not None:
-        logger.warning("Failed to update a company with name %s it is already exist", company_settings.name)
-        return JSONResponse(
-            status_code=status.HTTP_409_CONFLICT,
-            content=CompanyErrorResponse(
-                error=f"user company name {company_settings.name} is already exist").model_dump()
-        )
+        if company_by_name.id != company.id:
+            logger.warning("Failed to update a company with name %s it is already exist", company_settings.name)
+            return JSONResponse(
+                status_code=status.HTTP_409_CONFLICT,
+                content=CompanyErrorResponse(
+                    error=f"user company name {company_settings.name} is already exist").model_dump()
+            )
 
     company_to_update = company_settings.model_dump(exclude_none=True)
 
-    if company_to_update.get("new_password") and company_to_update.get("new_repeat_password"):
+    if company_to_update.get("new_password") is not None and company_to_update.get("new_repeat_password") is not None:
+
+        company_by_id = await company_use_case.get_company_by_id(session, company.id)
+
+        is_match_password = await company_use_case.verify_password(
+            company_settings.current_password,
+            company_by_id.password
+        )
+
+        if not is_match_password:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=CompanyErrorResponse(
+                    error=f"Incorrect current password. Impossible to set new password").model_dump()
+            )
+
         company_to_update["password"] = company_to_update.get("new_password")
 
     try:
@@ -140,13 +158,12 @@ async def update_settings_company(company_settings: CompanyUpdateSettingsRequest
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=CompanyEntityResponse(
-            id=updated_data.id,
+        content=CompanySettingsResponse(
             name=updated_data.name,
+            address=updated_data.address,
             email=updated_data.email,
             phone=updated_data.phone,
             booking_url=updated_data.booking_url,
             description=updated_data.description,
-            address=updated_data.address,
         ).model_dump(by_alias=True)
     )

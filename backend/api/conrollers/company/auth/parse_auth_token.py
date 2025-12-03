@@ -14,17 +14,16 @@ from backend.core.db_helper import db_helper
 
 logger = init_logger('auth_company', 'INFO')
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/company/auth/register")
 
 
 async def get_current_company_from_token(
-        request: Request,
         token: str = Depends(oauth2_scheme),
         token_use_case: IToken = Depends(di_container.get_token_use_case),
         company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
         session: AsyncSession = Depends(db_helper.session_getter)
 ) -> CompanyEntity | JSONResponse:
-
+    print(token)
     is_revoke = await token_use_case.is_revoke(session, token)
     if is_revoke is None:
         raise HTTPException(

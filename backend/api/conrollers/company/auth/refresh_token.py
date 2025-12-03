@@ -15,7 +15,7 @@ from backend.core.db_helper import db_helper
 
 logger = init_logger('auth_company', 'INFO')
 
-router = APIRouter(tags=["company"])
+router = APIRouter()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/login")
 
@@ -61,7 +61,7 @@ async def refresh_tokens(
         logger.error(f"Error occurred while refreshing tokens %s:", str(ex), exc_info=True)
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content=CompanyErrorResponse(error=f"Failed to register company").model_dump()
+            content=CompanyErrorResponse(error=f"Failed to update toens").model_dump()
         )
 
     if new_tokens is None:

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from jose import jwt
@@ -98,7 +98,7 @@ class Token(IToken):
             company_id=company_id,
             type=self.jwt_settings.token_type_access,
             exp=int(
-                (datetime.now() + timedelta(minutes=self.jwt_settings.access_token_expire_minutes)).timestamp()
+                (datetime.now(timezone.utc) + timedelta(minutes=self.jwt_settings.access_token_expire_minutes)).timestamp()
             )
         )
 
@@ -115,7 +115,7 @@ class Token(IToken):
             company_id=company_id,
             type=self.jwt_settings.token_type_refresh,
             exp=int(
-                (datetime.now() + timedelta(minutes=self.jwt_settings.refresh_token_expire_minutes)).timestamp()
+                (datetime.now(timezone.utc) + timedelta(minutes=self.jwt_settings.refresh_token_expire_minutes)).timestamp()
             ),
         )
 

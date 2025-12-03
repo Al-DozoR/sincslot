@@ -17,10 +17,14 @@ from backend.core.db_helper import db_helper
 
 logger = init_logger('company', 'INFO')
 
-router = APIRouter(tags=["company"])
+router = APIRouter()
 
 
-@router.get("/schedule/")
+@router.get("/", responses={
+    status.HTTP_200_OK: {"model": CompanyWorkScheduleResponse},
+    status.HTTP_404_NOT_FOUND: {"model": CompanyErrorResponse},
+    status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": CompanyErrorResponse},
+})
 async def get_work_schedule_company(company=Depends(get_current_company_from_token),
                                     company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
                                     session: AsyncSession = Depends(db_helper.session_getter)):
@@ -52,7 +56,11 @@ async def get_work_schedule_company(company=Depends(get_current_company_from_tok
     )
 
 
-@router.post("/schedule")
+@router.post("/", responses={
+    status.HTTP_200_OK: {"model": CompanyWorkScheduleResponse},
+    status.HTTP_404_NOT_FOUND: {"model": CompanyErrorResponse},
+    status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": CompanyErrorResponse},
+})
 async def create_or_update_work_schedule(work_schedule: CompanyWorkScheduleRequest,
                                          company=Depends(get_current_company_from_token),
                                          company_use_case: ICompanyUseCase = Depends(

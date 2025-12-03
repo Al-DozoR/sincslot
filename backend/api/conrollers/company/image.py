@@ -13,10 +13,10 @@ from backend.use_case.file_use_case import IFileStorage
 
 logger = init_logger('company', 'INFO')
 
-router = APIRouter(tags=["company"])
+router = APIRouter()
 
 
-@router.get("/logo/")
+@router.get("/")
 async def download_image(company=Depends(get_current_company_from_token),
                          file_storage_use_case: IFileStorage = Depends(di_container.get_file_storage_use_case)):
     try:
@@ -49,7 +49,7 @@ async def download_image(company=Depends(get_current_company_from_token),
     )
 
 
-@router.put("/logo")
+@router.put("/")
 async def upload_image(file: UploadFile = File(...),
                        company=Depends(get_current_company_from_token),
                        file_storage_use_case: IFileStorage = Depends(di_container.get_file_storage_use_case)):

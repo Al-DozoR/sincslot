@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select, update, and_
 
 from backend.entity.service import ServiceEntity
 from backend.repository.models.service import Service
@@ -30,6 +30,10 @@ class IServiceRepository(ABC):
     async def get_services_by_company_id(self, session: AsyncSession, company_id: int) -> list[ServiceEntity] | None:
         raise NotImplemented
 
+    @abstractmethod
+    async def remove_service(self, session: AsyncSession, service_id: int) -> bool:
+        raise NotImplemented
+
 
 class ServiceRepository(IServiceRepository):
 
@@ -44,7 +48,7 @@ class ServiceRepository(IServiceRepository):
 
     async def get_service_by_id(self, session: AsyncSession, service_id: int) -> ServiceEntity | None:
         async with UnitOfWork(session) as uow:
-            query = select(Service).where(Service.id == service_id)
+            query = select(Service).where(and_(Service.id == service_id, Service.is_active == True))
             service = await uow.execute_query(query)
             service_scalar: Service | None = service.scalar()
             if service_scalar is None:
@@ -59,7 +63,7 @@ class ServiceRepository(IServiceRepository):
             data_to_update: dict) -> ServiceEntity | None:
 
         async with UnitOfWork(session) as uow:
-            query = update(Service).where(Service.id == service_id).values(
+            query = update(Service).where(and_(Service.id == service_id, Service.is_active == True)).values(
                 **data_to_update
             ).returning(Service)
             service_updated = await uow.execute_query(query)
@@ -71,7 +75,7 @@ class ServiceRepository(IServiceRepository):
 
     async def get_services_by_company_id(self, session: AsyncSession, company_id: int) -> list[ServiceEntity] | None:
         async with UnitOfWork(session) as uow:
-            query = select(Service).where(Service.company_id == company_id)
+            query = select(Service).where(and_(Service.company_id == company_id, Service.is_active == True))
             services = await uow.execute_query(query)
             services_scalars: list[Service] | None = services.scalars()
             if services_scalars is None:
@@ -83,3 +87,15 @@ class ServiceRepository(IServiceRepository):
             result.append(service.to_service_entity())
 
         return result
+
+    async def remove_service(self, session: AsyncSession, service_id: int) -> bool:
+        async with UnitOfWork(session) as uow:
+            query = update(Service).where(Service.id == service_id).values(
+                is_active=False
+            ).returning(Service)
+            service_not_active = await uow.execute_query(query)
+            service_not_active_scalar: Service | None = service_not_active.scalar()
+            if service_not_active_scalar is None:
+                return False
+
+        return True if not service_not_active_scalar.is_active else False

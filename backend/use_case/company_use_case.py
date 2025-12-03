@@ -79,16 +79,8 @@ class ICompanyUseCase(ABC):
         raise NotImplemented
 
     @abstractmethod
-    async def hash_password(self, password: str) -> str:
-        raise NotImplementedError
-
-    @abstractmethod
     async def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         raise NotImplementedError
-
-    @abstractmethod
-    async def generate_booking_url(self, s: str) -> str:
-        raise NotImplemented
 
     @abstractmethod
     async def get_work_schedule_by_company_id(self, session: AsyncSession, company_id) -> list | None:
@@ -123,9 +115,7 @@ class CompanyUseCase(ICompanyUseCase):
             password: str,
     ) -> TokenEntity | None:
 
-        password_salt = password + self.password_settings.salt
-
-        hash_password = await self.hash_password(password_salt)
+        hash_password = await self.hash_password(password)
 
         booking_url: str = await self.generate_booking_url(name)
 
@@ -236,7 +226,7 @@ class CompanyUseCase(ICompanyUseCase):
         return random_pass
 
     async def hash_password(self, password: str) -> str:
-        return self.crypt_hasher.hash(password)
+        return self.crypt_hasher.hash(password + self.password_settings.salt)
 
     async def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         return self.crypt_hasher.verify(plain_password + self.password_settings.salt, hashed_password)

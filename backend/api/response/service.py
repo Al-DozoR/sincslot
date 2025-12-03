@@ -23,3 +23,7 @@ class ServiceEntityListResponse(BaseModel):
 
 class ServiceErrorResponse(BaseModel):
     error: str
+
+
+class ServiceRemoveResponse(BaseModel):
+    is_removed: bool
