@@ -11,6 +11,7 @@ E164NumberType = Annotated[
     Union[str, phonenumbers.PhoneNumber], PhoneNumberValidator(number_format="E164")
 ]
 
+
 class CompanyTokensResponse(BaseModel):
     access_token: str = Field(alias="accessToken")
     model_config = ConfigDict(
@@ -72,7 +73,7 @@ class CompanyEntityResponse(BaseModel):
     booking_url: str = Field(alias="bookingUrl")
     work_schedule: Optional[list[CompanyWorkScheduleResponse]] = Field(default=None, alias="workSchedule")
     filename: Optional[str] = None
-    updated_at: Optional[int]= Field(default=None, alias="updatedAt")
+    updated_at: Optional[int] = Field(default=None, alias="updatedAt")
     created_at: Optional[int] = Field(default=None, alias="createdAt")
     description: Optional[str] = None
     address: Optional[str] = None
@@ -90,10 +91,17 @@ class CompanySettingsResponse(BaseModel):
     email: EmailStr
     phone: E164NumberType
     description: Optional[str | None] = None
-    booking_url: str = Field(alias="bookingUrl")
 
     model_config = ConfigDict(
         alias_generator=to_camel,
         populate_by_name=True,
         from_attributes=True,
     )
+
+
+class CompanySettingsGetResponse(CompanySettingsResponse):
+    booking_url: str = Field(alias="bookingUrl")
+
+
+class CompanySettingsPatchResponse(CompanySettingsResponse):
+    slug_booking_url: str = Field(examples=["company name slug"], alias="slugBookingUrl")

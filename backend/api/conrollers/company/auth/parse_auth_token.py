@@ -23,7 +23,7 @@ async def get_current_company_from_token(
         company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
         session: AsyncSession = Depends(db_helper.session_getter)
 ) -> CompanyEntity | JSONResponse:
-    print(token)
+
     is_revoke = await token_use_case.is_revoke(session, token)
     if is_revoke is None:
         raise HTTPException(

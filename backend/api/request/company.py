@@ -87,38 +87,45 @@ class CompanyWorkScheduleRequest(BaseModel):
 
 
 class CompanyUpdateSettingsRequest(BaseModel):
-    name: Optional[str] = Field(default=None, examples=["Tesla"])
-    address: Optional[str] = None
-    email: Optional[EmailStr | None] = Field(default=None, examples=["ElonMask@example.ru"])
-    phone: Optional[E164NumberType | None] = Field(default=None, examples=["+79125483496"])
-    current_password: Optional[str] = Field(default=None, examples=["currentPass123"], alias="currentPassword")
-    new_password: Optional[str] = Field(default=None, examples=["newPass123!"], alias="newPassword")
+    name: Optional[str] = Field(default="", examples=["Tesla"])
+    address: Optional[str] = Field(default="", examples=["Baker Street 221"])
+    email: Optional[EmailStr] = Field(default="", examples=["ElonMask@example.ru"])
+    phone: Optional[E164NumberType] = Field(default="", examples=["+79125483496"])
+    current_password: Optional[str] = Field(default="", examples=["currentPass123"], alias="currentPassword")
+    new_password: Optional[str] = Field(default="", examples=["newPass123!"], alias="newPassword")
     new_repeat_password: Optional[str] = Field(
-        default=None,
+        default="",
         examples=["user@example.ru"],
         alias="newRepeatPassword"
     )
-    slug_booking_url: Optional[str] = Field(default=None, examples=["company name slug"], alias="slugBookingUrl")
-    description: Optional[str] = Field(default=None, examples=["company description"])
+    slug_booking_url: Optional[str] = Field(default="", examples=["company name slug"], alias="slugBookingUrl")
+    description: Optional[str] = Field(default="", examples=["company description"])
 
-    @classmethod
-    @field_validator('new_password')
-    def validate_password_complexity(cls, new_password):
-        if not re.search(r'[A-Z]', new_password):
+    @model_validator(mode='after')
+    def validate_password_complexity(self) -> Self:
+        # Не передали поле
+        if self.new_password == "":
+            return self
+
+        # Передали null
+        if self.new_password is None:
             raise ValueError('Пароль должен содержать хотя бы одну заглавную букву (A–Z)')
-        if not re.search(r'[a-z]', new_password):
+
+        if not re.search(r'[A-Z]', self.new_password):
+            raise ValueError('Пароль должен содержать хотя бы одну заглавную букву (A–Z)')
+        if not re.search(r'[a-z]', self.new_password):
             raise ValueError('Пароль должен содержать хотя бы одну строчную букву (a–z)')
-        if not re.search(r'\d', new_password):
+        if not re.search(r'\d', self.new_password):
             raise ValueError('Пароль должен содержать хотя бы одну цифру (0–9)')
-        if not re.search(r'[!@#$%^&*()_+\-=]', new_password):
+        if not re.search(r'[!@#$%^&*()_+\-=]', self.new_password):
             raise ValueError('Пароль должен содержать хотя бы один спецсимвол: !@#$%^&*()_+-=')
 
-        return new_password
+        return self
 
     @classmethod
     @field_validator('slug_booking_url')
     def validate_slug_booking_url(cls, value: Optional[str]) -> Optional[str]:
-        if value is None:
+        if value == "":
             return value
 
         if not re.fullmatch(r"^[a-zA-Z-]+$", value):
@@ -128,15 +135,16 @@ class CompanyUpdateSettingsRequest(BaseModel):
 
     @model_validator(mode='after')
     def check_password_match(self) -> Self:
-        if self.new_password is None and self.new_repeat_password is None:
+
+        # Не передали поля
+        if self.new_password == "" and self.new_repeat_password == "":
             return self
 
-        if self.new_password is None and self.new_repeat_password is not None:
+        # Передали null
+        if self.new_password is None or self.new_repeat_password is None:
             raise ValueError('new_password and new_repeat_password do not match')
 
-        if self.new_password is not None and self.new_repeat_password is None:
-            raise ValueError('new_password and new_repeat_password do not match')
-
+        # Поля передали и они не None
         if self.new_password is not None and self.new_repeat_password is not None:
             if self.current_password is None:
                 raise ValueError('current_password is needed to update new password')

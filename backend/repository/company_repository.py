@@ -40,6 +40,10 @@ class ICompanyRepository(ABC):
         raise NotImplemented
 
     @abstractmethod
+    async def get_company_by_booking_url(self, session: AsyncSession, booking_url: str) -> CompanyEntity | None:
+        raise NotImplemented
+
+    @abstractmethod
     async def update_company_by_id(
             self,
             session: AsyncSession,
@@ -116,6 +120,16 @@ class CompanyRepository(ICompanyRepository):
     async def get_company_by_name(self, session: AsyncSession, name: str) -> CompanyEntity | None:
         async with UnitOfWork(session) as uow:
             query = select(Company).where(Company.name == name)
+            company = await uow.execute_query(query)
+            company_scalar: Company | None = company.scalar()
+            if company_scalar is None:
+                return
+
+        return company_scalar.to_company_entity()
+
+    async def get_company_by_booking_url(self, session: AsyncSession, booking_url: str) -> CompanyEntity | None:
+        async with UnitOfWork(session) as uow:
+            query = select(Company).where(Company.booking_url == booking_url)
             company = await uow.execute_query(query)
             company_scalar: Company | None = company.scalar()
             if company_scalar is None:

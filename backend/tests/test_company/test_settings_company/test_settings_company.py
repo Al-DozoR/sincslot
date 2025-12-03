@@ -34,7 +34,7 @@ async def test_update_settings_company(client, auth_header, data_get_settings_up
     assert resp.json()["email"] == data_get_settings_update["email"]
     assert resp.json()["phone"] == data_get_settings_update["phone"]
     assert resp.json()["description"] == data_get_settings_update["description"]
-    assert resp.json()["bookingUrl"] is not None
+    assert resp.json()["slugBookingUrl"] is not None
 
 
 async def test_login_company_after_update_settings(client, data_login_company_after_update_settings):
