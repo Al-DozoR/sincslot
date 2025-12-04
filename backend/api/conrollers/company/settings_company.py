@@ -6,8 +6,6 @@ from backend.api.request.company import CompanyUpdateSettingsRequest
 from backend.api.response.company import (
     CompanySettingsResponse,
     CompanyErrorResponse,
-    CompanySettingsGetResponse,
-    CompanySettingsPatchResponse
 )
 from backend.use_case.company_use_case import ICompanyUseCase
 from backend.api.conrollers.company.auth.parse_auth_token import get_current_company_from_token
@@ -21,7 +19,7 @@ router = APIRouter()
 
 
 @router.get("/", responses={
-    status.HTTP_200_OK: {"model": CompanySettingsGetResponse},
+    status.HTTP_200_OK: {"model": CompanySettingsResponse},
     status.HTTP_400_BAD_REQUEST: {"model": CompanyErrorResponse},
     status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": CompanyErrorResponse}
 })
@@ -57,19 +55,19 @@ async def get_settings_company(
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=CompanySettingsGetResponse(
+        content=CompanySettingsResponse(
             name=company_by_id.name,
             address=company_by_id.address,
             email=company_by_id.email,
             phone=company_by_id.phone,
-            booking_url=company_by_id.booking_url,
+            slug_booking_url=company_by_id.booking_url.split("/")[-1],
             description=company_by_id.description,
         ).model_dump(by_alias=True)
     )
 
 
 @router.patch("/", responses={
-    status.HTTP_200_OK: {"model": CompanySettingsPatchResponse},
+    status.HTTP_200_OK: {"model": CompanySettingsResponse},
     status.HTTP_400_BAD_REQUEST: {"model": CompanyErrorResponse},
     status.HTTP_409_CONFLICT: {"model": CompanyErrorResponse},
     status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": CompanyErrorResponse}
@@ -181,7 +179,7 @@ async def update_settings_company(company_settings: CompanyUpdateSettingsRequest
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=CompanySettingsPatchResponse(
+        content=CompanySettingsResponse(
             name=updated_data.name,
             address=updated_data.address,
             email=updated_data.email,

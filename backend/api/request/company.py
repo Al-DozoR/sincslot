@@ -176,7 +176,12 @@ class CompanyUpdateSettingsRequest(BaseModel):
 
         # Поля передали и они не null
         if self.new_password is not None and self.new_repeat_password is not None:
+            # Текущий передали как null. Он не может быть null
             if self.current_password is None:
+                raise ValueError('current_password is needed to update new password')
+
+            # Текущий пароль не передали
+            if self.current_password == "":
                 raise ValueError('current_password is needed to update new password')
 
             if self.new_password != self.new_repeat_password:
