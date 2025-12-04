@@ -91,17 +91,10 @@ class CompanySettingsResponse(BaseModel):
     email: EmailStr
     phone: E164NumberType
     description: Optional[str | None] = None
+    slug_booking_url: str = Field(examples=["company name slug"], alias="slugBookingUrl")
 
     model_config = ConfigDict(
         alias_generator=to_camel,
         populate_by_name=True,
         from_attributes=True,
     )
-
-
-class CompanySettingsGetResponse(CompanySettingsResponse):
-    booking_url: str = Field(alias="bookingUrl")
-
-
-class CompanySettingsPatchResponse(CompanySettingsResponse):
-    slug_booking_url: str = Field(examples=["company name slug"], alias="slugBookingUrl")
