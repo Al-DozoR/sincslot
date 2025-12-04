@@ -134,6 +134,24 @@ class CompanyUpdateSettingsRequest(BaseModel):
         return value
 
     @model_validator(mode='after')
+    def is_email(self):
+        if self.email is None:
+            raise ValueError("email cannot be null")
+        return self
+
+    @model_validator(mode='after')
+    def is_name(self):
+        if self.name is None:
+            raise ValueError("name cannot be null")
+        return self
+
+    @model_validator(mode='after')
+    def is_phone(self):
+        if self.phone is None:
+            raise ValueError("phone cannot be null")
+        return self
+
+    @model_validator(mode='after')
     def check_password_match(self) -> Self:
 
         # Не передали поля
