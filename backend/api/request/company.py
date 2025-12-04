@@ -4,7 +4,7 @@ from typing import Annotated, Union, Optional, Self
 
 import phonenumbers
 from pydantic_extra_types.phone_numbers import PhoneNumberValidator
-from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator, model_validator, ValidationError
+from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator, model_validator
 from pydantic.alias_generators import to_camel
 
 from backend.entity.company import DaysOfWeek
