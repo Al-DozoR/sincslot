@@ -122,17 +122,6 @@ class CompanyUpdateSettingsRequest(BaseModel):
 
         return self
 
-    @classmethod
-    @field_validator('slug_booking_url')
-    def validate_slug_booking_url(cls, value: Optional[str]) -> Optional[str]:
-        if value == "":
-            return value
-
-        if not re.fullmatch(r"^[a-zA-Z-]+$", value):
-            raise ValueError("slug_booking_url must contain only Latin letters and hyphens (-)")
-
-        return value
-
     @model_validator(mode='after')
     def is_email(self):
         if self.email is None:
@@ -149,6 +138,21 @@ class CompanyUpdateSettingsRequest(BaseModel):
     def is_phone(self):
         if self.phone is None:
             raise ValueError("phone cannot be null")
+        return self
+
+    @model_validator(mode='after')
+    def is_slug_booking_url(self):
+        # передали null. Поле не может быть null
+        if self.slug_booking_url is None:
+            raise ValueError("slug booking url cannot be null")
+
+        # поле slug_booking_url не передали
+        if self.slug_booking_url == "":
+            return self
+
+        if not re.fullmatch(r"^[a-zA-Z-0-9-]+$", self.slug_booking_url):
+            raise ValueError("slug_booking_url must contain only Latin letters, hyphens (-) and numbers")
+
         return self
 
     @model_validator(mode='after')
