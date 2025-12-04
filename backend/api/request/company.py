@@ -4,7 +4,7 @@ from typing import Annotated, Union, Optional, Self
 
 import phonenumbers
 from pydantic_extra_types.phone_numbers import PhoneNumberValidator
-from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator, model_validator
+from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator, model_validator, ValidationError
 from pydantic.alias_generators import to_camel
 
 from backend.entity.company import DaysOfWeek
@@ -132,6 +132,24 @@ class CompanyUpdateSettingsRequest(BaseModel):
             raise ValueError("slug_booking_url must contain only Latin letters and hyphens (-)")
 
         return value
+
+    @model_validator(mode='after')
+    def is_email(self):
+        if self.email is None:
+            raise ValueError("email cannot be null")
+        return self
+
+    @model_validator(mode='after')
+    def is_name(self):
+        if self.name is None:
+            raise ValueError("name cannot be null")
+        return self
+
+    @model_validator(mode='after')
+    def is_phone(self):
+        if self.phone is None:
+            raise ValueError("phone cannot be null")
+        return self
 
     @model_validator(mode='after')
     def check_password_match(self) -> Self:

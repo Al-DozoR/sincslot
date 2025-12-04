@@ -179,16 +179,21 @@ class CompanyUseCase(ICompanyUseCase):
     ) -> CompanyEntity | None:
 
         data_to_update = {}
-        print(password)
-        if name != "":
+
+        # Поле передано и не равно null
+        if name != "" and name is not None:
             data_to_update["name"] = name
-        if email != "":
+        # Поле передано и не равно null
+        if email != "" and email is not None:
             data_to_update["email"] = email
-        if password != "":
+        # Поле передано и не равно null
+        if password != "" and password is not None:
             data_to_update["password"] = await self.hash_password(password)
-        if phone != "":
+        # Поле передано и не равно null
+        if phone != "" and phone is not None:
             data_to_update["phone"] = phone
-        if slug_booking_url != "":
+        # Поле передано и не равно null
+        if slug_booking_url != "" and slug_booking_url is not None:
             data_to_update["booking_url"] = await self.generate_booking_url(slug_booking_url)
         if description != "":
             data_to_update["description"] = description
