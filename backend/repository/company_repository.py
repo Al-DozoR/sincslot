@@ -56,6 +56,9 @@ class ICompanyRepository(ABC):
     async def get_work_schedule_by_company_id(self, session: AsyncSession, company_id) -> list | None:
         raise NotImplemented
 
+    @abstractmethod
+    async def deactivate_company(self, session: AsyncSession, company_id: int) -> None:
+        raise NotImplemented
 
 class CompanyRepository(ICompanyRepository):
 
@@ -163,3 +166,9 @@ class CompanyRepository(ICompanyRepository):
                 return None
 
             return company_scalar.work_schedule if company_scalar.work_schedule else []
+
+    async def deactivate_company(self, session: AsyncSession, company_id: int) -> None:
+        async with UnitOfWork(session) as uow:
+            query = update(Company).where(Company.id == company_id).values(is_active=False)
+            await uow.execute_query(query)
+            return None

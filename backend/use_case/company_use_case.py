@@ -90,6 +90,9 @@ class ICompanyUseCase(ABC):
     async def get_work_schedule_by_company_id(self, session: AsyncSession, company_id) -> list | None:
         raise NotImplemented
 
+    @abstractmethod
+    async def deactivate_company(self, session: AsyncSession, company_id: int) -> None:
+        raise NotImplemented
 
 class CompanyUseCase(ICompanyUseCase):
 
@@ -250,3 +253,6 @@ class CompanyUseCase(ICompanyUseCase):
 
     async def get_work_schedule_by_company_id(self, session: AsyncSession, company_id) -> list | None:
         return await self.company_repository.get_work_schedule_by_company_id(session, company_id)
+
+    async def deactivate_company(self, session: AsyncSession, company_id: int) -> None:
+        await self.company_repository.deactivate_company(session, company_id)

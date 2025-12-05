@@ -4,6 +4,7 @@ from backend.api.conrollers.health import router_health
 
 from backend.api.conrollers.company.image import router as router_image
 from backend.api.conrollers.company.work_schedule import router as router_work_schedule
+from backend.api.conrollers.company.deactivate_company import router as router_deactivate_company
 from backend.api.conrollers.company.auth.login import router as router_login
 from backend.api.conrollers.company.auth.logout import router as router_logout
 from backend.api.conrollers.company.auth.recover_password import router as router_recover_password
@@ -96,4 +97,10 @@ routes.include_router(
     router=router_remove_service_by_id,
     prefix=settings.api_v1.prefix_company_service,
     tags=[settings.tags.tag_company_service]
+)
+
+routes.include_router(
+    router=router_deactivate_company,
+    prefix=settings.api_v1.prefix_company_settings,
+    tags=[settings.tags.tag_company_settings]
 )
