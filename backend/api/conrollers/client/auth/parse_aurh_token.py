@@ -1,16 +1,13 @@
-from fastapi import APIRouter, status, Depends, HTTPException, Request
+from fastapi import status, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from starlette.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from jose import JWTError
 
 from backend.entity.client import ClientEntity
-from backend.entity.company import CompanyEntity
 from backend.logger.logger import init_logger
-from backend.api.response.company import CompanyErrorResponse
 from backend.di_container.di_container import di_container
 from backend.use_case.client_use_case import IClientUseCase
-from backend.use_case.company_use_case import ICompanyUseCase
 from backend.use_case.token_use_case import IToken
 from backend.core.db_helper import db_helper
 

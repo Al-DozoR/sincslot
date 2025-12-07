@@ -3,16 +3,8 @@ from starlette.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.api.request.client import ClientRegisterRequest
-from backend.api.request.service import ServiceCreateRequest
 from backend.api.response.client import ClientErrorResponse, ClientTokensResponse
-
-from backend.api.response.service import (
-    ServiceEntityResponse,
-    ServiceErrorResponse,
-)
-
 from backend.logger.logger import init_logger
-from backend.api.conrollers.company.auth.parse_auth_token import get_current_company_from_token
 from backend.di_container.di_container import di_container
 from backend.use_case.client_use_case import IClientUseCase
 from backend.core.db_helper import db_helper
@@ -22,7 +14,7 @@ logger = init_logger('client', 'INFO')
 router = APIRouter()
 
 
-@router.post("/")
+@router.post("/register")
 async def register_client(
         register_request: ClientRegisterRequest,
         client_use_case: IClientUseCase = Depends(di_container.get_client_use_case),
