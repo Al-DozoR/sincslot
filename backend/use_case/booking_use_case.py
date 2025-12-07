@@ -25,7 +25,7 @@ class IBookingUseCase(ABC):
         raise NotImplemented
 
     @abstractmethod
-    async def get_booking_by_id(self, session: AsyncSession, service_id: int, work_schedule: list):
+    async def get_booking_by_id(self, session: AsyncSession, service_id: int, company_id: int, work_schedule: list):
         raise NotImplemented
 
     @abstractmethod
@@ -175,7 +175,7 @@ class BookingUseCase(IBookingUseCase):
 
         return result
 
-    async def get_booking_by_id(self, session: AsyncSession, service_id: int, work_schedule: list):
+    async def get_booking_by_id(self, session: AsyncSession, service_id: int, company_id: int, work_schedule: list):
 
         schedule: list[dict] = []
 
@@ -183,7 +183,7 @@ class BookingUseCase(IBookingUseCase):
         if service is None:
             return
 
-        services = await self.service_repository.get_services_by_company_id(session, company_id=53)
+        services = await self.service_repository.get_services_by_company_id(session, company_id=company_id)
 
         days_of_week_to_work = {w["day_of_week"] for w in work_schedule}
 

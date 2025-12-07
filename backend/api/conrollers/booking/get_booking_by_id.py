@@ -39,7 +39,7 @@ async def get_booking_by_id(
         )
 
     try:
-        calendar_schedule = await booking_use_case.get_booking_by_id(session, service_id, work_schedule)
+        calendar_schedule = await booking_use_case.get_booking_by_id(session, service_id, company_id, work_schedule)
     except Exception as ex:
         logger.warning(f"Error occurred: %s", str(ex))
         return JSONResponse(
