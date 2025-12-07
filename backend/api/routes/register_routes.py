@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+
 from backend.core.config import settings
 from backend.api.conrollers.health import router_health
 
@@ -8,7 +9,7 @@ from backend.api.conrollers.company.auth.login import router as router_login
 from backend.api.conrollers.company.auth.logout import router as router_logout
 from backend.api.conrollers.company.auth.recover_password import router as router_recover_password
 from backend.api.conrollers.company.auth.refresh_token import router as router_refresh_token
-from backend.api.conrollers.company.auth.register import router as router_register
+from backend.api.conrollers.company.auth.register import router as router_register_company
 from backend.api.conrollers.company.settings_company import router as router_settings_company
 
 from backend.api.conrollers.company.service.create_service import router as router_create_service
@@ -17,9 +18,20 @@ from backend.api.conrollers.company.service.get_services_by_company_id import ro
 from backend.api.conrollers.company.service.update_service_by_id import router as router_update_service_by_id
 from backend.api.conrollers.company.service.remove_service_by_id import router as router_remove_service_by_id
 
+from backend.api.conrollers.booking.get_booking_by_id import router as router_get_booking_by_id
+from backend.api.conrollers.booking.create_booking import router as router_create_booking
+
+from backend.api.conrollers.client.auth.login import router_client_auth_login
+from backend.api.conrollers.client.auth.register import router as router_register_client
+from backend.api.conrollers.client.auth.refresh_token import router as router_refresh_token_client
+from backend.api.conrollers.client.get_client_bookings import router as router_get_client_bookings
+
 routes = APIRouter()
 
 routes.include_router(router=router_health)
+
+################### Company ###################
+
 routes.include_router(
     router=router_image,
     prefix=settings.api_v1.prefix_company_logo_image,
@@ -63,10 +75,12 @@ routes.include_router(
 )
 
 routes.include_router(
-    router=router_register,
+    router=router_register_company,
     prefix=settings.api_v1.prefix_company_auth,
     tags=[settings.tags.tag_company_auth]
 )
+
+################### Company Service ###################
 
 routes.include_router(
     router=router_create_service,
@@ -96,4 +110,44 @@ routes.include_router(
     router=router_remove_service_by_id,
     prefix=settings.api_v1.prefix_company_service,
     tags=[settings.tags.tag_company_service]
+)
+
+################### Booking ###################
+
+routes.include_router(
+    router=router_get_booking_by_id,
+    prefix=settings.api_v1.prefix_booking,
+    tags=[settings.tags.tag_booking]
+)
+
+routes.include_router(
+    router=router_create_booking,
+    prefix=settings.api_v1.prefix_booking,
+    tags=[settings.tags.tag_booking]
+)
+
+routes.include_router(
+    router=router_get_client_bookings,
+    prefix=settings.api_v1.prefix_client_booking,
+    tags=[settings.tags.tag_client_booking]
+)
+
+################### Client ###################
+
+routes.include_router(
+    router=router_client_auth_login,
+    prefix=settings.api_v1.prefix_client_auth,
+    tags=[settings.tags.tag_client_auth]
+)
+
+routes.include_router(
+    router=router_refresh_token_client,
+    prefix=settings.api_v1.prefix_client_auth,
+    tags=[settings.tags.tag_client_auth]
+)
+
+routes.include_router(
+    router=router_register_client,
+    prefix=settings.api_v1.prefix_client_auth,
+    tags=[settings.tags.tag_client_auth]
 )
