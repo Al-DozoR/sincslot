@@ -26,6 +26,14 @@ class IToken(ABC):
         raise NotImplemented
 
     @abstractmethod
+    async def create_access_token_client(self, client_id: int) -> str:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def create_refresh_token_client(self, client_id: int) -> str:
+        raise NotImplementedError
+
+    @abstractmethod
     async def create_access_token(self, company_id: int) -> str:
         raise NotImplementedError
 
@@ -110,6 +118,24 @@ class Token(IToken):
 
         return encoded_access_jwt
 
+    async def create_access_token_client(self, client_id: int) -> str:
+        new_access_token = {
+            "client_id": client_id,
+            "type": self.jwt_settings.token_type_access,
+            "exp": int(
+                (datetime.now(timezone.utc) + timedelta(
+                    minutes=self.jwt_settings.access_token_expire_minutes)).timestamp()
+            )
+        }
+
+        encoded_access_jwt = jwt.encode(
+            new_access_token,
+            self.jwt_settings.secret_key,
+            algorithm=self.jwt_settings.algorithm
+        )
+
+        return encoded_access_jwt
+
     async def create_refresh_token(self, company_id: int) -> str:
         new_refresh_token = RefreshTokenEntity(
             company_id=company_id,
@@ -121,6 +147,24 @@ class Token(IToken):
 
         encoded_refresh_jwt = jwt.encode(
             new_refresh_token.to_dict(),
+            self.jwt_settings.secret_key,
+            algorithm=self.jwt_settings.algorithm
+        )
+
+        return encoded_refresh_jwt
+
+    async def create_refresh_token_client(self, client_id: int) -> str:
+        new_refresh_token = {
+            "client_id": client_id,
+            "type": self.jwt_settings.token_type_refresh,
+            "exp": int(
+                (datetime.now(timezone.utc) + timedelta(
+                    minutes=self.jwt_settings.refresh_token_expire_minutes)).timestamp()
+            ),
+        }
+
+        encoded_refresh_jwt = jwt.encode(
+            new_refresh_token,
             self.jwt_settings.secret_key,
             algorithm=self.jwt_settings.algorithm
         )
