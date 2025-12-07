@@ -2,8 +2,11 @@ from abc import ABC, abstractmethod
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.entity.client import ClientEntity
+from backend.entity.token import TokenEntity
 from backend.logger.logger import init_logger
-
+from backend.repository.client_repository import IClientRepository
+from backend.use_case.token_use_case import IToken
 
 logger = init_logger('company_use_case', 'INFO')
 
@@ -14,14 +17,61 @@ class IClientUseCase(ABC):
     async def save_client(
             self,
             session: AsyncSession,
+            name: str,
             phone: str,
     ):
         raise NotImplemented
 
     @abstractmethod
-    async def get_client_by_id(self, session: AsyncSession, client_id: int):
+    async def get_client_by_id(self, session: AsyncSession, client_id: int) -> ClientEntity:
+        raise NotImplemented
+
+    async def get_client_by_name(self, session: AsyncSession, name: str) -> ClientEntity:
         raise NotImplemented
 
     @abstractmethod
-    async def get_client_by_phone(self, session: AsyncSession, phone: str):
+    async def get_client_by_phone(self, session: AsyncSession, phone: str) -> ClientEntity:
         raise NotImplemented
+
+    @abstractmethod
+    async def login(self, session: AsyncSession, client: ClientEntity) -> TokenEntity:
+        raise NotImplemented
+
+
+class ClientUseCase(IClientUseCase):
+
+    def __init__(self, client_repository: IClientRepository, token: IToken):
+        self.client_repository = client_repository
+        self.token = token
+
+    async def save_client(
+            self,
+            session: AsyncSession,
+            name: str,
+            phone: str,
+    ) -> TokenEntity:
+        client_id = await self.client_repository.save_client(session, name, phone)
+
+        access_token = await self.token.create_access_token_client(client_id=client_id)
+        refresh_token = await self.token.create_refresh_token_client(client_id=client_id)
+
+        tokens = await self.token.save_tokens(session, access_token, refresh_token, is_revoke=False)
+
+        return tokens
+
+    async def get_client_by_id(self, session: AsyncSession, client_id: int) -> ClientEntity:
+        return await self.client_repository.get_client_by_id(session, client_id)
+
+    async def get_client_by_name(self, session: AsyncSession, name: str) -> ClientEntity:
+        return await self.client_repository.get_client_by_name(session, name)
+
+    async def get_client_by_phone(self, session: AsyncSession, phone: str) -> ClientEntity:
+        return await self.client_repository.get_client_by_phone(session, phone)
+
+    async def login(self, session: AsyncSession, client: ClientEntity) -> TokenEntity:
+        access_token = await self.token.create_access_token_client(client_id=client.id)
+        refresh_token = await self.token.create_refresh_token_client(client_id=client.id)
+
+        tokens = await self.token.save_tokens(session, access_token, refresh_token, is_revoke=False)
+
+        return tokens
