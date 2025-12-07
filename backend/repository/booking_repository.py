@@ -27,7 +27,7 @@ class IBookingRepository(ABC):
         raise NotImplemented
 
     @abstractmethod
-    async def get_booking_by_client(self, session: AsyncSession, client_id) -> list[BookingEntity] | None:
+    async def get_booking_by_client(self, session: AsyncSession, client_id) -> list[dict] | None:
         raise NotImplemented
 
     @abstractmethod
@@ -64,9 +64,8 @@ class BookingRepository(IBookingRepository):
 
         return new_booking.id
 
-    async def get_booking_by_client(self, session: AsyncSession, client_id) -> list[BookingEntity] | None:
+    async def get_booking_by_client(self, session: AsyncSession, client_id) -> list[dict] | None:
         async with UnitOfWork(session) as uow:
-            # query = select(Booking).where(and_(Booking.client_id == client_id, Service.is_active == True))
             query = Select(Booking).join(Booking.service).options(joinedload(Booking.service).selectinload(Service.company)).where(Booking.client_id == client_id)
             bookings_by_client = await uow.execute_query(query)
             bookings_by_client_scalars: list[Booking] | None = bookings_by_client.scalars()
@@ -74,8 +73,7 @@ class BookingRepository(IBookingRepository):
                 return
 
         result: list[dict] = []
-        print("bookings_by_client_scalars")
-        print(bookings_by_client_scalars)
+
         for booking in bookings_by_client_scalars:
             result.append({
                 "id": booking.id,
@@ -118,7 +116,6 @@ class BookingRepository(IBookingRepository):
     ) -> BookingEntity | None:
         async with UnitOfWork(session) as uow:
             query = select(Booking).where(and_(Booking.client_id == client_id, Booking.service_id == service_id))
-            # query = Select(Booking).options(joinedload(Booking.service))
             booking = await uow.execute_query(query)
             booking_scalars: Booking | None = booking.scalar()
             if booking_scalars is None:
