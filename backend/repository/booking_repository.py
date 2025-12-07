@@ -7,8 +7,6 @@ from sqlalchemy.orm import joinedload
 
 from backend.entity.booking import BookingEntity
 from backend.repository.models.booking import Booking
-from backend.repository.models.client import Client
-from backend.repository.models.company import Company
 from backend.repository.models.service import Service
 from backend.repository.unit_of_work.unit_of_work import UnitOfWork
 
