@@ -99,7 +99,6 @@ class BookingRepository(IBookingRepository):
 
     async def get_booking_by_service_id(self, session: AsyncSession, service_id) -> list[BookingEntity] | None:
         async with UnitOfWork(session) as uow:
-            # query = select(Booking).where(and_(Booking.client_id == client_id, Booking.service_id == service_id))
             query = Select(Booking).where(Booking.service_id == service_id)
             booking = await uow.execute_query(query)
             booking_scalars: list[Booking] | None = booking.scalars()
