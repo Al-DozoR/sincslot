@@ -1,12 +1,19 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy import String, Integer, ForeignKey
 from sqlalchemy import true
-from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column
 from sqlalchemy  import CheckConstraint
 
 from backend.entity.service import ServiceEntity
 from backend.repository.models.base import Base
 from backend.repository.models.mixins import CreatedAtMixin, UpdatedAtMixin
+
+
+if TYPE_CHECKING:
+    from .booking import Booking
+    from .company import Company
 
 
 class Service(CreatedAtMixin, UpdatedAtMixin, Base):
@@ -30,6 +37,8 @@ class Service(CreatedAtMixin, UpdatedAtMixin, Base):
         nullable=False,
     )
     company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    company: Mapped["Company"] = relationship(back_populates="services")
+    bookings: Mapped[list["Booking"]] = relationship(back_populates="service")
 
     def to_service_entity(self) -> ServiceEntity:
         return ServiceEntity(
