@@ -20,6 +20,7 @@ router = APIRouter()
 @router.get("/", responses={
     status.HTTP_200_OK: {"model": ClientBookingsResponse},
     status.HTTP_404_NOT_FOUND: {"model": CompanyErrorResponse},
+    status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": CompanyErrorResponse},
 })
 async def get_client_bookings(
         client=Depends(get_current_client_from_token),
@@ -31,7 +32,7 @@ async def get_client_bookings(
     except Exception as ex:
         logger.warning("Failed to get client booking by client id %s. Error %s", client.id, str(ex))
         return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=CompanyErrorResponse(
                 error=f"Failed to get client booking by client id {client.id}"
             ).model_dump()

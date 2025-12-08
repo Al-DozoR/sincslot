@@ -14,7 +14,12 @@ logger = init_logger('client', 'INFO')
 router = APIRouter()
 
 
-@router.post("/register")
+@router.post("/register", responses={
+    status.HTTP_200_OK: {"model": ClientTokensResponse},
+    status.HTTP_400_BAD_REQUEST: {"model": ClientErrorResponse},
+    status.HTTP_409_CONFLICT: {"model": ClientErrorResponse},
+    status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": ClientErrorResponse}
+})
 async def register_client(
         register_request: ClientRegisterRequest,
         client_use_case: IClientUseCase = Depends(di_container.get_client_use_case),
@@ -27,14 +32,6 @@ async def register_client(
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
             content=ClientErrorResponse(error=f"client with phone {register_request.phone} is already exist").model_dump()
-        )
-
-    client_by_name = await client_use_case.get_client_by_name(session, register_request.name)
-    if client_by_name is not None:
-        logger.warning("Failed to create a client with name %s it is already exist", register_request.name)
-        return JSONResponse(
-            status_code=status.HTTP_409_CONFLICT,
-            content=ClientErrorResponse(error=f"client with name {register_request.name} is already exist").model_dump()
         )
 
     try:

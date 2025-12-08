@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 class Client(CreatedAtMixin, UpdatedAtMixin, Base):
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    name: Mapped[str] = mapped_column(String(255), unique=False, nullable=False)
     phone: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     bookings: Mapped[list["Booking"]] = relationship(back_populates="client")
 

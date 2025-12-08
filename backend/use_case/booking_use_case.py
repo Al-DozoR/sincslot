@@ -33,6 +33,16 @@ class IBookingUseCase(ABC):
         raise NotImplemented
 
     @abstractmethod
+    async def is_booking_time_in_work_schedule(
+            self,
+            session: AsyncSession,
+            company_id: int,
+            time_start: datetime,
+            time_end: datetime,
+    ):
+        raise NotImplemented
+
+    @abstractmethod
     async def get_booking_by_service_id_and_client_id(
             self,
             session: AsyncSession,
@@ -64,6 +74,27 @@ class BookingUseCase(IBookingUseCase):
             time_start: datetime,
             time_end: datetime):
         return await self.booking_repository.save_booking(session, service_id, client_id, time_start, time_end)
+
+    async def is_booking_time_in_work_schedule(
+            self,
+            session: AsyncSession,
+            company_id: int,
+            time_start: datetime,
+            time_end: datetime,
+    ):
+        work_schedule = await self.company_repository.get_work_schedule_by_company_id(session, company_id)
+
+        for ws in work_schedule:
+            work_start = datetime.strptime(ws["work_start"], "%H:%M").time()
+            work_end = datetime.strptime(ws["work_end"], "%H:%M").time()
+
+            if not work_start <= time(time_start.hour, time_start.minute) < work_end:
+                return False
+
+            if not work_start < time(time_end.hour, time_end.minute) <= work_end:
+                return False
+
+        return True
 
     @staticmethod
     def get_work_schedule_by_day_of_week(work_schedule, day_of_week: int):
