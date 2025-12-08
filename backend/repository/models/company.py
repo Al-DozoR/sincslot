@@ -1,6 +1,8 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy import String, Text
 from sqlalchemy import true
-from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.dialects.postgresql import JSONB
 
@@ -8,6 +10,8 @@ from backend.entity.company import CompanyEntity, WorkSchedule
 from backend.repository.models.base import Base
 from backend.repository.models.mixins import CreatedAtMixin, UpdatedAtMixin
 
+if TYPE_CHECKING:
+    from .service import Service
 
 class Company(CreatedAtMixin, UpdatedAtMixin, Base):
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -30,6 +34,7 @@ class Company(CreatedAtMixin, UpdatedAtMixin, Base):
     )
     work_schedule = mapped_column(JSONB, nullable=True)
     booking_url:  Mapped[str] = mapped_column(String(255), unique=True, nullable=True)
+    services: Mapped[list["Service"]] = relationship(back_populates="company")
 
     def to_company_entity(self) -> CompanyEntity:
 

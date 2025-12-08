@@ -27,7 +27,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/login")
     status.HTTP_404_NOT_FOUND: {"model": CompanyErrorResponse},
     status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": CompanyErrorResponse}
 })
-async def login(
+async def login_company(
         login_input: CompanyLoginRequest,
         company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
         session: AsyncSession = Depends(db_helper.session_getter),
