@@ -10,6 +10,8 @@ services:
     depends_on:
       - syncslot_db
       - syncslot_db_test
+    volumes:
+      - ./storage:/syncslot/backend/storage
     networks:
       - syncslot_network
 
