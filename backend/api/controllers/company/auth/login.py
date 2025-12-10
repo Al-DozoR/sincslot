@@ -25,10 +25,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/login")
 @router.post("/login", responses={
     status.HTTP_201_CREATED: {"model": CompanyTokensResponse},
     status.HTTP_404_NOT_FOUND: {"model": CompanyErrorResponse},
-    status.HTTP_403_FORBIDDEN: {"model": CompanyErrorResponse},
     status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": CompanyErrorResponse}
 })
-async def login(
+async def login_company(
         login_input: CompanyLoginRequest,
         company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
         session: AsyncSession = Depends(db_helper.session_getter),
@@ -42,7 +41,6 @@ async def login(
                 error=f"Company with email {login_input.email} does not exist"
             ).model_dump()
         )
-
     if not company.is_active:
         logger.warning("Company %s is inactive. Login forbidden", login_input.email)
         return JSONResponse(
@@ -51,9 +49,8 @@ async def login(
                 error="Company is deactivated and cannot log in"
             ).model_dump()
         )
-
     if not await company_use_case.verify_password(login_input.password, company.password):
-        logger.warning("Failed to verify password. Impossible to log in")
+        logger.warning("Failed to verify password %s. Impossible to log in", login_input.password)
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content=CompanyErrorResponse(
@@ -74,8 +71,7 @@ async def login(
         status_code=status.HTTP_201_CREATED,
         content=CompanyTokensResponse(
             access_token=new_tokens.access_token,
-        ).model_dump(by_alias=True)
-    )
+        ).model_dump(by_alias=True))
 
     response.set_cookie(
         key="refreshToken",
