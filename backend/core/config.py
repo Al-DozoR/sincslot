@@ -10,6 +10,10 @@ from pydantic_settings import (
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+class CalendarSchedule(BaseModel):
+    calendar_schedule_limit_days: int = 30
+
+
 class BookingUrl(BaseModel):
     base_url: str = "https://syncslot.ru/booking"
 
@@ -64,6 +68,9 @@ class ApiV1Tags(BaseModel):
     tag_company_work_schedule: str = "company work schedule"
     tag_company_logo_image: str = "company logo image"
     tag_company_service: str = "company service"
+    tag_booking: str = "booking"
+    tag_client_auth: str = "client auth"
+    tag_client_booking: str = "client booking"
 
 
 class ApiV1Prefix(BaseModel):
@@ -72,6 +79,9 @@ class ApiV1Prefix(BaseModel):
     prefix_company_work_schedule: str = "/api/v1/company/work-schedule"
     prefix_company_logo_image: str = "/api/v1/company/logo-image"
     prefix_company_service: str = "/api/v1/company/service"
+    prefix_booking: str = "/api/v1/booking"
+    prefix_client_auth: str = "/api/v1/client/auth"
+    prefix_client_booking: str = "/api/v1/client/booking"
 
 
 class Settings(BaseSettings):
@@ -91,6 +101,7 @@ class Settings(BaseSettings):
     password: Password = Password()
     file_company_logo_settings: FileCompanyLogoSettings = FileCompanyLogoSettings()
     booking_url: BookingUrl = BookingUrl()
+    calendar_schedule: CalendarSchedule = CalendarSchedule()
 
 
 settings = Settings()
