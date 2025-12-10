@@ -1,5 +1,4 @@
 from fastapi import APIRouter
-
 from backend.core.config import settings
 from backend.api.controllers.health import router_health
 
@@ -9,7 +8,6 @@ from backend.api.controllers.company.auth.login import router as router_login
 from backend.api.controllers.company.auth.logout import router as router_logout
 from backend.api.controllers.company.auth.recover_password import router as router_recover_password
 from backend.api.controllers.company.auth.refresh_token import router as router_refresh_token
-from backend.api.controllers.company.auth.register import router as router_register_company
 from backend.api.controllers.company.settings_company import router as router_settings_company
 
 from backend.api.controllers.company.service.create_service import router as router_create_service
@@ -17,6 +15,8 @@ from backend.api.controllers.company.service.get_service_by_id import router as 
 from backend.api.controllers.company.service.get_services_by_company_id import router as router_get_services_by_company_id
 from backend.api.controllers.company.service.update_service_by_id import router as router_update_service_by_id
 from backend.api.controllers.company.service.remove_service_by_id import router as router_remove_service_by_id
+from backend.api.controllers.company.auth.register import router as router_register_company
+from backend.api.controllers.company.deactivate_company import router as router_deactivate_company
 
 from backend.api.controllers.booking.get_booking_by_id import router as router_get_booking_by_id
 from backend.api.controllers.booking.create_booking import router as router_create_booking
@@ -25,6 +25,8 @@ from backend.api.controllers.client.auth.login import router_client_auth_login
 from backend.api.controllers.client.auth.register import router as router_register_client
 from backend.api.controllers.client.auth.refresh_token import router as router_refresh_token_client
 from backend.api.controllers.client.get_client_bookings import router as router_get_client_bookings
+
+
 
 routes = APIRouter()
 
@@ -80,6 +82,11 @@ routes.include_router(
     tags=[settings.tags.tag_company_auth]
 )
 
+routes.include_router(
+    router=router_deactivate_company,
+    prefix=settings.api_v1.prefix_company_settings,
+    tags=[settings.tags.tag_company_settings]
+)
 ################### Company Service ###################
 
 routes.include_router(

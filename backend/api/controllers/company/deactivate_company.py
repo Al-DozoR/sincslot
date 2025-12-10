@@ -1,0 +1,78 @@
+from fastapi import APIRouter, status, Depends, Request
+from starlette.responses import JSONResponse
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from backend.logger.logger import init_logger
+from backend.api.response.company import (
+    CompanyErrorResponse,
+    CompanySuccessResponse,
+)
+from backend.api.controllers.company.auth.parse_auth_token import get_current_company_from_token
+from backend.di_container.di_container import di_container
+from backend.use_case.company_use_case import ICompanyUseCase
+from backend.use_case.token_use_case import IToken
+from backend.core.db_helper import db_helper
+
+logger = init_logger('company_settings', 'INFO')
+
+router = APIRouter()
+
+
+@router.post(
+    "/deactivate",
+    responses={
+        status.HTTP_200_OK: {"model": CompanySuccessResponse},
+        status.HTTP_404_NOT_FOUND: {"model": CompanyErrorResponse},
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": CompanyErrorResponse},
+    }
+)
+async def deactivate_company(
+        request: Request,
+        company=Depends(get_current_company_from_token),  # <-- п.1 + п.2
+        company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
+        token_use_case: IToken = Depends(di_container.get_token_use_case),
+        session: AsyncSession = Depends(db_helper.session_getter),
+):
+    refresh_token = request.cookies.get("refreshToken")
+
+    if refresh_token is None:
+        logger.error("Refresh token was not provided")
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=CompanyErrorResponse(error="Refresh token was not provided").model_dump()
+        )
+
+    # Проверяем что refresh принадлежит этой компании
+    payload = await token_use_case.decode_token(refresh_token)
+    if int(payload.get("company_id")) != company.id:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=CompanyErrorResponse(
+                error="Companies ids from access token and from refresh token do not match"
+            ).model_dump()
+        )
+
+    # Деактивация компании
+    try:
+        await company_use_case.deactivate_company(session, company.id)
+    except Exception as ex:
+        logger.error(f"Error occurred while deactivating company: {str(ex)}")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=CompanyErrorResponse(error="Failed to deactivate company").model_dump()
+        )
+
+    # Отзыв всех токенов (п.3)
+    try:
+        await token_use_case.revoke_tokens(session, refresh_token, True)
+    except Exception as ex:
+        logger.error(f"Error occurred while revoking tokens: {str(ex)}")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=CompanyErrorResponse(error="Failed to revoke tokens").model_dump()
+        )
+
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=CompanySuccessResponse(message="Company deactivated successfully").model_dump()
+    )

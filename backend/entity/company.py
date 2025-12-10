@@ -3,6 +3,8 @@ from typing import Optional
 from dataclasses import dataclass, field
 from enum import Enum
 
+from sqlalchemy.sql.operators import truediv
+
 
 class DaysOfWeek(Enum):
     Monday = 1
@@ -63,6 +65,7 @@ class CompanyEntity:
     description: Optional[str] = field(default=None)
     address: Optional[str] = field(default=None)
     id: Optional[int] = field(default=None)
+    is_active: bool = field(default=True)
 
     def to_dict(self) -> dict:
         return self.__dict__

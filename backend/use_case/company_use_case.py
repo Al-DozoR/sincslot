@@ -90,6 +90,9 @@ class ICompanyUseCase(ABC):
     async def get_work_schedule_by_company_id(self, session: AsyncSession, company_id) -> list | None:
         raise NotImplemented
 
+    @abstractmethod
+    async def deactivate_company(self, session: AsyncSession, company_id: int) -> None:
+        raise NotImplemented
 
 class CompanyUseCase(ICompanyUseCase):
 
@@ -157,6 +160,8 @@ class CompanyUseCase(ICompanyUseCase):
         return await self.company_repository.get_company_by_booking_url(session, booking_url)
 
     async def login(self, session: AsyncSession, company: CompanyEntity) -> TokenEntity:
+        if not company.is_active:
+            raise Exception("Inactive company cannot log in")
 
         access_token = await self.token.create_access_token(company_id=company.id)
         refresh_token = await self.token.create_refresh_token(company_id=company.id)
@@ -250,3 +255,6 @@ class CompanyUseCase(ICompanyUseCase):
 
     async def get_work_schedule_by_company_id(self, session: AsyncSession, company_id) -> list | None:
         return await self.company_repository.get_work_schedule_by_company_id(session, company_id)
+
+    async def deactivate_company(self, session: AsyncSession, company_id: int) -> None:
+        await self.company_repository.deactivate_company(session, company_id)
