@@ -8,7 +8,7 @@ from backend.api.response.company import (
     CompanyErrorResponse,
     CompanySuccessResponse,
 )
-from backend.api.conrollers.company.auth.parse_auth_token import get_current_company_from_token
+from backend.api.controllers.company.auth.parse_auth_token import get_current_company_from_token
 from backend.di_container.di_container import di_container
 from backend.use_case.token_use_case import IToken
 from backend.core.db_helper import db_helper

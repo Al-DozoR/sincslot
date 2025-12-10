@@ -53,6 +53,7 @@ class Company(CreatedAtMixin, UpdatedAtMixin, Base):
             description=self.description,
             address=self.address,
             booking_url=self.booking_url,
+            is_active=self.is_active
         )
 
     def __str__(self):

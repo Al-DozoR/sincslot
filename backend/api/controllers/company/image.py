@@ -6,7 +6,7 @@ from backend.api.response.company import (
     CompanyErrorResponse,
 )
 
-from backend.api.conrollers.company.auth.parse_auth_token import get_current_company_from_token
+from backend.api.controllers.company.auth.parse_auth_token import get_current_company_from_token
 from backend.logger.logger import init_logger
 from backend.di_container.di_container import di_container
 from backend.use_case.file_use_case import IFileStorage

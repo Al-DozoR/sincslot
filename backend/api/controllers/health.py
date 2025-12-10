@@ -2,7 +2,7 @@ from fastapi import APIRouter, status, Depends
 from fastapi.security import OAuth2PasswordBearer
 from starlette.responses import JSONResponse
 
-from backend.api.conrollers.company.auth.parse_auth_token import get_current_company_from_token
+from backend.api.controllers.company.auth.parse_auth_token import get_current_company_from_token
 from backend.logger.logger import init_logger
 
 logger = init_logger('health', 'INFO')

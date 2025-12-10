@@ -160,6 +160,8 @@ class CompanyUseCase(ICompanyUseCase):
         return await self.company_repository.get_company_by_booking_url(session, booking_url)
 
     async def login(self, session: AsyncSession, company: CompanyEntity) -> TokenEntity:
+        if not company.is_active:
+            raise Exception("Inactive company cannot log in")
 
         access_token = await self.token.create_access_token(company_id=company.id)
         refresh_token = await self.token.create_refresh_token(company_id=company.id)
