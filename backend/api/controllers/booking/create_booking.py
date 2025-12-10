@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.api.request.booking import BookingCreateRequest
 from backend.api.response.booking import BookingGetById, BookingErrorResponse
 from backend.logger.logger import init_logger
-from backend.api.conrollers.client.auth.parse_aurh_token import get_current_client_from_token
+from backend.api.controllers.client.auth.parse_aurh_token import get_current_client_from_token
 from backend.di_container.di_container import di_container
 from backend.use_case.booking_use_case import IBookingUseCase
 from backend.core.db_helper import db_helper
