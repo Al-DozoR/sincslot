@@ -7,8 +7,8 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const Login = () => {
   const navigate = useNavigate();
-
   const inputRefs = useRef([]);
+  
   useEffect(() => {
     inputRefs.current[0]?.focus();
   }, []);
@@ -17,21 +17,29 @@ const Login = () => {
     email: '',
     password: ''
   });
-
   const [errors, setErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
 
-  const validateField = (name, value) => {
-    if (name === 'email') {
-      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const phonePattern = /^\+?\d{11}$/; 
-      if (!value) return 'Поле обязательно для заполнения';
-      if (!emailPattern.test(value) && !phonePattern.test(value)) return 'Введите корректный email или телефон';
+ const validateField = (name, value) => {
+    switch (name) {
+      case 'email': {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!value.trim()) {
+          return 'Поле обязательно для заполнения';
+        }
+        return emailRegex.test(value) ? '' : 'Введите корректный email';
+      }
+      case 'password':
+        if (!value.trim()) {
+          return 'Поле обязательно для заполнения';
+        }
+        return '';
+      default:
+        return '';
     }
-    return '';
   };
 
-const handleChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
 
     setFormData((prev) => {
@@ -42,7 +50,7 @@ const handleChange = (e) => {
         newErrors[name] = validateField(name, value);
 
         // Проверка валидности всей формы
-        setIsFormValid(!Object.values(newErrors).some(error => error));
+        setIsFormValid(newFormData.email && newFormData.password && !Object.values(newErrors).some(error => error));
 
         return newErrors;
       });
@@ -51,7 +59,7 @@ const handleChange = (e) => {
     });
   };
 
- const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!isFormValid) return;
@@ -84,16 +92,17 @@ const handleChange = (e) => {
 
         <form onSubmit={handleSubmit} className={styles.authForm}>
           <div className={styles.formGroup}>
-            <label htmlFor="email">Email или телефон</label>
+            <label htmlFor="email">Email</label>
             <input
-              type="text"
+              type="email" // Изменено на тип "email"
               id="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="example@mail.ru или +7 XXX XXX XX XX"
+              placeholder="example@mail.ru"
               required
             />
+            {errors.email && <span className={styles.error}>{errors.email}</span>} {/* Отображение ошибки */}
           </div>
 
           <div className={styles.formGroup}>
@@ -107,6 +116,7 @@ const handleChange = (e) => {
               placeholder="Введите ваш пароль"
               required
             />
+            {errors.password && <span className={styles.error}>{errors.password}</span>} {/* Отображение ошибки */}
           </div>
 
           <button
