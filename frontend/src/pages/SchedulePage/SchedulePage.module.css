@@ -434,3 +434,189 @@
     font-size: 0.9rem;
   }
 }
+
+.pageContainer {
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+.container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Кнопка подтверждения */
+.confirmButton {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  margin-right: 0.5rem;
+}
+
+.confirmButton:hover {
+  background: #a7f3d0;
+  color: #064e3b;
+}
+
+/* Обновляем контейнер для кнопок действий */
+.actionsCell {
+  padding: 1rem;
+  text-align: center;
+  border-bottom: 1px solid #f1f5f9;
+  min-width: 220px; /* Увеличиваем для двух кнопок */
+}
+
+/* Модальное окно подтверждения */
+.confirmModal {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.confirmModalIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.confirmModalTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.confirmModalContent {
+  margin-bottom: 2rem;
+}
+
+.confirmModalText {
+  color: #6b7280;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.confirmModalText strong {
+  color: #1f2937;
+}
+
+.confirmModalInfo {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 1rem;
+  color: #0369a1;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.confirmModalActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.confirmModalCancel {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.confirmModalCancel:hover {
+  background: #e5e7eb;
+}
+
+.confirmModalConfirm {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  flex: 1;
+}
+
+.confirmModalConfirm:hover {
+  background: #059669;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .actionsCell {
+    min-width: 180px;
+  }
+
+  .confirmButton {
+    margin-right: 0.3rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .cancelButton,
+  .restoreButton {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .confirmModal,
+  .cancelModal {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+
+  .confirmModalActions {
+    flex-direction: column;
+  }
+
+  .detailItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .actionsCell {
+    min-width: 150px;
+  }
+
+  .confirmButton,
+  .cancelButton,
+  .restoreButton {
+    display: block;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    margin-right: 0;
+  }
+
+  .confirmModalTitle,
+  .cancelModalTitle {
+    font-size: 1.3rem;
+  }
+}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Header from '../../components/Header/Header';
 import styles from './CompanySettingsPage.module.css';
 
 const CompanySettingsPage = () => {
@@ -159,289 +160,293 @@ const CompanySettingsPage = () => {
   ];
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>Настройки компании</h1>
-      </div>
+    <div className={styles.pageContainer}>
+      <Header title="SyncSlot" />
+      
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Настройки компании</h1>
+        </div>
 
-      <form onSubmit={handleSave} className={styles.form}>
-        {/* Основная информация */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Основная информация</h2>
-          <div className={styles.formGrid}>
-            <div className={styles.formGroup}>
-              <label htmlFor="name">Название компании</label>
-              <input
-                type="text"
-                id="name"
-                value={companyData.name}
-                onChange={(e) => handleBasicInfoChange('name', e.target.value)}
-                className={styles.input}
-                required
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="phone">Телефон</label>
-              <input
-                type="tel"
-                id="phone"
-                value={companyData.phone}
-                onChange={(e) => handleBasicInfoChange('phone', e.target.value)}
-                className={styles.input}
-                required
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                value={companyData.email}
-                onChange={(e) => handleBasicInfoChange('email', e.target.value)}
-                className={styles.input}
-                required
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="address">Адрес</label>
-              <input
-                type="text"
-                id="address"
-                value={companyData.address}
-                onChange={(e) => handleBasicInfoChange('address', e.target.value)}
-                className={styles.input}
-                required
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Расписание */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Расписание</h2>
-          <div className={styles.scheduleGrid}>
-            {daysOfWeek.map((day) => (
-              <div key={day.key} className={styles.scheduleItem}>
-                <label className={styles.dayLabel}>
-                  <input
-                    type="checkbox"
-                    checked={companyData.schedule[day.key].enabled}
-                    onChange={() => handleScheduleChange(day.key, 'enabled')}
-                    className={styles.checkbox}
-                  />
-                  <span>{day.label}</span>
-                </label>
-                
-                {companyData.schedule[day.key].enabled && (
-                  <div className={styles.timeInputs}>
-                    <input
-                      type="time"
-                      value={companyData.schedule[day.key].start}
-                      onChange={(e) => handleScheduleChange(day.key, 'start', e.target.value)}
-                      className={styles.timeInput}
-                    />
-                    <span className={styles.timeSeparator}>—</span>
-                    <input
-                      type="time"
-                      value={companyData.schedule[day.key].end}
-                      onChange={(e) => handleScheduleChange(day.key, 'end', e.target.value)}
-                      className={styles.timeInput}
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <div className={styles.divider}></div>
-
-        {/* Дополнительные настройки */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Дополнительные настройки</h2>
-          
-          {/* Логотип */}
-          <div className={styles.logoSection}>
-            <label className={styles.logoLabel}>Логотип компании</label>
-            <div className={styles.logoUpload}>
-              <div className={styles.logoPreview}>
-                {logoPreview ? (
-                  <img src={logoPreview} alt="Логотип" className={styles.logoImage} />
-                ) : (
-                  <div className={styles.logoPlaceholder}>Логотип</div>
-                )}
-              </div>
-              <input
-                type="file"
-                id="logo"
-                accept="image/*"
-                onChange={handleLogoUpload}
-                className={styles.fileInput}
-              />
-              <label htmlFor="logo" className={styles.uploadButton}>
-                Выбрать файл
-              </label>
-            </div>
-          </div>
-
-          {/* Ссылка на компанию */}
-          <div className={styles.formGroup}>
-            <label htmlFor="companyUrl">Ссылка на компанию</label>
-            <div className={styles.urlInputWrapper}>
-              <span className={styles.urlPrefix}>syncslot.ru/</span>
-              <input
-                type="text"
-                id="companyUrl"
-                value={companyData.companyUrl}
-                onChange={(e) => handleBasicInfoChange('companyUrl', e.target.value)}
-                className={styles.urlInput}
-                required
-              />
-            </div>
-          </div>
-
-          {/* Изменение пароля */}
-          <div className={styles.passwordSection}>
-            <h3 className={styles.subsectionTitle}>Изменить пароль</h3>
+        <form onSubmit={handleSave} className={styles.form}>
+          {/* Основная информация */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Основная информация</h2>
             <div className={styles.formGrid}>
               <div className={styles.formGroup}>
-                <label htmlFor="currentPassword">Текущий пароль</label>
+                <label htmlFor="name">Название компании</label>
                 <input
-                  type="password"
-                  id="currentPassword"
-                  value={passwordData.currentPassword}
-                  onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
+                  type="text"
+                  id="name"
+                  value={companyData.name}
+                  onChange={(e) => handleBasicInfoChange('name', e.target.value)}
                   className={styles.input}
+                  required
                 />
               </div>
+
               <div className={styles.formGroup}>
-                <label htmlFor="newPassword">Новый пароль</label>
+                <label htmlFor="phone">Телефон</label>
                 <input
-                  type="password"
-                  id="newPassword"
-                  value={passwordData.newPassword}
-                  onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
+                  type="tel"
+                  id="phone"
+                  value={companyData.phone}
+                  onChange={(e) => handleBasicInfoChange('phone', e.target.value)}
                   className={styles.input}
+                  required
                 />
               </div>
+
               <div className={styles.formGroup}>
-                <label htmlFor="confirmPassword">Подтвердите пароль</label>
+                <label htmlFor="email">Email</label>
                 <input
-                  type="password"
-                  id="confirmPassword"
-                  value={passwordData.confirmPassword}
-                  onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
+                  type="email"
+                  id="email"
+                  value={companyData.email}
+                  onChange={(e) => handleBasicInfoChange('email', e.target.value)}
                   className={styles.input}
+                  required
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="address">Адрес</label>
+                <input
+                  type="text"
+                  id="address"
+                  value={companyData.address}
+                  onChange={(e) => handleBasicInfoChange('address', e.target.value)}
+                  className={styles.input}
+                  required
                 />
               </div>
             </div>
-          </div>
+          </section>
 
-          {/* Ссылка для записи */}
-          <div className={styles.bookingLinkSection}>
-            <h3 className={styles.subsectionTitle}>Ссылка для записи</h3>
-            <div className={styles.bookingLinkWrapper}>
-              <input
-                type="text"
-                value={companyData.bookingLink}
-                readOnly
-                className={styles.bookingLinkInput}
-              />
+          {/* Расписание */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Расписание</h2>
+            <div className={styles.scheduleGrid}>
+              {daysOfWeek.map((day) => (
+                <div key={day.key} className={styles.scheduleItem}>
+                  <label className={styles.dayLabel}>
+                    <input
+                      type="checkbox"
+                      checked={companyData.schedule[day.key].enabled}
+                      onChange={() => handleScheduleChange(day.key, 'enabled')}
+                      className={styles.checkbox}
+                    />
+                    <span>{day.label}</span>
+                  </label>
+                  
+                  {companyData.schedule[day.key].enabled && (
+                    <div className={styles.timeInputs}>
+                      <input
+                        type="time"
+                        value={companyData.schedule[day.key].start}
+                        onChange={(e) => handleScheduleChange(day.key, 'start', e.target.value)}
+                        className={styles.timeInput}
+                      />
+                      <span className={styles.timeSeparator}>—</span>
+                      <input
+                        type="time"
+                        value={companyData.schedule[day.key].end}
+                        onChange={(e) => handleScheduleChange(day.key, 'end', e.target.value)}
+                        className={styles.timeInput}
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <div className={styles.divider}></div>
+
+          {/* Дополнительные настройки */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Дополнительные настройки</h2>
+            
+            {/* Логотип */}
+            <div className={styles.logoSection}>
+              <label className={styles.logoLabel}>Логотип компании</label>
+              <div className={styles.logoUpload}>
+                <div className={styles.logoPreview}>
+                  {logoPreview ? (
+                    <img src={logoPreview} alt="Логотип" className={styles.logoImage} />
+                  ) : (
+                    <div className={styles.logoPlaceholder}>Логотип</div>
+                  )}
+                </div>
+                <input
+                  type="file"
+                  id="logo"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  className={styles.fileInput}
+                />
+                <label htmlFor="logo" className={styles.uploadButton}>
+                  Выбрать файл
+                </label>
+              </div>
+            </div>
+
+            {/* Ссылка на компанию */}
+            <div className={styles.formGroup}>
+              <label htmlFor="companyUrl">Ссылка на компанию</label>
+              <div className={styles.urlInputWrapper}>
+                <span className={styles.urlPrefix}>syncslot.ru/</span>
+                <input
+                  type="text"
+                  id="companyUrl"
+                  value={companyData.companyUrl}
+                  onChange={(e) => handleBasicInfoChange('companyUrl', e.target.value)}
+                  className={styles.urlInput}
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Изменение пароля */}
+            <div className={styles.passwordSection}>
+              <h3 className={styles.subsectionTitle}>Изменить пароль</h3>
+              <div className={styles.formGrid}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="currentPassword">Текущий пароль</label>
+                  <input
+                    type="password"
+                    id="currentPassword"
+                    value={passwordData.currentPassword}
+                    onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
+                    className={styles.input}
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="newPassword">Новый пароль</label>
+                  <input
+                    type="password"
+                    id="newPassword"
+                    value={passwordData.newPassword}
+                    onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
+                    className={styles.input}
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="confirmPassword">Подтвердите пароль</label>
+                  <input
+                    type="password"
+                    id="confirmPassword"
+                    value={passwordData.confirmPassword}
+                    onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
+                    className={styles.input}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Ссылка для записи */}
+            <div className={styles.bookingLinkSection}>
+              <h3 className={styles.subsectionTitle}>Ссылка для записи</h3>
+              <div className={styles.bookingLinkWrapper}>
+                <input
+                  type="text"
+                  value={companyData.bookingLink}
+                  readOnly
+                  className={styles.bookingLinkInput}
+                />
+                <button
+                  type="button"
+                  onClick={copyBookingLink}
+                  className={styles.copyButton}
+                >
+                  Копировать
+                </button>
+              </div>
+            </div>
+
+            {/* Удаление профиля */}
+            <div className={styles.deleteSection}>
+              <h3 className={styles.subsectionTitle}>Опасная зона</h3>
+              <p className={styles.deleteWarning}>
+                Удаление профиля компании приведет к безвозвратной потере всех данных, включая записи клиентов и настройки.
+              </p>
               <button
                 type="button"
-                onClick={copyBookingLink}
-                className={styles.copyButton}
+                onClick={handleDeleteClick}
+                className={styles.deleteButton}
               >
-                Копировать
+                Удалить профиль компании
               </button>
             </div>
-          </div>
+          </section>
 
-          {/* Удаление профиля */}
-          <div className={styles.deleteSection}>
-            <h3 className={styles.subsectionTitle}>Опасная зона</h3>
-            <p className={styles.deleteWarning}>
-              Удаление профиля компании приведет к безвозвратной потере всех данных, включая записи клиентов и настройки.
-            </p>
+          {/* Кнопки действий */}
+          <div className={styles.actions}>
             <button
               type="button"
-              onClick={handleDeleteClick}
-              className={styles.deleteButton}
+              onClick={handleReset}
+              className={styles.resetButton}
             >
-              Удалить профиль компании
+              Сбросить
+            </button>
+            <button
+              type="submit"
+              className={styles.saveButton}
+            >
+              Сохранить изменения
             </button>
           </div>
-        </section>
+        </form>
 
-        {/* Кнопки действий */}
-        <div className={styles.actions}>
-          <button
-            type="button"
-            onClick={handleReset}
-            className={styles.resetButton}
-          >
-            Сбросить
-          </button>
-          <button
-            type="submit"
-            className={styles.saveButton}
-          >
-            Сохранить изменения
-          </button>
-        </div>
-      </form>
-
-      {/* Модальное окно подтверждения удаления */}
-      {isDeleteModalOpen && (
-        <div className={styles.modalOverlay} onClick={handleCloseDeleteModal}>
-          <div className={styles.deleteModal} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.deleteModalIcon}>⚠️</div>
-            <h2 className={styles.deleteModalTitle}>Удалить профиль компании</h2>
-            <div className={styles.deleteModalContent}>
-              <p className={styles.deleteModalText}>
-                Вы уверены, что хотите удалить профиль компании <strong>«{companyData.name}»</strong>?
-              </p>
-              <div className={styles.deleteModalWarning}>
-                <strong>Это действие нельзя отменить!</strong> Будут безвозвратно удалены:
-                <ul className={styles.deleteModalList}>
-                  <li>Все данные компании</li>
-                  <li>Расписание и услуги</li>
-                  <li>История записей клиентов</li>
-                  <li>Настройки и конфигурации</li>
-                </ul>
+        {/* Модальное окно подтверждения удаления */}
+        {isDeleteModalOpen && (
+          <div className={styles.modalOverlay} onClick={handleCloseDeleteModal}>
+            <div className={styles.deleteModal} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.deleteModalIcon}>⚠️</div>
+              <h2 className={styles.deleteModalTitle}>Удалить профиль компании</h2>
+              <div className={styles.deleteModalContent}>
+                <p className={styles.deleteModalText}>
+                  Вы уверены, что хотите удалить профиль компании <strong>«{companyData.name}»</strong>?
+                </p>
+                <div className={styles.deleteModalWarning}>
+                  <strong>Это действие нельзя отменить!</strong> Будут безвозвратно удалены:
+                  <ul className={styles.deleteModalList}>
+                    <li>Все данные компании</li>
+                    <li>Расписание и услуги</li>
+                    <li>История записей клиентов</li>
+                    <li>Настройки и конфигурации</li>
+                  </ul>
+                </div>
+                <div className={styles.deleteModalConfirmText}>
+                  Для подтверждения введите название вашей компании:
+                </div>
+                <input
+                  type="text"
+                  placeholder={companyData.name}
+                  className={styles.deleteModalInput}
+                  onChange={(e) => {
+                    // Можно добавить проверку на совпадение с названием компании
+                  }}
+                />
               </div>
-              <div className={styles.deleteModalConfirmText}>
-                Для подтверждения введите название вашей компании:
+              <div className={styles.deleteModalActions}>
+                <button
+                  className={styles.deleteModalCancel}
+                  onClick={handleCloseDeleteModal}
+                >
+                  Отмена
+                </button>
+                <button
+                  className={styles.deleteModalConfirm}
+                  onClick={handleConfirmDelete}
+                >
+                  Удалить профиль
+                </button>
               </div>
-              <input
-                type="text"
-                placeholder={companyData.name}
-                className={styles.deleteModalInput}
-                onChange={(e) => {
-                  // Можно добавить проверку на совпадение с названием компании
-                }}
-              />
-            </div>
-            <div className={styles.deleteModalActions}>
-              <button
-                className={styles.deleteModalCancel}
-                onClick={handleCloseDeleteModal}
-              >
-                Отмена
-              </button>
-              <button
-                className={styles.deleteModalConfirm}
-                onClick={handleConfirmDelete}
-              >
-                Удалить профиль
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
