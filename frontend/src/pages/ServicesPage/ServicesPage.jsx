@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import styles from './ServicesPage.module.css';
 
 const ServicesPage = () => {
@@ -49,6 +49,24 @@ const ServicesPage = () => {
     duration: '',
     price: ''
   });
+
+ // Функция для загрузки услуг с бэкенда
+  const fetchServices = async () => {
+    try {
+      const data = await servicesService.get(service.id); // Верный ли метод?..
+      setServices(data);
+    } catch (error) {
+      console.error("Ошибка при загрузке услуг:", error);
+      toast.error(
+        error?.response?.data?.detail || "Не удалось загрузить услуги"
+      );
+    }
+  };
+ 
+// Используем useEffect для загрузки данных при монтировании компонента. Массив пустой, т.к. выполнится только один раз.
+  useEffect(() => {
+    fetchServices();
+  }, []);
 
   // Открытие модального окна для редактирования
   const handleEditClick = (service) => {
