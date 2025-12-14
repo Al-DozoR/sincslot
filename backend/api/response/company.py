@@ -1,8 +1,9 @@
+from datetime import date, time
 from typing import Annotated, Union, Optional
 
 import phonenumbers
 from pydantic_extra_types.phone_numbers import PhoneNumberValidator
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from pydantic import BaseModel, EmailStr, Field, ConfigDict, model_validator
 from pydantic.alias_generators import to_camel
 
 from backend.entity.company import DaysOfWeek
@@ -98,3 +99,29 @@ class CompanySettingsResponse(BaseModel):
         populate_by_name=True,
         from_attributes=True,
     )
+
+
+class CompanyBookingStatusResponse(BaseModel):
+    status: str
+
+
+class CompanyBookingResponse(BaseModel):
+    booking_id: int = Field(alias="bookingID")
+    client_name: str = Field(alias="clientName")
+    phone: str
+    service: str
+    status: str
+    date: str = Field(examples=["2025-12-14"])
+    time: str = Field(examples=["14:04:08"])
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        from_attributes=True,
+    )
+
+
+class CompanyBookingScheduleResponse(BaseModel):
+    bookings: list[CompanyBookingResponse]
+
+

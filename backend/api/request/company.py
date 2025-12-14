@@ -8,6 +8,7 @@ from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator, mo
 from pydantic.alias_generators import to_camel
 
 from backend.entity.company import DaysOfWeek
+from backend.entity.booking import BookingStatus
 
 E164NumberType = Annotated[
     Union[str, phonenumbers.PhoneNumber], PhoneNumberValidator(number_format="E164")
@@ -188,3 +189,14 @@ class CompanyUpdateSettingsRequest(BaseModel):
                 raise ValueError('new_password and new_repeat_password do not match')
 
         return self
+
+
+class CompanyBookingScheduleOrder(BaseModel):
+    client_name: str | None = Field(default=None)
+    service_name: str | None = Field(default=None)
+    date: str | None = Field(default=None)
+    time: str | None = Field(default=None)
+
+
+class CompanyBookingScheduleStatus(BaseModel):
+    status: BookingStatus

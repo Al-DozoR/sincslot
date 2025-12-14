@@ -47,6 +47,7 @@ class Booking(BaseModel):
     client_id: int = Field(alias="clientID")
     time_start: datetime = Field(alias="timeStart")
     time_end: datetime = Field(alias="timeEnd")
+    status: str
     service: ServiceInfo
 
     model_config = ConfigDict(

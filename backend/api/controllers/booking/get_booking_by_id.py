@@ -39,13 +39,26 @@ async def get_booking_by_id(
         )
 
     try:
-        calendar_schedule = await booking_use_case.get_booking_by_id(session, service_id, company_id, work_schedule)
+        calendar_schedule = await booking_use_case.get_calendar_schedule_booking(
+            session,
+            service_id,
+            company_id,
+            work_schedule
+        )
     except Exception as ex:
         logger.warning(f"Error occurred: %s", str(ex))
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=BookingErrorResponse(
                 error=f"Error occurred: {str(ex)}"
+            ).model_dump()
+        )
+
+    if calendar_schedule is None:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=BookingErrorResponse(
+                error=f"Service with id {service_id} was not found"
             ).model_dump()
         )
 

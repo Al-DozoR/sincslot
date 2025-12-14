@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+
 from backend.core.config import settings
 from backend.api.controllers.health import router_health
 
@@ -20,6 +21,9 @@ from backend.api.controllers.company.deactivate_company import router as router_
 
 from backend.api.controllers.booking.get_booking_by_id import router as router_get_booking_by_id
 from backend.api.controllers.booking.create_booking import router as router_create_booking
+
+from backend.api.controllers.company.booking_schedule.booking_schedule import router as router_booking_schedule
+from backend.api.controllers.company.booking_schedule.booking_schedule_status import router as router_booking_schedule_status
 
 from backend.api.controllers.client.auth.login import router_client_auth_login
 from backend.api.controllers.client.auth.register import router as router_register_client
@@ -117,6 +121,20 @@ routes.include_router(
     router=router_remove_service_by_id,
     prefix=settings.api_v1.prefix_company_service,
     tags=[settings.tags.tag_company_service]
+)
+
+################### Company booking schedule ###################
+
+routes.include_router(
+    router=router_booking_schedule,
+    prefix=settings.api_v1.prefix_company_booking_schedule,
+    tags=[settings.tags.tag_company_booking_schedule]
+)
+
+routes.include_router(
+    router=router_booking_schedule_status,
+    prefix=settings.api_v1.prefix_company_booking_schedule,
+    tags=[settings.tags.tag_company_booking_schedule]
 )
 
 ################### Booking ###################
