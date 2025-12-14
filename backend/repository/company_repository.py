@@ -227,6 +227,7 @@ class CompanyRepository(ICompanyRepository):
 
             for booking in bookings_by_client_scalars:
                 result.append({
+                    "booking_id": booking.id,
                     "client_name": booking.client.name,
                     "phone": booking.client.phone,
                     "service": booking.service.name,

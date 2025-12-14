@@ -28,7 +28,7 @@ async def get_current_company_from_token(
     if is_revoke is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Refresh token was not found",
+            detail="Failed to find tokens by provided token",
         )
 
     if is_revoke is True:
@@ -47,12 +47,17 @@ async def get_current_company_from_token(
         )
 
     company_id = payload_access_token.get("company_id")
+    if company_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Failed to find get company id from token",
+        )
 
     company = await company_use_case.get_company_by_id(session, company_id)
     if company is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Failed to find company by id {company_id} expired",
+            detail=f"Failed to find company by id {company_id}",
         )
 
     return company

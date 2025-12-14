@@ -106,9 +106,11 @@ class CompanyBookingStatusResponse(BaseModel):
 
 
 class CompanyBookingResponse(BaseModel):
+    booking_id: int = Field(alias="bookingID")
     client_name: str = Field(alias="clientName")
     phone: str
     service: str
+    status: str
     date: str = Field(examples=["2025-12-14"])
     time: str = Field(examples=["14:04:08"])
 
