@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, Select, asc, desc
@@ -230,8 +231,8 @@ class CompanyRepository(ICompanyRepository):
                     "phone": booking.client.phone,
                     "service": booking.service.name,
                     "status": booking.status,
-                    "date": booking.time_start.date(),
-                    "time": booking.time_start.time(),
+                    "date": booking.time_start.date().strftime('%Y-%m-%d'),
+                    "time": booking.time_start.time().strftime('%H:%M:%S'),
                 })
 
             if sort_by_column is not None and sort_by_column == "booking_date":

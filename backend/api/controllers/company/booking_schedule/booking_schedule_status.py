@@ -24,7 +24,7 @@ router = APIRouter()
 async def change_booking_schedule_status(
         booking_id: int,
         booking_status: BookingStatus,
-        # company=Depends(get_current_company_from_token),
+        company=Depends(get_current_company_from_token),
         booking_use_case: IBookingUseCase = Depends(di_container.get_booking_use_case),
         session: AsyncSession = Depends(db_helper.session_getter),
 ) -> JSONResponse:
@@ -40,8 +40,6 @@ async def change_booking_schedule_status(
     updated_booking = await booking_use_case.update_booking_by_id(
         session, booking_id, str(booking_status.value)
     )
-
-    print(updated_booking)
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,

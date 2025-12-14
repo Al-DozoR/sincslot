@@ -46,28 +46,28 @@ async def get_company_booking_schedule(
             default=SortOrderEnum.asc,
             alias="sortOrder"
         ),
-        # company=Depends(get_current_company_from_token),
+        company=Depends(get_current_company_from_token),
         company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
         session: AsyncSession = Depends(db_helper.session_getter),
 ) -> JSONResponse:
     try:
         company_booking_schedule = await company_use_case.get_company_booking_schedule(
             session,
-            53,
+            company.id,
             str(sort_by.value),
             str(sort_order.value),
         )
     except Exception as ex:
         logger.error(
             "Error occurred while getting company booking schedule. Company id: %s Error: %s",
-            53,
+            company.id,
             str(ex),
             exc_info=True
         )
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=CompanyErrorResponse(
-                error=f"failed to get company booking schedule by company id {53}"
+                error=f"failed to get company booking schedule by company id {company.id}"
             ).model_dump()
         )
 
