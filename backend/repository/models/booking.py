@@ -6,7 +6,7 @@ from sqlalchemy import true, TIMESTAMP
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column
 
-from backend.entity.booking import BookingEntity
+from backend.entity.booking import BookingEntity, BookingStatus
 from backend.repository.models.base import Base
 from backend.repository.models.service import Service
 from backend.repository.models.client import Client
@@ -26,6 +26,7 @@ class Booking(CreatedAtMixin, UpdatedAtMixin, Base):
     client: Mapped["Client"] = relationship(back_populates="bookings")
     time_start: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True))
     time_end: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True))
+    status: Mapped[str] = mapped_column(default=BookingStatus.pending.value, nullable=False)
     is_active: Mapped[bool] = mapped_column(
         default=True,
         server_default=true(),
@@ -40,4 +41,5 @@ class Booking(CreatedAtMixin, UpdatedAtMixin, Base):
             time_start=self.time_start,
             time_end=self.time_end,
             is_active=self.is_active,
+            status=BookingStatus(self.status),
         )
