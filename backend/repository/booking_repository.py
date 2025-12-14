@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 
+from alembic.util import status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, Select
+from sqlalchemy import select, and_, Select, update
 from sqlalchemy.orm import joinedload
 
-from backend.entity.booking import BookingEntity
+from backend.entity.booking import BookingEntity, BookingStatus
 from backend.repository.models.booking import Booking
 from backend.repository.models.service import Service
 from backend.repository.unit_of_work.unit_of_work import UnitOfWork
@@ -38,6 +39,14 @@ class IBookingRepository(ABC):
     ) -> BookingEntity | None:
         raise NotImplemented
 
+    @abstractmethod
+    async def update_booking_by_id(self, session: AsyncSession, booking_id: int, data_to_update: dict) -> BookingEntity:
+        raise NotImplemented
+
+    @abstractmethod
+    async def get_booking_by_id(self, session: AsyncSession, booking_id: int):
+        raise NotImplemented
+
 
 class BookingRepository(IBookingRepository):
 
@@ -55,6 +64,7 @@ class BookingRepository(IBookingRepository):
             time_start=time_start,
             time_end=time_end,
             is_active=True,
+            status=BookingStatus.pending.value,
         )
 
         async with UnitOfWork(session) as uow:
@@ -78,6 +88,7 @@ class BookingRepository(IBookingRepository):
                 "client_id": booking.client_id,
                 "time_start": booking.time_start,
                 "time_end": booking.time_end,
+                "status": booking.status,
                 "service": {
                     "id": booking.service.id,
                     "name": booking.service.name,
@@ -119,3 +130,31 @@ class BookingRepository(IBookingRepository):
                 return
 
         return booking_scalars.to_booking_entity()
+
+    async def update_booking_by_id(
+            self,
+            session: AsyncSession,
+            booking_id: int,
+            data_to_update: dict
+    ) -> BookingEntity | None:
+
+        async with UnitOfWork(session) as uow:
+            query = update(Booking).where(Booking.id == booking_id).values(
+                **data_to_update
+            ).returning(Booking)
+            booking_updated = await uow.execute_query(query)
+            booking_updated_scalar: Booking | None = booking_updated.scalar()
+            if booking_updated_scalar is None:
+                return
+
+        return booking_updated_scalar.to_booking_entity()
+
+    async def get_booking_by_id(self, session: AsyncSession, booking_id: int):
+        async with UnitOfWork(session) as uow:
+            query = select(Booking).where(Booking.id == booking_id)
+            booking = await uow.execute_query(query)
+            booking_scalar = booking.scalar()
+            if booking_scalar is None:
+                return
+
+        return booking_scalar.to_booking_entity()

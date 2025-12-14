@@ -25,7 +25,7 @@ class IBookingUseCase(ABC):
         raise NotImplemented
 
     @abstractmethod
-    async def get_booking_by_id(self, session: AsyncSession, service_id: int, company_id: int, work_schedule: list):
+    async def get_calendar_schedule_booking(self, session: AsyncSession, service_id: int, company_id: int, work_schedule: list):
         raise NotImplemented
 
     @abstractmethod
@@ -49,6 +49,18 @@ class IBookingUseCase(ABC):
             service_id: int,
             client_id: int
     ) -> BookingEntity | None:
+        raise NotImplemented
+
+    @abstractmethod
+    async def update_booking_by_id(
+            self,
+            session: AsyncSession,
+            booking_id: int,
+            status: str,
+    ) -> BookingEntity | None:
+        raise NotImplemented
+
+    async def get_booking_by_id(self, session: AsyncSession, booking_id: int):
         raise NotImplemented
 
 
@@ -206,7 +218,7 @@ class BookingUseCase(IBookingUseCase):
 
         return result
 
-    async def get_booking_by_id(self, session: AsyncSession, service_id: int, company_id: int, work_schedule: list):
+    async def get_calendar_schedule_booking(self, session: AsyncSession, service_id: int, company_id: int, work_schedule: list):
 
         schedule: list[dict] = []
 
@@ -266,3 +278,15 @@ class BookingUseCase(IBookingUseCase):
             client_id: int
     ) -> BookingEntity | None:
         return await self.booking_repository.get_booking_by_service_id_and_client_id(session, service_id, client_id)
+
+    async def update_booking_by_id(
+            self,
+            session: AsyncSession,
+            booking_id: int,
+            status: str,
+    ) -> BookingEntity | None:
+        data_to_update = {"status": status}
+        return await self.booking_repository.update_booking_by_id(session, booking_id, data_to_update)
+
+    async def get_booking_by_id(self, session: AsyncSession, booking_id: int):
+        return await self.booking_repository.get_booking_by_id(session, booking_id)
