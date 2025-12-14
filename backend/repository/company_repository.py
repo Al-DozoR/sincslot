@@ -1,10 +1,14 @@
 from abc import ABC, abstractmethod
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select, update, Select, asc, desc
+from sqlalchemy.orm import joinedload
 
 from backend.entity.company import CompanyEntity
+from backend.repository.models.booking import Booking
+from backend.repository.models.client import Client
 from backend.repository.models.company import Company
+from backend.repository.models.service import Service
 from backend.repository.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -59,6 +63,17 @@ class ICompanyRepository(ABC):
     @abstractmethod
     async def deactivate_company(self, session: AsyncSession, company_id: int) -> None:
         raise NotImplemented
+
+    @abstractmethod
+    async def get_company_booking_schedule(
+            self,
+            session: AsyncSession,
+            company_id: int,
+            sort_by: str,
+            sort_order: str,
+    ):
+        raise NotImplemented
+
 
 class CompanyRepository(ICompanyRepository):
 
@@ -172,3 +187,63 @@ class CompanyRepository(ICompanyRepository):
             query = update(Company).where(Company.id == company_id).values(is_active=False)
             await uow.execute_query(query)
             return None
+
+    async def get_company_booking_schedule(
+            self,
+            session: AsyncSession,
+            company_id: int,
+            sort_by: str,
+            sort_order: str,
+    ):
+
+        sort_by_mapping = {
+            "clientName": Client.name,
+            "serviceName": Service.name,
+            "date": "booking_date",
+            "time": "booking_time",
+        }
+
+        async with UnitOfWork(session) as uow:
+            query = Select(Booking).join(Booking.service).join(Booking.client).options(
+                joinedload(Booking.client), joinedload(Booking.service)).where(Service.company_id == company_id)
+
+            sort_by_column = sort_by_mapping.get(sort_by)
+
+            if sort_by_column is not None and isinstance(sort_by_column, (Client, Service)):
+                if sort_order == "asc":
+                    query = query.order_by(asc(sort_by_column))
+                elif sort_order == "desc":
+                    query = query.order_by(desc(sort_by_column))
+                else:
+                    query = query.order_by(sort_by_column)
+
+            bookings_by_client = await uow.execute_query(query)
+            bookings_by_client_scalars: list[Booking] | None = bookings_by_client.scalars()
+            if bookings_by_client_scalars is None:
+                return
+
+            result = []
+
+            for booking in bookings_by_client_scalars:
+                result.append({
+                    "client_name": booking.client.name,
+                    "phone": booking.client.phone,
+                    "service": booking.service.name,
+                    "status": booking.status,
+                    "date": booking.time_start.date(),
+                    "time": booking.time_start.time(),
+                })
+
+            if sort_by_column is not None and sort_by_column == "booking_date":
+                if sort_order == "desc":
+                    result = sorted(result, key=lambda x: x['date'], reverse=True)
+                else:
+                    result = sorted(result, key=lambda x: x['date'])
+
+            if sort_by_column is not None and sort_by_column == "booking_time":
+                if sort_order == "desc":
+                    result = sorted(result, key=lambda x: x['time'], reverse=True)
+                else:
+                    result = sorted(result, key=lambda x: x['time'])
+
+            return result

@@ -1,3 +1,4 @@
+from datetime import date, time
 from typing import Annotated, Union, Optional
 
 import phonenumbers
@@ -98,3 +99,26 @@ class CompanySettingsResponse(BaseModel):
         populate_by_name=True,
         from_attributes=True,
     )
+
+
+class CompanyBookingStatusResponse(BaseModel):
+    status: str
+
+
+class CompanyBookingResponse(BaseModel):
+    client_name: str = Field(alias="clientName")
+    phone: str
+    service: str
+    date: date
+    time: time
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        from_attributes=True,
+    )
+
+class CompanyBookingScheduleResponse(BaseModel):
+    bookings: list[CompanyBookingResponse]
+
+

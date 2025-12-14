@@ -94,6 +94,16 @@ class ICompanyUseCase(ABC):
     async def deactivate_company(self, session: AsyncSession, company_id: int) -> None:
         raise NotImplemented
 
+    @abstractmethod
+    async def get_company_booking_schedule(
+            self,
+            session: AsyncSession,
+            company_id: int,
+            sort_by: str,
+            sort_order: str,
+    ):
+        raise NotImplemented
+
 class CompanyUseCase(ICompanyUseCase):
 
     def __init__(
@@ -258,3 +268,12 @@ class CompanyUseCase(ICompanyUseCase):
 
     async def deactivate_company(self, session: AsyncSession, company_id: int) -> None:
         await self.company_repository.deactivate_company(session, company_id)
+
+    async def get_company_booking_schedule(
+            self,
+            session: AsyncSession,
+            company_id: int,
+            sort_by: str,
+            sort_order: str,
+    ):
+        return await self.company_repository.get_company_booking_schedule(session, company_id, sort_by, sort_order)
