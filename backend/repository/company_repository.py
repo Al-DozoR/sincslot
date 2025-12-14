@@ -210,7 +210,7 @@ class CompanyRepository(ICompanyRepository):
 
             sort_by_column = sort_by_mapping.get(sort_by)
 
-            if sort_by_column is not None and isinstance(sort_by_column, (Client, Service)):
+            if sort_by_column is not None and sort_by_column in (Service.name, Client.name):
                 if sort_order == "asc":
                     query = query.order_by(asc(sort_by_column))
                 elif sort_order == "desc":
