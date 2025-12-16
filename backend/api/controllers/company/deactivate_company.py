@@ -1,3 +1,24 @@
+from fastapi import APIRouter, status, Depends
+from starlette.responses import JSONResponse
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from backend.logger.logger import init_logger
+from backend.api.response.company import (
+    CompanyErrorResponse,
+    CompanySuccessResponse,
+)
+from backend.api.controllers.company.auth.parse_auth_token import (
+    get_current_company_from_token
+)
+from backend.di_container.di_container import di_container
+from backend.use_case.company_use_case import ICompanyUseCase
+from backend.use_case.token_use_case import IToken
+from backend.core.db_helper import db_helper
+
+logger = init_logger('company_settings', 'INFO')
+
+router = APIRouter()
+
 @router.post(
     "/deactivate",
     responses={
