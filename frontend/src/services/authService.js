@@ -24,5 +24,12 @@ export const authService = {
   login: async (data) => {
     const response = await api.post("/api/v1/company/auth/login", data);
     return response.data;
+  },
+
+  logout: () => {
+    return axios.delete(
+      "/api/v1/company/auth/logout",
+      { withCredentials: true }
+    );
   }
 };

@@ -1,4 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
+import { useNavigate } from "react-router-dom";
 import Header from '../../components/Header/Header';
 import styles from './CompanySettingsPage.module.css';
 import {toast} from 'react-toastify';
@@ -7,6 +8,7 @@ import {companyService} from "../../services/companyService.js";
 import {getChangedFields} from "../../utils/getChangedFields";
 
 const CompanySettingsPage = () => {
+  const navigate = useNavigate();
   const [errors, setErrors] = useState({});
   const [companyData, setCompanyData] = useState(null);
   const [savedCompanyData, setSavedCompanyData] = useState(null);
@@ -235,11 +237,21 @@ const CompanySettingsPage = () => {
   };
 
   // Подтверждение удаления профиля
-  const handleConfirmDelete = () => {
-    console.log('Удаление профиля компании');
-    alert('Профиль компании удален');
-    handleCloseDeleteModal();
-    // Здесь будет логика реального удаления профиля
+  const handleConfirmDelete = async () => {
+    try {
+      await companyService.deactivateCompany();
+
+      toast.success("Профиль компании удален");
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error?.response?.data?.error || "Ошибка при удалении компании"
+      );
+    } finally {
+      localStorage.removeItem("accessToken");
+      setIsDeleteModalOpen(false);
+      navigate("/", { replace: true });
+    }
   };
 
   const isScheduleChanged = (saved, current) => {

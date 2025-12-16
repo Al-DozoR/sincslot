@@ -1,15 +1,18 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Header.module.css';
+import {authService} from "../../services/authService.js";
 
 const Header = ({ title, showLogout = true }) => {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    // Здесь будет логика выхода (удаление токена и т.д.)
-    console.log('Выход из учетной записи');
-    // После выхода перенаправляем на главную страницу
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+    } finally {
+      localStorage.removeItem("accessToken");
+      navigate("/", { replace: true });
+    }
   };
 
   const handleGoToSchedule = () => {
