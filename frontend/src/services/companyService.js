@@ -56,5 +56,13 @@ export const companyService = {
     }
 
     return { error: "Unknown response type" };
+  },
+
+  async deactivateCompany() {
+    const response = await api.post(
+      `${BASE_URL}/settings/deactivate`,
+      {}
+    );
+    return response.data;
   }
 };
