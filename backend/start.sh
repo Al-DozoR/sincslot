@@ -1,10 +1,17 @@
 #!/bin/sh
+set -e
 
-until alembic upgrade head
-do
-    echo "Waiting for db to be ready..."
-    sleep 2
+echo "Waiting for database..."
+
+until alembic upgrade head; do
+  echo "DB not ready, retrying..."
+  sleep 2
 done
 
-pytest . -v --cache-clear
-uvicorn main:app --reload --host 0.0.0.0 --port 10004
+echo "DB ready"
+
+uvicorn main:app \
+  --host 0.0.0.0 \
+  --port 10004 \
+  --reload
+
