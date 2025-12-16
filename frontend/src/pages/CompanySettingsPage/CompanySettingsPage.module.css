@@ -549,6 +549,35 @@
   background: #b91c1c;
 }
 
+.textarea {
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical; /* можно менять высоту мышкой */
+  min-height: 120px;
+  transition: border-color 0.2s ease;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.error {
+  color: #e63946;
+  font-size: 0.85rem;
+  margin-top: 4px;
+  display: block;
+  font-weight: 500;
+}
+
 /* Адаптивность для модального окна удаления */
 @media (max-width: 768px) {
   .deleteModal {

@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import styles from './ServicesPage.module.css';
+import {servicesService} from "../../services/servicesService.js";
+import {toast} from "react-toastify";
 import Header from '../../components/Header/Header';
 
 const ServicesPage = () => {
@@ -55,15 +57,32 @@ const ServicesPage = () => {
   });
 
   // Открытие модального окна для редактирования
-  const handleEditClick = (service) => {
-    setEditingService(service);
-    setFormData({
-      name: service.name,
-      description: service.description,
-      duration: service.duration,
-      price: service.price
-    });
-    setIsModalOpen(true);
+  const handleEditClick = async (service) => {
+    try {
+      // Получаем актуальные данные с сервера
+      const updatedService = await servicesService.get(service.id);
+
+      // Обновляем локальный стейт карточки
+      setServices(prev =>
+        prev.map(s => (s.id === updatedService.id ? updatedService : s))
+      );
+
+      // Открываем модальное окно и заполняем форму
+      setEditingService(updatedService);
+      setFormData({
+        name: updatedService.name,
+        description: updatedService.description,
+        duration: updatedService.duration,
+        price: updatedService.price
+      });
+      setIsModalOpen(true);
+
+    } catch (error) {
+      console.error("Ошибка при загрузке данных услуги:", error);
+      toast.error(
+        error?.response?.data?.detail || "Не удалось загрузить данные услуги"
+      );
+    }
   };
 
   // Открытие модального окна для добавления
@@ -102,7 +121,7 @@ const ServicesPage = () => {
 
   // Обработчик изменения полей формы
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const {name, value} = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -110,41 +129,87 @@ const ServicesPage = () => {
   };
 
   // Сохранение изменений
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    
-    if (editingService) {
-      // Редактирование существующей услуги
-      const updatedServices = services.map(service =>
-        service.id === editingService.id
-          ? { ...service, ...formData }
-          : service
+
+    if (!editingService) return;
+
+    try {
+      const payload = {
+        name: formData.name,
+        description: formData.description,
+        duration: Number(formData.duration),
+        price: Number(formData.price),
+      };
+
+      // Отправляем PATCH на сервер
+      const updatedService = await servicesService.update(editingService.id, payload);
+
+      // Обновляем локальный стейт
+      setServices(prev =>
+        prev.map(service =>
+          service.id === updatedService.id ? updatedService : service
+        )
       );
-      setServices(updatedServices);
+
+      toast.success("Услуга успешно сохранена!");
+      handleCloseModal();
+    } catch (error) {
+      console.error("Ошибка при сохранении услуги:", error);
+      toast.error(
+        error?.response?.data?.detail || "Не удалось сохранить услугу"
+      );
     }
-    
-    handleCloseModal();
   };
 
   // Добавление новой услуги
-  const handleAddService = (e) => {
+  const handleAddService = async (e) => {
     e.preventDefault();
-    
-    const newService = {
-      id: Math.max(...services.map(s => s.id)) + 1, // Генерируем новый ID
-      ...formData
-    };
-    
-    setServices(prev => [...prev, newService]);
-    handleCloseModal();
+
+    try {
+      const payload = {
+        name: formData.name,
+        description: formData.description,
+        duration: Number(formData.duration),
+        price: Number(formData.price),
+      };
+
+      const createdService = await servicesService.create(payload);
+
+      setServices(prev => [...prev, createdService]);
+
+      toast.success("Услуга успешно добавлена!");
+      handleCloseModal();
+    } catch (error) {
+      console.error("Ошибка при добавлении услуги:", error);
+
+      toast.error(
+        error?.response?.data?.detail || "Не удалось добавить услугу"
+      );
+    }
   };
 
   // Подтверждение удаления услуги
-  const handleConfirmDelete = () => {
-    if (serviceToDelete) {
-      setServices(prev => prev.filter(service => service.id !== serviceToDelete.id));
+  const handleConfirmDelete = async () => {
+    if (!serviceToDelete) return;
+
+    try {
+      // Отправляем DELETE на сервер
+      await servicesService.delete(serviceToDelete.id);
+
+      // Удаляем услугу из локального стейта
+      setServices(prev =>
+        prev.filter(service => service.id !== serviceToDelete.id)
+      );
+
+      toast.success("Услуга успешно удалена!");
+      handleCloseModal();
+    } catch (error) {
+      console.error("Ошибка при удалении услуги:", error);
+      toast.error(
+        error?.response?.data?.detail || "Не удалось удалить услугу"
+      );
     }
-    handleCloseModal();
   };
 
   // Сброс формы
@@ -168,8 +233,8 @@ const ServicesPage = () => {
 
   return (
     <div className={styles.pageContainer}>
-      <Header title="SyncSlot" />
-      
+      <Header title="SyncSlot"/>
+
       <div className={styles.container}>
         <div className={styles.header}>
           <div className={styles.headerLeft}>
@@ -196,7 +261,7 @@ const ServicesPage = () => {
               <div className={styles.serviceHeader}>
                 <h3 className={styles.serviceName}>{service.name}</h3>
                 <div className={styles.serviceActions}>
-                  <span className={styles.serviceDuration}>{service.duration}</span>
+                  <span className={styles.serviceDuration}>{service.duration} мин.</span>
                   <button
                     className={styles.deleteButton}
                     onClick={(e) => handleDeleteClick(service, e)}
@@ -206,7 +271,7 @@ const ServicesPage = () => {
                   </button>
                 </div>
               </div>
-              <div className={styles.servicePrice}>{service.price}</div>
+              <div className={styles.servicePrice}>{service.price} ₽</div>
               <p className={styles.serviceDescription}>{service.description}</p>
               <div className={styles.editHint}>Нажмите для редактирования</div>
             </div>
@@ -227,7 +292,7 @@ const ServicesPage = () => {
 
         {/* Модальное окно редактирования */}
         {isModalOpen && (
-          <div className={styles.modalOverlay} onClick={handleCloseModal}>
+          <div className={styles.modalOverlay}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
               <div className={styles.modalHeader}>
                 <h2>Редактирование услуги</h2>
@@ -318,7 +383,7 @@ const ServicesPage = () => {
 
         {/* Модальное окно добавления */}
         {isAddModalOpen && (
-          <div className={styles.modalOverlay} onClick={handleCloseModal}>
+          <div className={styles.modalOverlay}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
               <div className={styles.modalHeader}>
                 <h2>Добавление услуги</h2>
@@ -437,8 +502,8 @@ const ServicesPage = () => {
           </div>
         )}
       </div>
-    </div>
-  );
-};
+
+    </div>);
+}
 
 export default ServicesPage;

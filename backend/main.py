@@ -6,9 +6,7 @@ import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 
-from backend.api.conrollers.health import router_health
-from backend.api.conrollers.company.company import router_company
-from backend.api.conrollers.company.auth import router_auth_company
+from backend.api.routes.register_routes import routes
 from backend.core.config import settings
 from backend.core.db_helper import db_helper
 
@@ -33,19 +31,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(
-    router_health,
-)
-
-app.include_router(
-    router_company,
-    prefix=settings.api_v1.prefix_company,
-)
-
-app.include_router(
-    router_auth_company,
-    prefix=settings.api_v1.prefix_company,
-)
+app.include_router(routes)
 
 if __name__ == "__main__":
     logging.info(f'Start server: {settings.run.port}')

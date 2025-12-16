@@ -23,13 +23,9 @@ function AppRouter() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/schedule" element={<SchedulePage />} />
         
         {/* Услуги */}
         <Route path="/services" element={<ServicesPage />} />
-        
-        {/* Настройки компании */}
-        <Route path="/settings" element={<CompanySettingsPage />} />
 
         {/*Только для авторизованных */}
         {/* Расписание */}
@@ -38,6 +34,15 @@ function AppRouter() {
           element={
             <PrivateRoute>
               <SchedulePage />
+            </PrivateRoute>
+          }
+        />
+        {/* Настройки компании */}
+        <Route
+          path="/settings"
+          element={
+            <PrivateRoute>
+              <CompanySettingsPage/>
             </PrivateRoute>
           }
         />

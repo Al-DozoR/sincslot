@@ -4,9 +4,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.api.response.company import (
     CompanyByIdResponse,
-    CompaniesList,
     CompanyErrorResponse,
 )
+
 from backend.logger.logger import init_logger
 from backend.di_container.di_container import di_container
 from backend.use_case.company_use_case import ICompanyUseCase
@@ -14,10 +14,10 @@ from backend.core.db_helper import db_helper
 
 logger = init_logger('company', 'INFO')
 
-router_company = APIRouter(tags=["company"])
+router = APIRouter()
 
 
-@router_company.get("/{company_id}", responses={
+@router.get("/{company_id}", responses={
     status.HTTP_200_OK: {"model": CompanyByIdResponse},
     status.HTTP_404_NOT_FOUND: {"model": CompanyErrorResponse},
 })

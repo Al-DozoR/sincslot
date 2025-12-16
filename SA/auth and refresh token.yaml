@@ -4,7 +4,7 @@ info:
   version: 1.0.0
 
 paths:
-  /auth/login:
+  /api/v1/company/auth/login:
     post:
       summary: Авторизация компании
       description: Возвращает access и refresh токены
@@ -30,16 +30,49 @@ paths:
               schema:
                 type: object
                 properties:
-                  accessToken:
+                  access-token:
                     type: string
                     description: Короткоживущий токен
-                  refreshToken:
+                  refresh-token:
                     type: string
                     description: Долгоживущий токен
         "401":
           description: Неверный логин или пароль
-
-  /auth/refresh:
+  /api/v1/client/auth/login:
+    post:
+      summary: Авторизация клиента
+      description: Возвращает access и refresh токены
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - email
+                - password
+      responses:
+        "200":
+          description: Успешная авторизация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access-token:
+                    type: string
+                    description: Короткоживущий токен
+                  refresh-token:
+                    type: string
+                    description: Долгоживущий токен
+        "401":
+          description: Неверный логин или пароль
+  /api/v1/auth/refresh:
     post:
       summary: Обновление access токена
       description: Принимает refresh токен и возвращает новые access/refresh токены
@@ -50,10 +83,10 @@ paths:
             schema:
               type: object
               properties:
-                refreshToken:
+                refresh-token:
                   type: string
               required:
-                - refreshToken
+                - refresh-token
       responses:
         "200":
           description: Успешное обновление токенов
@@ -62,9 +95,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  accessToken:
+                  access-token:
                     type: string
-                  refreshToken:
+                  refresh-token:
                     type: string
         "401":
           description: Refresh токен недействителен или истёк

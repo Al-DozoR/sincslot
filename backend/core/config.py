@@ -1,6 +1,4 @@
-import logging
 import os
-from typing import Literal
 from pathlib import Path
 from pydantic import PostgresDsn
 from pydantic import BaseModel
@@ -9,16 +7,20 @@ from pydantic_settings import (
     SettingsConfigDict,
 )
 
-LOG_DEFAULT_FORMAT = (
-    "[%(asctime)s.%(msecs)03d] %(module)10s:%(lineno)-3d %(levelname)-7s - %(message)s"
-)
-
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+class CalendarSchedule(BaseModel):
+    calendar_schedule_limit_days: int = 30
+
+
+class BookingUrl(BaseModel):
+    base_url: str = "https://syncslot.ru/booking"
 
 
 class FileCompanyLogoSettings(BaseModel):
     path_file: str = os.path.join(BASE_DIR, "storage")
-    valid_extentions: tuple = ("png", "jpg", "jpeg")
+    valid_extensions: tuple = ("png", "jpg", "jpeg")
     max_file_size_mb: int = 5
 
 
@@ -40,11 +42,8 @@ class RunConfig(BaseModel):
     port: int = 10004
 
 
-class GunicornConfig(BaseModel):
-    host: str = "0.0.0.0"
-    port: int = 8000
-    workers: int = 1
-    timeout: int = 900
+class TestDatabaseConfig(BaseModel):
+    url: str = "postgresql+asyncpg://pguser_test:pgpassword_test@db_test:5432/syncslot_db_test"
 
 
 class DatabaseConfig(BaseModel):
@@ -63,24 +62,28 @@ class DatabaseConfig(BaseModel):
     }
 
 
-class LoggingConfig(BaseModel):
-    log_level: Literal[
-        "debug",
-        "info",
-        "warning",
-        "error",
-        "critical",
-    ] = "info"
-    log_format: str = LOG_DEFAULT_FORMAT
-    date_format: str = "%Y-%m-%d %H:%M:%S"
-
-    @property
-    def log_level_value(self) -> int:
-        return logging.getLevelNamesMapping()[self.log_level.upper()]
+class ApiV1Tags(BaseModel):
+    tag_company_auth: str = "company auth"
+    tag_company_settings: str = "company settings"
+    tag_company_work_schedule: str = "company work schedule"
+    tag_company_logo_image: str = "company logo image"
+    tag_company_service: str = "company service"
+    tag_company_booking_schedule: str = "company booking schedule"
+    tag_booking: str = "booking"
+    tag_client_auth: str = "client auth"
+    tag_client_booking: str = "client booking"
 
 
 class ApiV1Prefix(BaseModel):
-    prefix_company: str = "/api/v1/company"
+    prefix_company_auth: str = "/api/v1/company/auth"
+    prefix_company_settings: str = "/api/v1/company/settings"
+    prefix_company_work_schedule: str = "/api/v1/company/work-schedule"
+    prefix_company_logo_image: str = "/api/v1/company/logo-image"
+    prefix_company_service: str = "/api/v1/company/service"
+    prefix_company_booking_schedule: str = "/api/v1/company/booking/schedule"
+    prefix_booking: str = "/api/v1/booking"
+    prefix_client_auth: str = "/api/v1/client/auth"
+    prefix_client_booking: str = "/api/v1/client/booking"
 
 
 class Settings(BaseSettings):
@@ -92,13 +95,15 @@ class Settings(BaseSettings):
         env_prefix="SYNC_SLOT__",
     )
     run: RunConfig = RunConfig()
-    gunicorn: GunicornConfig = GunicornConfig()
-    logging: LoggingConfig = LoggingConfig()
     api_v1: ApiV1Prefix = ApiV1Prefix()
+    tags: ApiV1Tags = ApiV1Tags()
     db: DatabaseConfig
+    db_test: TestDatabaseConfig = TestDatabaseConfig()
     jwt: JWT = JWT()
     password: Password = Password()
     file_company_logo_settings: FileCompanyLogoSettings = FileCompanyLogoSettings()
+    booking_url: BookingUrl = BookingUrl()
+    calendar_schedule: CalendarSchedule = CalendarSchedule()
 
 
 settings = Settings()
