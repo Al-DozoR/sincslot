@@ -204,37 +204,55 @@ const ClientBookingPage = () => {
     });
   };
 
-  return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>Запись на услугу</h1>
-        <p className={styles.subtitle}>Выберите услугу и удобное время для записи</p>
-      </div>
-
-      <div className={styles.servicesSection}>
-        <h2 className={styles.sectionTitle}>Выберите услугу</h2>
-        <div className={styles.servicesGrid}>
-          {services.map((service) => (
-            <div
-              key={service.id}
-              className={`${styles.serviceCard} ${
-                selectedService?.id === service.id ? styles.serviceCardSelected : ''
-              }`}
-              onClick={() => handleServiceSelect(service)}
-            >
-              <div className={styles.serviceHeader}>
-                <h3 className={styles.serviceName}>{service.name}</h3>
-                <span className={styles.serviceDuration}>{service.duration}</span>
-              </div>
-              <div className={styles.servicePrice}>{service.price}</div>
-              <p className={styles.serviceDescription}>{service.description}</p>
-              <div className={styles.selectHint}>
-                {selectedService?.id === service.id ? '✓ Выбрано' : 'Выбрать'}
-              </div>
+ return (
+    <div className={styles.pageContainer}>
+      {/* Header как на других страницах */}
+      <header className={styles.header}>
+        <div className={styles.container}>
+          <div className={styles.headerContent}>
+            <div className={styles.logo}>
+              <h1>Timeslot</h1>
             </div>
-          ))}
+            <button
+              className={styles.myBookingsButton}
+              onClick={() => navigate('/my-bookings-auth')}
+            >
+              📋 Мои записи
+            </button>
+          </div>
         </div>
-      </div>
+      </header>
+      
+      <div className={styles.mainContent}>
+        <div className={styles.pageHeader}>
+          <h2 className={styles.pageTitle}>Запись на услугу</h2>
+          <p className={styles.pageSubtitle}>Выберите услугу и удобное время для записи</p>
+        </div>
+
+        <div className={styles.servicesSection}>
+          <h3 className={styles.sectionTitle}>Выберите услугу</h3>
+          <div className={styles.servicesGrid}>
+            {services.map((service) => (
+              <div
+                key={service.id}
+                className={`${styles.serviceCard} ${
+                  selectedService?.id === service.id ? styles.serviceCardSelected : ''
+                }`}
+                onClick={() => handleServiceSelect(service)}
+              >
+                <div className={styles.serviceHeader}>
+                  <h4 className={styles.serviceName}>{service.name}</h4>
+                  <span className={styles.serviceDuration}>{service.duration}</span>
+                </div>
+                <div className={styles.servicePrice}>{service.price}</div>
+                <p className={styles.serviceDescription}>{service.description}</p>
+                <div className={styles.selectHint}>
+                  {selectedService?.id === service.id ? '✓ Выбрано' : 'Выбрать'}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
       {/* Модальное окно с календарем */}
       {isCalendarModalOpen && selectedService && (
@@ -345,6 +363,7 @@ const ClientBookingPage = () => {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 };
