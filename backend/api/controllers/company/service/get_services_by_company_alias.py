@@ -19,7 +19,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/services/company/{alias}",
+    "/{alias}",
     responses={
         status.HTTP_200_OK: {"model": ServiceEntityListResponse},
         status.HTTP_404_NOT_FOUND: {"model": ServiceErrorResponse},
