@@ -18,6 +18,7 @@ from backend.api.controllers.company.service.update_service_by_id import router 
 from backend.api.controllers.company.service.remove_service_by_id import router as router_remove_service_by_id
 from backend.api.controllers.company.auth.register import router as router_register_company
 from backend.api.controllers.company.deactivate_company import router as router_deactivate_company
+from backend.api.controllers.booking.get_services_by_company_alias import router as router_get_services_by_company_alias
 
 from backend.api.controllers.booking.get_booking_by_id import router as router_get_booking_by_id
 from backend.api.controllers.booking.create_booking import router as router_create_booking
@@ -121,6 +122,12 @@ routes.include_router(
     router=router_remove_service_by_id,
     prefix=settings.api_v1.prefix_company_service,
     tags=[settings.tags.tag_company_service]
+)
+
+routes.include_router(
+    router=router_get_services_by_company_alias,
+    prefix=settings.api_v1.prefix_booking,
+    tags=[settings.tags.tag_booking],
 )
 
 ################### Company booking schedule ###################
