@@ -53,7 +53,7 @@ const ServicesPage = () => {
  // Функция для загрузки услуг с бэкенда
   const fetchServices = async () => {
     try {
-      const data = await servicesService.get(service.id); // Верный ли метод?..
+      const data = await servicesService.get('/api/v1/company/service/');
       setServices(data);
     } catch (error) {
       console.error("Ошибка при загрузке услуг:", error);
