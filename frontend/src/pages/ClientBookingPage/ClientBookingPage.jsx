@@ -1,52 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './ClientBookingPage.module.css';
 import { useNavigate } from 'react-router-dom';
 
 const ClientBookingPage = () => {
     const navigate = useNavigate();
-  // Моковые данные услуг
-  const [services, setServices] = useState([
-    {
-      id: 1,
-      name: 'Стрижка мужская',
-      duration: '60 мин',
-      description: 'Классическая мужская стрижка с укладкой. Профессиональный подход к созданию идеальной формы.',
-      price: '1500 ₽'
-    },
-    {
-      id: 2,
-      name: 'Маникюр',
-      duration: '90 мин',
-      description: 'Комплексный маникюр с покрытием гель-лаком. Укрепление и уход за ногтями.',
-      price: '2000 ₽'
-    },
-    {
-      id: 3,
-      name: 'Массаж спины',
-      duration: '45 мин',
-      description: 'Расслабляющий массаж шейно-воротниковой зоны. Снятие напряжения и мышечных зажимов.',
-      price: '2500 ₽'
-    },
-    {
-      id: 4,
-      name: 'Консультация',
-      duration: '30 мин',
-      description: 'Первичная консультация специалиста. Подбор услуг и составление программы ухода.',
-      price: '1000 ₽'
-    },
-    {
-      id: 5,
-      name: 'SPA-процедура',
-      duration: '120 мин',
-      description: 'Полный комплекс SPA-ухода для лица и тела. Расслабление и восстановление.',
-      price: '5000 ₽'
-    }
-  ]);
+  // убрала моковые данные услуг
+  const [services, setServices] = useState([]);
 
   const [selectedService, setSelectedService] = useState(null);
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
+
+// Загрузка данных услуг с бэкенда
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await fetch('/api/v1/booking/services/company/{alias}');
+        if (!response.ok) {
+          throw new Error('Ошибка при загрузке услуг');
+        }
+        const data = await response.json();
+        setServices(data); // Предполагается, что API возвращает массив услуг
+      } catch (error) {
+        console.error('Ошибка:', error);
+      }
+    };
+
+    fetchServices();
+  }, []); // Пустой массив зависимостей означает, что эффект выполнится только один раз при монтировании
 
   // Генерация тестовых дат на 30 дней вперед
   const generateAvailableDates = () => {
