@@ -10,6 +10,8 @@ import ClientBookingPage from "../pages/ClientBookingPage/ClientBookingPage.jsx"
 import BookingDetailsPage from "../pages/BookingDetailsPage/BookingDetailsPage.jsx";
 import BookingConfirmationPage from "../pages/BookingConfirmationPage/BookingConfirmationPage.jsx";
 import CompanySettingsPage from "../pages/CompanySettingsPage/CompanySettingsPage.jsx";
+import MyBookingsAuthPage from "../pages/MyBookingsAuthPage/MyBookingsAuthPage.jsx";
+import MyBookingsPage from "../pages/MyBookingsPage/MyBookingsPage.jsx";
 import PrivateRoute from "./PrivateRoute.jsx";
 
 function AppRouter() {
@@ -53,6 +55,9 @@ function AppRouter() {
        {/*Детали записи и подтверждение*/}
        <Route path="/booking-details" element={<BookingDetailsPage />} />
        <Route path="/booking-confirmation" element={<BookingConfirmationPage />} />
+
+       <Route path="/my-bookings-auth" element={<MyBookingsAuthPage />} />
+      <Route path="/my-bookings" element={<MyBookingsPage />} />
 
       </Routes>
     </BrowserRouter>

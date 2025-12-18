@@ -24,7 +24,7 @@ const BookingConfirmationPage = () => {
   };
 
   const handleMyBookingsClick = () => {
-    // Переход на страницу "Мои записи" (будет создана позже)
+
     navigate('/my-bookings');
   };
 
