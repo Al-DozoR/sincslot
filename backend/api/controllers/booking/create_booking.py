@@ -17,14 +17,13 @@ logger = init_logger('create_booking', 'INFO')
 router = APIRouter()
 
 
-@router.post("/company/{company_id}/service/{service_id}", responses={
+@router.post("/company/service/{service_id}", responses={
     status.HTTP_200_OK: {"model": BookingGetById},
     status.HTTP_409_CONFLICT: {"model": BookingErrorResponse},
     status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": BookingErrorResponse},
 })
 async def create_booking(
         service_id: int,
-        company_id: int,
         create_booking_request: BookingCreateRequest,
         client=Depends(get_current_client_from_token),
         booking_use_case: IBookingUseCase = Depends(di_container.get_booking_use_case),
