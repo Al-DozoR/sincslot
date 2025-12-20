@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 class Company(CreatedAtMixin, UpdatedAtMixin, Base):
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(
         Text,
         default="",
@@ -26,7 +26,7 @@ class Company(CreatedAtMixin, UpdatedAtMixin, Base):
     email: Mapped[str] = mapped_column(String(254), unique=True, nullable=False)
     phone: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     filename: Mapped[str] = mapped_column(nullable=True)
-    password: Mapped[str] = mapped_column(unique=True, nullable=False)
+    password: Mapped[str] = mapped_column(nullable=False)
     is_active: Mapped[bool] = mapped_column(
         default=True,
         server_default=true(),
