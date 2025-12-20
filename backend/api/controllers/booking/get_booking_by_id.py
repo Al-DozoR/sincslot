@@ -62,6 +62,8 @@ async def get_booking_by_id(
             ).model_dump()
         )
 
+    return calendar_schedule
+
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=BookingCalendarScheduleResponse(
