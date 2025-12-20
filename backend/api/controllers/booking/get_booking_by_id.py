@@ -65,4 +65,17 @@ async def get_booking_by_id(
             ).model_dump()
         )
 
-    return calendar_schedule
+    result = BookingCalendarScheduleResponse(
+            id=calendar_schedule.get("id"),
+            name=calendar_schedule.get("name"),
+            duration=calendar_schedule.get("duration"),
+            price=calendar_schedule.get("price"),
+            schedule=calendar_schedule.get("schedule"),
+        ).model_dump(exclude_none=True, by_alias=True)
+
+    result["schedule"] = calendar_schedule.get("schedule")
+
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=result
+    )

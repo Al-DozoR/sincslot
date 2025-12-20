@@ -308,9 +308,9 @@ class BookingUseCase(IBookingUseCase):
                     schedule.append({
                         "month": now.month,
                         "day": now.day,
-                        "day_of_week": now.isoweekday(),
-                        "time_to_book": new_time_to_book,
-                        "is_work": True
+                        "dayOfWeek": now.isoweekday(),
+                        "timeToBook": new_time_to_book,
+                        "isWork": True
                     })
                 else:
 
@@ -320,25 +320,25 @@ class BookingUseCase(IBookingUseCase):
                     if intervals is not None:
                         for interval in non_overlapping_intervals.get(now.isoweekday()):
                             result.append({
-                                "start": interval[0],
-                                "end": interval[1]
+                                "start": interval[0].strftime("%H:%M"),
+                                "end": interval[1].strftime("%H:%M")
                             })
 
                     schedule.append({
                         "month": now.month,
                         "day": now.day,
-                        "day_of_week": now.isoweekday(),
-                        "time_to_book": result,
-                        "is_work": True
+                        "dayOfWeek": now.isoweekday(),
+                        "timeToBook": result,
+                        "isWork": True
                     })
 
             else:
                 schedule.append({
                     "month": now.month,
                     "day": now.day,
-                    "day_of_week": now.isoweekday(),
-                    "time_to_book": [],
-                    "is_work": False
+                    "dayOfWeek": now.isoweekday(),
+                    "timeToBook": [],
+                    "isWork": False
                 })
 
         return {

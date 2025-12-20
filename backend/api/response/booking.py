@@ -37,4 +37,4 @@ class BookingCalendarScheduleResponse(BaseModel):
     duration: int
     price: int
     description: Optional[str] = Field(default=None)
-    schedule: list[BookingSchedule]
+    # schedule: list[BookingSchedule]
