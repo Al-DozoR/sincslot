@@ -126,8 +126,8 @@ routes.include_router(
 
 routes.include_router(
     router=router_get_services_by_company_alias,
-    prefix=settings.api_v1.prefix_company_service,
-    tags=[settings.tags.tag_company_service],
+    prefix=settings.api_v1.prefix_company_service_public,
+    tags=[settings.tags.tag_company_service_public],
 )
 
 ################### Company booking schedule ###################
