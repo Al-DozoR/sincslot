@@ -28,13 +28,13 @@ async def get_current_company_from_token(
     if is_revoke is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Failed to find tokens by provided token",
+            detail="Failed to find company tokens by provided token",
         )
 
     if is_revoke is True:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token is already revoked",
+            detail="Company token is already revoked",
         )
 
     try:
@@ -43,14 +43,14 @@ async def get_current_company_from_token(
         logger.error("Error occurred while parsing token: %s. Error: %s", token, str(ex))
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Failed to parse token. Probably token is expired",
+            detail="Failed to parse token. Probably company token is expired",
         )
 
     company_id = payload_access_token.get("company_id")
     if company_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Failed to find get company id from token",
+            detail=f"Failed to get company id from token",
         )
 
     company = await company_use_case.get_company_by_id(session, company_id)

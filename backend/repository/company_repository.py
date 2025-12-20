@@ -75,6 +75,14 @@ class ICompanyRepository(ABC):
     ):
         raise NotImplemented
 
+    @abstractmethod
+    async def list_companies(self, session: AsyncSession, limit: int, offset: int) -> list[CompanyEntity] | None:
+        raise NotImplemented
+
+    @abstractmethod
+    async def get_company_by_slug(self, session: AsyncSession, slug: str) -> CompanyEntity | None:
+        raise NotImplemented
+
 
 class CompanyRepository(ICompanyRepository):
 
@@ -249,3 +257,37 @@ class CompanyRepository(ICompanyRepository):
                     result = sorted(result, key=lambda x: x['time'])
 
             return result
+
+    async def list_companies(self, session: AsyncSession, limit: int, offset: int) -> list[CompanyEntity] | None:
+
+        async with UnitOfWork(session) as uow:
+            query = select(Company)
+            if limit is not None:
+                query = query.limit(limit)
+            if offset is not None:
+                query = query.offset(offset)
+
+            company = await uow.execute_query(query)
+            companies_scalar = company.scalars()
+            if companies_scalar is None:
+                return
+
+        result = []
+
+        for company in companies_scalar:
+            result.append(company.to_company_entity())
+
+        return result
+
+    async def get_company_by_slug(self, session: AsyncSession, slug: str) -> CompanyEntity | None:
+
+        pattern: str = f"%{slug}"
+
+        async with UnitOfWork(session) as uow:
+            query = select(Company).filter(Company.booking_url.like(pattern))
+            company = await uow.execute_query(query)
+            company_scalar: Company | None = company.scalar()
+            if company_scalar is None:
+                return
+
+        return company_scalar.to_company_entity()
