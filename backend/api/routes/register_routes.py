@@ -3,6 +3,8 @@ from fastapi import APIRouter
 from backend.core.config import settings
 from backend.api.controllers.health import router_health
 
+from backend.api.controllers.company.get_company_by_slug import router as router_get_company_by_slug
+from backend.api.controllers.company.list_companies import router as router_list_companies
 from backend.api.controllers.company.image import router as router_image
 from backend.api.controllers.company.work_schedule import router as router_work_schedule
 from backend.api.controllers.company.auth.login import router as router_login
@@ -91,6 +93,18 @@ routes.include_router(
     router=router_deactivate_company,
     prefix=settings.api_v1.prefix_company_settings,
     tags=[settings.tags.tag_company_settings]
+)
+
+routes.include_router(
+    router=router_list_companies,
+    prefix=settings.api_v1.prefix_list_companies,
+    tags=[settings.tags.tag_company]
+)
+
+routes.include_router(
+    router=router_get_company_by_slug,
+    prefix=settings.api_v1.prefix_company_by_slug,
+    tags=[settings.tags.tag_company]
 )
 ################### Company Service ###################
 

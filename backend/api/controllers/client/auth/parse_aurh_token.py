@@ -27,13 +27,13 @@ async def get_current_client_from_token(
     if is_revoke is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Refresh token was not found",
+            detail="Failed to find client tokens by provided token",
         )
 
     if is_revoke is True:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token is already revoked",
+            detail="Client token is already revoked",
         )
 
     try:
@@ -42,7 +42,7 @@ async def get_current_client_from_token(
         logger.error("Error occurred while parsing token: %s. Error: %s", token, str(ex))
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Failed to parse token. Probably token is expired",
+            detail="Failed to parse client token. Probably token is expired",
         )
 
     client_id = payload_access_token.get("client_id")
