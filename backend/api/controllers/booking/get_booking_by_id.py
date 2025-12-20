@@ -18,31 +18,34 @@ router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/login")
 
 
-@router.get("/company/{company_id}/service/{service_id}", responses={
+@router.get("/company/{slug}/service/{service_id}", responses={
                  status.HTTP_200_OK: {"model": BookingCalendarScheduleResponse},
                  status.HTTP_400_BAD_REQUEST: {"model": BookingErrorResponse},
                  status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": BookingErrorResponse},
              }
     )
 async def get_booking_by_id(
-        company_id: int,
+        slug: str,
         service_id: int,
         booking_use_case: IBookingUseCase = Depends(di_container.get_booking_use_case),
         company_use_case: ICompanyUseCase = Depends(di_container.get_company_use_cases),
         session: AsyncSession = Depends(db_helper.session_getter),
 ) -> JSONResponse:
-    work_schedule = await company_use_case.get_work_schedule_by_company_id(session, company_id)
+
+    company = await company_use_case.get_company_by_slug(session, slug)
+
+    work_schedule = await company_use_case.get_work_schedule_by_company_id(session, company.id)
     if work_schedule is None:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content=BookingErrorResponse(error=f"Failed to find work schedule for company {company_id}")
+            content=BookingErrorResponse(error=f"Failed to find work schedule for company {company.id}")
         )
 
     try:
         calendar_schedule = await booking_use_case.get_calendar_schedule_booking(
             session,
             service_id,
-            company_id,
+            company.id,
             work_schedule
         )
     except Exception as ex:
@@ -63,14 +66,3 @@ async def get_booking_by_id(
         )
 
     return calendar_schedule
-
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=BookingCalendarScheduleResponse(
-            id=calendar_schedule.get("id"),
-            name=calendar_schedule.get("name"),
-            duration=calendar_schedule.get("duration"),
-            price=calendar_schedule.get("price"),
-            schedule=calendar_schedule.get("schedule"),
-        ).model_dump(exclude_none=True, by_alias=True)
-    )
