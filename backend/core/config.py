@@ -73,6 +73,7 @@ class ApiV1Tags(BaseModel):
     tag_booking: str = "booking"
     tag_client_auth: str = "client auth"
     tag_client_booking: str = "client booking"
+    tag_company: str = "company"
 
 
 class ApiV1Prefix(BaseModel):
@@ -86,6 +87,8 @@ class ApiV1Prefix(BaseModel):
     prefix_booking: str = "/api/v1/booking"
     prefix_client_auth: str = "/api/v1/client/auth"
     prefix_client_booking: str = "/api/v1/client/booking"
+    prefix_list_companies: str = "/api/v1/list-companies"
+    prefix_company_by_slug: str = "/api/v1/company-by-slug"
 
 
 class Settings(BaseSettings):

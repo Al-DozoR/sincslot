@@ -31,6 +31,15 @@ class CompanyByIdResponse(BaseModel):
     address: Optional[str]
 
 
+class CompanyBySlugResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+    phone: str
+    description: Optional[str]
+    address: Optional[str]
+
+
 class CompanySuccessResponse(BaseModel):
     message: str
 
@@ -84,6 +93,19 @@ class CompanyEntityResponse(BaseModel):
         populate_by_name=True,
         from_attributes=True,
     )
+
+
+class ListCompanyElemResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+    phone: str
+    description: Optional[str] = None
+    address: Optional[str] = None
+
+
+class ListCompanyEntityResponse(BaseModel):
+    companies: list[ListCompanyElemResponse]
 
 
 class CompanySettingsResponse(BaseModel):

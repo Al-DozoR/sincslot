@@ -25,7 +25,8 @@ class IBookingUseCase(ABC):
         raise NotImplemented
 
     @abstractmethod
-    async def get_calendar_schedule_booking(self, session: AsyncSession, service_id: int, company_id: int, work_schedule: list):
+    async def get_calendar_schedule_booking(self, session: AsyncSession, service_id: int, company_id: int,
+                                            work_schedule: list):
         raise NotImplemented
 
     @abstractmethod
@@ -140,85 +141,117 @@ class BookingUseCase(IBookingUseCase):
             end_interval = current_time + timedelta(minutes=service_duration_min)
             # Формат строки: "ЧЧ:ММ–ЧЧ:ММ"
             # interval_str = current_time.strftime("%H:%M") + "–" + end_interval.strftime("%H:%M")
-            intervals.append((current_time.time(), end_interval.time()))
+            intervals.append(
+                (
+                    time(current_time.time().hour, current_time.time().minute),
+                    time(end_interval.time().hour, end_interval.time().minute)
+                )
+            )
             # Переходим к следующему интервалу
             current_time = end_interval
 
         return intervals
 
     @staticmethod
-    async def select_non_overlapping_intervals(intervals):
-        if not intervals:
-            return []
+    def remove_overlapping_intervals(data):
+        """
+        Принимает словарь вида {ключ: [(start1, end1), (start2, end2), ...]}
+        и возвращает словарь с теми же ключами, но с непересекающимися и уникальными интервалами
+        в каждом списке (в порядке возрастания start).
 
-        intervals = [(time(start.hour, start.minute), time(end.hour, end.minute)) for start, end in intervals]
+        Для каждого ключа:
+        - полностью удаляются интервалы, которые встречаются 2+ раза;
+        - оставшиеся интервалы сортируются по началу;
+        - последовательно добавляются в результат, если не пересекаются с последним добавленным.
+        """
+        result = {}
 
-        # Считаем количество вхождений каждого кортежа
-        counts = Counter(intervals)
+        for key, intervals in data.items():
+            if not intervals:
+                result[key] = []
+                continue
 
-        # Оставляем только кортежи с количеством = 1
-        intervals = [item for item, count in counts.items() if count == 1]
+            # Подсчитываем количество вхождений каждого интервала
+            count = {}
+            for interval in intervals:
+                count[interval] = count.get(interval, 0) + 1
 
-        # Сортируем по времени окончания (жадный алгоритм)
-        sorted_intervals = sorted(intervals, key=lambda x: x[1])
+            # Оставляем только интервалы, которые встретились ровно 1 раз
+            unique_intervals = [interval for interval in intervals if count[interval] == 1]
 
-        selected = [sorted_intervals[0]]  # берём первый (самый ранний по окончанию)
+            # Если после удаления дубликатов ничего не осталось — записываем пустой список
+            if not unique_intervals:
+                result[key] = []
+                continue
 
-        for current in sorted_intervals[1:]:
-            last_selected = selected[-1]
-            # Если текущий интервал начинается после окончания последнего выбранного
-            if current[0] >= last_selected[1]:
-                selected.append(current)
+            # Сортируем интервалы по началу
+            sorted_intervals = sorted(unique_intervals, key=lambda x: x[0])
 
-        return selected
+            # Первый интервал всегда добавляем
+            non_overlapping = [sorted_intervals[0]]
 
-    async def get_services_intervals(self, services: list[ServiceEntity], work_schedule: list) -> list[
-        tuple[time, time]]:
+            for current in sorted_intervals[1:]:
+                last = non_overlapping[-1]
+                # Проверяем пересечение: если начало текущего >= концу последнего — не пересекаются
+                if current[0] >= last[1]:
+                    non_overlapping.append(current)
 
-        intervals = []
+            result[key] = non_overlapping
+
+        return result
+
+    async def get_services_intervals(self, services: list[ServiceEntity], work_schedule: list) -> dict[int, list[tuple[time, time]]]:
+
+        intervals = {}
 
         for ws in work_schedule:
             work_start = datetime.strptime(ws.get("work_start"), "%H:%M").time()
             work_end = datetime.strptime(ws.get("work_end"), "%H:%M").time()
             for service in services:
                 list_intervals = self.get_intervals(work_start, work_end, service.duration)
-                intervals.extend(list_intervals)
+                day_of_week = ws["day_of_week"]
+                intervals[day_of_week] = list_intervals
 
         return intervals
 
     @staticmethod
     async def filter_intervals_by_service_duration(
-            intervals: list[tuple[time, time]], service_duration_min: int
-    ) -> list[dict[str, str]]:
+            intervals: dict[int, list[tuple[time, time]]],
+            service_duration_min: int) -> dict[int, list[tuple[time, time]]]:
 
         if service_duration_min <= 0:
             raise ValueError("Длительность услуги должна быть положительной")
 
-        result = []
+        result_dict = {}
 
-        for start, end in intervals:
-            # Преобразуем time в datetime для арифметики (берём произвольную дату)
-            dummy_date = datetime.now().date()  # можно любую дату
-            start_dt = datetime.combine(dummy_date, start)
-            end_dt = datetime.combine(dummy_date, end)
+        for key in intervals:
+            result = []
+            for start, end in intervals[key]:
+                # Преобразуем time в datetime для арифметики (берём произвольную дату)
+                dummy_date = datetime.now().date()  # можно любую дату
+                start_dt = datetime.combine(dummy_date, start)
+                end_dt = datetime.combine(dummy_date, end)
 
-            # Проверяем, что конец >= начало
-            if end_dt < start_dt:
-                raise ValueError(f"Некорректный интервал: {start}–{end} (конец раньше начала)")
+                # Проверяем, что конец >= начало
+                if end_dt < start_dt:
+                    raise ValueError(f"Некорректный интервал: {start}–{end} (конец раньше начала)")
 
-            # Вычисляем длительность интервала в минутах
-            duration = (end_dt - start_dt).total_seconds() / 60
+                # Вычисляем длительность интервала в минутах
+                duration = (end_dt - start_dt).total_seconds() / 60
 
-            # Если длительность точно равна заданной — добавляем в результат
-            if duration == service_duration_min:
-                result.append({
-                    "start": start.strftime("%H:%M"),
-                    "end": end.strftime("%H:%M"),
-                })
+                # Если длительность точно равна заданной — добавляем в результат
+                if duration == service_duration_min:
+                    result.append({
+                        "start": start.strftime("%H:%M"),
+                        "end": end.strftime("%H:%M"),
+                    })
 
-        return result
+            result_dict[key] = result
 
-    async def get_calendar_schedule_booking(self, session: AsyncSession, service_id: int, company_id: int, work_schedule: list):
+        return result_dict
+
+    async def get_calendar_schedule_booking(self, session: AsyncSession, service_id: int, company_id: int,
+                                            work_schedule: list):
 
         schedule: list[dict] = []
 
@@ -226,34 +259,79 @@ class BookingUseCase(IBookingUseCase):
         if service is None:
             return
 
-        services = await self.service_repository.get_services_by_company_id(session, company_id=company_id)
-
-        days_of_week_to_work = {w["day_of_week"] for w in work_schedule}
+        services = await self.service_repository.get_services_by_company_id(session, company_id)
 
         services_intervals = await self.get_services_intervals(services, work_schedule)
 
         bookings_by_service_id = await self.booking_repository.get_booking_by_service_id(session, service_id)
 
-        bookings_intervals = [(t.time_start.time(), t.time_end.time(),) for t in bookings_by_service_id if t.client_id is not None]
+        days_already_booked = [d.time_start.day for d in bookings_by_service_id]
 
-        services_intervals.extend(bookings_intervals)
+        for booking in bookings_by_service_id:
 
-        non_overlapping_intervals = await self.select_non_overlapping_intervals(services_intervals)
+            if booking.client_id is None:
+                continue
+
+            t = (time(hour=booking.time_start.time().hour, minute=booking.time_start.time().minute), time(hour=booking.time_end.time().hour, minute=booking.time_end.time().minute))
+            day_of_week = booking.time_start.isoweekday()
+
+            if day_of_week in services_intervals:
+                services_intervals[day_of_week].append(t)
+
+        non_overlapping_intervals = self.remove_overlapping_intervals(services_intervals)
+
+        days_of_week_to_work = {w["day_of_week"] for w in work_schedule}
 
         for day in range(self.calendar_schedule_settings.calendar_schedule_limit_days):
             now = datetime.now() + timedelta(days=day)
             if now.isoweekday() in days_of_week_to_work:
 
-                time_to_book = await self.filter_intervals_by_service_duration(non_overlapping_intervals,
-                                                                               service.duration),
+                if now.day in days_already_booked:
+                    time_to_book = await self.filter_intervals_by_service_duration(non_overlapping_intervals, service.duration),
+                    time_to_book = time_to_book[0][now.isoweekday()] if isinstance(time_to_book, tuple) else time_to_book[now.isoweekday()]
 
-                schedule.append({
-                    "month": now.month,
-                    "day": now.day,
-                    "day_of_week": now.isoweekday(),
-                    "time_to_book": time_to_book,
-                    "is_work": True
-                })
+                    new_time_to_book = []
+
+                    for ws in work_schedule:
+                        if ws["day_of_week"] == now.isoweekday():
+                            work_start = ws["work_start"]
+                            work_end = ws["work_end"]
+                            for t in time_to_book:
+                                time_to_book_start = t["start"]
+                                time_to_book_end = t["end"]
+
+                                if time_to_book_start < work_start or time_to_book_end > work_end:
+                                    continue
+                                else:
+                                    new_time_to_book.append(t)
+
+                    schedule.append({
+                        "month": now.month,
+                        "day": now.day,
+                        "day_of_week": now.isoweekday(),
+                        "time_to_book": new_time_to_book,
+                        "is_work": True
+                    })
+                else:
+
+                    result = []
+
+                    intervals = non_overlapping_intervals.get(now.isoweekday())
+                    if intervals is not None:
+                        for interval in non_overlapping_intervals.get(now.isoweekday()):
+                            result.append({
+                                "start": interval[0],
+                                "end": interval[1]
+                            })
+
+                    schedule.append({
+                        "month": now.month,
+                        "day": now.day,
+                        "day_of_week": now.isoweekday(),
+                        "time_to_book": result,
+                        "is_work": True
+                    })
+
             else:
                 schedule.append({
                     "month": now.month,

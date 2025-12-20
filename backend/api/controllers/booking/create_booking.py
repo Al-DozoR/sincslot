@@ -38,25 +38,6 @@ async def create_booking(
                 error=f"Client with id {client.id} has already booked the service with id {service_id}").model_dump()
         )
 
-    time_start = create_booking_request.start_booking.replace(tzinfo=timezone.utc)
-    time_end = create_booking_request.end_booking.replace(tzinfo=timezone.utc)
-
-    try:
-        if not await booking_use_case.is_booking_time_in_work_schedule(session, company_id, time_start, time_end):
-            return JSONResponse(
-                status_code=status.HTTP_409_CONFLICT,
-                content=BookingErrorResponse(
-                    error=f"Время начала или окончания услуги не укладывается в расписание кампании").model_dump()
-            )
-    except Exception as ex:
-        logger.error("Failed to check company schedule for booking for client id %s. Error %s", client.id, str(ex))
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content=BookingErrorResponse(
-                error=f"Failed to check company schedule for booking for client id {client.id}"
-            ).model_dump()
-        )
-
     try:
         booking_id = await booking_use_case.save_booking(
             session,

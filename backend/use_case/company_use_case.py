@@ -1,10 +1,13 @@
 import secrets
 import string
 from abc import ABC, abstractmethod
+
+from alembic.util import status
 from slugify import slugify
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
+from sqlalchemy.util import await_only
 
 from backend.logger.logger import init_logger
 from backend.use_case.file_use_case import IFileStorage
@@ -103,6 +106,20 @@ class ICompanyUseCase(ABC):
             sort_order: str,
     ):
         raise NotImplemented
+
+    @abstractmethod
+    async def list_companies(
+            self,
+            session: AsyncSession,
+            limit: int | None,
+            offset: int | None,
+    ) -> list[CompanyEntity] | None:
+        raise NotImplemented
+
+    @abstractmethod
+    async def get_company_by_slug(self, session: AsyncSession, slug: str) -> CompanyEntity | None:
+        raise NotImplemented
+
 
 class CompanyUseCase(ICompanyUseCase):
 
@@ -260,6 +277,10 @@ class CompanyUseCase(ICompanyUseCase):
     async def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         return self.crypt_hasher.verify(plain_password + self.password_settings.salt, hashed_password)
 
+    @staticmethod
+    async def generate_company_slug(s: str) -> str:
+        return slugify(s, separator='-')
+
     async def generate_booking_url(self, s: str) -> str:
         return self.booking_url_settings.base_url + "/" + slugify(s, separator='-')
 
@@ -277,3 +298,18 @@ class CompanyUseCase(ICompanyUseCase):
             sort_order: str,
     ):
         return await self.company_repository.get_company_booking_schedule(session, company_id, sort_by, sort_order)
+
+    async def list_companies(self, session: AsyncSession, limit: int | None, offset: int | None) -> list[CompanyEntity] | None:
+
+        if limit is not None:
+            if limit > 100:
+                limit = 100
+
+        if limit is None:
+            limit = 100
+
+        return await self.company_repository.list_companies(session, limit, offset)
+
+    async def get_company_by_slug(self, session: AsyncSession, slug: str) -> CompanyEntity | None:
+        slug = await self.generate_company_slug(slug)
+        return await self.company_repository.get_company_by_slug(session, slug)
