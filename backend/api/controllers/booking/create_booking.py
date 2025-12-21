@@ -29,13 +29,6 @@ async def create_booking(
         booking_use_case: IBookingUseCase = Depends(di_container.get_booking_use_case),
         session: AsyncSession = Depends(db_helper.session_getter),
 ) -> JSONResponse:
-    booking = await booking_use_case.get_booking_by_service_id_and_client_id(session, service_id, client.id)
-    if booking is not None:
-        return JSONResponse(
-            status_code=status.HTTP_409_CONFLICT,
-            content=BookingErrorResponse(
-                error=f"Client with id {client.id} has already booked the service with id {service_id}").model_dump()
-        )
 
     try:
         booking_id = await booking_use_case.save_booking(
