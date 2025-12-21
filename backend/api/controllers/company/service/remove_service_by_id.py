@@ -40,7 +40,7 @@ async def remove_service_by_id(service_id: int,
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content=ServiceErrorResponse(
-                message=f"Failed to remove service with id {service_id}"
+                error=f"Failed to remove service with id {service_id}"
             ).model_dump()
         )
 
