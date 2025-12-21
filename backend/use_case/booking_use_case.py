@@ -319,10 +319,34 @@ class BookingUseCase(IBookingUseCase):
                     intervals = non_overlapping_intervals.get(now.isoweekday())
                     if intervals is not None:
                         for interval in non_overlapping_intervals.get(now.isoweekday()):
-                            result.append({
-                                "start": interval[0].strftime("%H:%M"),
-                                "end": interval[1].strftime("%H:%M")
-                            })
+
+                            for ws in work_schedule:
+                                day_of_week = ws["day_of_week"]
+                                work_start = ws["work_start"]
+                                work_end = ws["work_end"]
+
+                                if day_of_week != now.isoweekday():
+                                    continue
+
+                                work_start = time(int(work_start.split(":")[0]), int(work_start.split(":")[1]))
+                                work_end = time(int(work_end.split(":")[0]), int(work_end.split(":")[1]))
+
+                                work_start_dt = datetime.combine(datetime.today().date(), work_start)
+                                work_end_dt = datetime.combine(datetime.today().date(), work_end)
+
+                                work_start = int(work_start_dt.timestamp())
+                                work_end = int(work_end_dt.timestamp())
+
+                                start = int(datetime.combine(datetime.today().date(), time(interval[0].hour, interval[0].minute)).timestamp())
+                                end = int(datetime.combine(datetime.today().date(), time(interval[1].hour, interval[1].minute)).timestamp())
+
+                                if start < work_start or end > work_end:
+                                    continue
+                                else:
+                                    result.append({
+                                        "start": interval[0].strftime("%H:%M"),
+                                        "end": interval[1].strftime("%H:%M")
+                                    })
 
                     schedule.append({
                         "month": now.month,
