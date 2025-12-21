@@ -16,7 +16,7 @@ class IClientRepository(ABC):
             session: AsyncSession,
             name: str,
             phone: str,
-    ) -> int:
+    ) -> ClientEntity:
         raise NotImplemented
 
     @abstractmethod
@@ -39,7 +39,7 @@ class ClientRepository(IClientRepository):
             session: AsyncSession,
             name: str,
             phone: str,
-    ) -> int:
+    ) -> ClientEntity:
 
         new_client = Client(
             name=name,
@@ -49,7 +49,7 @@ class ClientRepository(IClientRepository):
         async with UnitOfWork(session) as uow:
             await uow.add(new_client)
 
-        return new_client.id
+        return new_client.to_client_entity()
 
     async def get_client_by_id(self, session: AsyncSession, client_id: int) -> ClientEntity | None:
 

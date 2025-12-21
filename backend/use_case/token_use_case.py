@@ -26,7 +26,7 @@ class IToken(ABC):
         raise NotImplemented
 
     @abstractmethod
-    async def create_access_token_client(self, client_id: int) -> str:
+    async def create_access_token_client(self, client_id: int, client_name: str, client_phone: str) -> str:
         raise NotImplementedError
 
     @abstractmethod
@@ -118,9 +118,11 @@ class Token(IToken):
 
         return encoded_access_jwt
 
-    async def create_access_token_client(self, client_id: int) -> str:
+    async def create_access_token_client(self, client_id: int, client_name: str, client_phone: str) -> str:
         new_access_token = {
             "client_id": client_id,
+            "client_name": client_name,
+            "client_phone": client_phone,
             "type": self.jwt_settings.token_type_access,
             "exp": int(
                 (datetime.now(timezone.utc) + timedelta(
