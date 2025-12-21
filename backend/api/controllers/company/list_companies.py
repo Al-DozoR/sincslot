@@ -55,6 +55,7 @@ async def get_company_booking_schedule(
                 phone=company.phone,
                 description=company.description,
                 address=company.address,
+                slug=company.booking_url.split("/")[-1]
             ).model_dump(exclude_none=True)
         )
 

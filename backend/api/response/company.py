@@ -102,6 +102,7 @@ class ListCompanyElemResponse(BaseModel):
     phone: str
     description: Optional[str] = None
     address: Optional[str] = None
+    slug: str
 
 
 class ListCompanyEntityResponse(BaseModel):
