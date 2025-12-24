@@ -83,7 +83,7 @@ async def refresh_tokens(
         httponly=True,
         secure=False,
         samesite="lax",
-        path="/api/v1/company/refresh-token"
+        path="/api/v1/company/auth/refresh-token"
     )
 
     return response
