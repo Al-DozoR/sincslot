@@ -1,34 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import styles from './ClientBookingPage.module.css';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const ClientBookingPage = () => {
-    const navigate = useNavigate();
-  // убрала моковые данные услуг
-  const [services, setServices] = useState([]);
+  const { companySlug } = useParams(); // Получаем Slug из URL
+  const navigate = useNavigate();
+  
+  const [services, setServices] = useState([]); // Состояние для хранения услуг
+  const [selectedService, setSelectedService] = useState(null); // Состояние для выбранной услуги
+  const [selectedTime, setSelectedTime] = useState(null); // Состояние для выбранного времени
+  const [selectedDate, setSelectedDate] = useState(null); // Состояние для выбранной даты
+  const [loading, setLoading] = useState(true); // Состояние для загрузки данных
 
-  const [selectedService, setSelectedService] = useState(null);
-  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedTime, setSelectedTime] = useState(null);
-
-// Загрузка данных услуг с бэкенда
   useEffect(() => {
+    // Функция для получения услуг компании по companySlug
     const fetchServices = async () => {
       try {
-        const response = await fetch('/api/v1/booking/services/company/{alias}');
+        const response = await fetch(/api/v1/booking/services/company/${companySlug});
         if (!response.ok) {
-          throw new Error('Ошибка при загрузке услуг');
+          throw new Error('Ошибка при получении услуг');
         }
         const data = await response.json();
-        setServices(data); // Предполагается, что API возвращает массив услуг
+        setServices(data.services); // Предполагаю, что данные приходят в формате { services: [...] }
       } catch (error) {
         console.error('Ошибка:', error);
+      } finally {
+        setLoading(false); // Завершаем загрузку
       }
     };
 
     fetchServices();
-  }, []); // Пустой массив зависимостей означает, что эффект выполнится только один раз при монтировании
+  }, [companySlug]); // Зависимость от companySlug
+
+  if (loading) {
+    return <div>Загрузка услуг...</div>;
+  }
+
+  if (error) {
+    return <div>Ошибка: {error}</div>;
+  }
+  
+return (
+    <div>
+        <h1>Услуги компании: {companySlug}</h1>
+        <ul>
+            {services.map(service => (
+                <li key={service.id}>{service.name}</li>
+            ))}
+        </ul>
+    </div>
+);
 
   // Генерация тестовых дат на 30 дней вперед
   const generateAvailableDates = () => {
