@@ -30,7 +30,7 @@ class IToken(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def create_refresh_token_client(self, client_id: int) -> str:
+    async def create_refresh_token_client(self, client_id: int, client_name: str, client_phone: str) -> str:
         raise NotImplementedError
 
     @abstractmethod
@@ -86,10 +86,18 @@ class Token(IToken):
         if tokens is None:
             return
 
-        payload = await self.decode_token(tokens.access_token)
+        payload = await self.decode_token(tokens.refresh_token)
 
-        new_access_token = await self.create_access_token(company_id=payload.get("company_id"))
-        new_refresh_token = await self.create_refresh_token(company_id=payload.get("company_id"))
+        new_access_token = await self.create_access_token_client(
+            client_id=payload.get("client_id"),
+            client_name=payload.get("client_name"),
+            client_phone=payload.get("client_phone"),
+        )
+        new_refresh_token = await self.create_refresh_token_client(
+            client_id=payload.get("client_id"),
+            client_name=payload.get("client_name"),
+            client_phone=payload.get("client_phone"),
+        )
 
         return await self.token_repository.update_tokens(
             session,
@@ -155,9 +163,11 @@ class Token(IToken):
 
         return encoded_refresh_jwt
 
-    async def create_refresh_token_client(self, client_id: int) -> str:
+    async def create_refresh_token_client(self, client_id: int, client_name: str, client_phone: str) -> str:
         new_refresh_token = {
             "client_id": client_id,
+            "client_name": client_name,
+            "client_phone": client_phone,
             "type": self.jwt_settings.token_type_refresh,
             "exp": int(
                 (datetime.now(timezone.utc) + timedelta(

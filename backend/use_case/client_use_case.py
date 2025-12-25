@@ -52,8 +52,16 @@ class ClientUseCase(IClientUseCase):
     ) -> TokenEntity:
         client = await self.client_repository.save_client(session, name, phone)
 
-        access_token = await self.token.create_access_token_client(client_id=client.id, client_name=client.name, client_phone=client.phone)
-        refresh_token = await self.token.create_refresh_token_client(client_id=client.id)
+        access_token = await self.token.create_access_token_client(
+            client_id=client.id,
+            client_name=client.name,
+            client_phone=client.phone
+        )
+        refresh_token = await self.token.create_refresh_token_client(
+            client_id=client.id,
+            client_name=client.name,
+            client_phone=client.phone
+        )
 
         tokens = await self.token.save_tokens(session, access_token, refresh_token, is_revoke=False)
 
@@ -69,8 +77,16 @@ class ClientUseCase(IClientUseCase):
         return await self.client_repository.get_client_by_phone(session, phone)
 
     async def login(self, session: AsyncSession, client: ClientEntity) -> TokenEntity:
-        access_token = await self.token.create_access_token_client(client_id=client.id, client_name=client.name, client_phone=client.phone)
-        refresh_token = await self.token.create_refresh_token_client(client_id=client.id)
+        access_token = await self.token.create_access_token_client(
+            client_id=client.id,
+            client_name=client.name,
+            client_phone=client.phone
+        )
+        refresh_token = await self.token.create_refresh_token_client(
+            client_id=client.id,
+            client_name=client.name,
+            client_phone=client.phone
+        )
 
         tokens = await self.token.save_tokens(session, access_token, refresh_token, is_revoke=False)
 
