@@ -33,6 +33,7 @@ from backend.api.controllers.client.auth.register import router as router_regist
 from backend.api.controllers.client.auth.refresh_token import router as router_refresh_token_client
 from backend.api.controllers.client.get_client_bookings import router as router_get_client_bookings
 from backend.api.controllers.client.deactivate_client_booking import router as router_deactivate_client_booking
+from backend.api.controllers.client.auth.logout import router as router_logout_client
 
 
 
@@ -203,4 +204,10 @@ routes.include_router(
     router=router_deactivate_client_booking,
     prefix=settings.api_v1.prefix_client_booking,
     tags=[settings.tags.tag_client_booking],
+)
+
+routes.include_router(
+    router=router_logout_client,
+    prefix=settings.api_v1.prefix_client_auth,
+    tags=[settings.tags.tag_client_auth]
 )

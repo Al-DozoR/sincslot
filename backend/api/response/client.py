@@ -4,6 +4,10 @@ from pydantic import BaseModel, Field, ConfigDict
 from pydantic.alias_generators import to_camel
 
 
+class ClientSuccessResponse(BaseModel):
+    message: str
+
+
 class ClientErrorResponse(BaseModel):
     error: str
 
